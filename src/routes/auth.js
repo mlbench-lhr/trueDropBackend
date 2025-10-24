@@ -6,7 +6,8 @@ const validators = require('../middleware/validators');
 
 router.post('/register', validate(validators.register), authController.register);
 router.post('/login', validate(validators.login), authController.login);
-router.post('/refresh', validate(validators.refresh), authController.refresh);
+router.post('/social/register', validate(validators.socialRegister), authController.socialRegister);
+router.post('/social/login', validate(validators.socialLogin), authController.socialLogin);
 router.post('/logout', validate(validators.logout), authController.logout);
 
 module.exports = router;
