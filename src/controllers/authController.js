@@ -5,8 +5,9 @@ const logger = require("../utils/logger");
 
 async function register(req, res, next) {
   try {
-    const { email, password } = req.body;
-    console.log("email, password ------------", email, password);
+    const { email, password, name, alcoholType, improvement, createdAt, goal } =
+      req.body;
+    console.log("req.body ------------",  email, password, name, alcoholType, improvement, createdAt, goal);
     if (!email || !password)
       return res.status(400).json({ error: "email and password required" });
 
@@ -15,18 +16,22 @@ async function register(req, res, next) {
       return res.status(409).json({ error: "Email already registered" });
 
     const passwordHash = await passwordService.hashPassword(password);
-    const user = await User.create({ email, passwordHash });
+    const user = await User.create({
+      email,
+      passwordHash,
+      name,
+      alcoholType,
+      improvement,
+      createdAt,
+      goal,
+    });
 
     const payload = { userId: user._id.toString(), email: user.email };
     const accessToken = jwtService.signAccess(payload);
     const refreshToken = jwtService.signRefresh(payload);
 
     return res.status(201).json({
-      user: {
-        id: user._id.toString(),
-        email: user.email,
-        createdAt: user.createdAt,
-      },
+      user: user,
       tokens: {
         accessToken,
         refreshToken,
