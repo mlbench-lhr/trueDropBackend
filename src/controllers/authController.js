@@ -374,6 +374,178 @@ async function logout(req, res, next) {
   }
 }
 
+const emailService = require("../services/emailService");
+const crypto = require("crypto");
+
+// Send verification code
+async function forgotPassword(req, res, next) {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        status: false,
+        message: "Email is required",
+        data: null,
+      });
+    }
+
+    const user = await User.findOne({ email, provider: "local" });
+    if (!user) {
+      // For security, don't reveal if email exists
+      return res.status(200).json({
+        status: true,
+        message: "If the email exists, a verification code has been sent",
+        data: null,
+      });
+    }
+
+    // Generate 6-digit code
+    const verificationCode = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
+
+    // Hash the code before storing
+    const hashedCode = crypto
+      .createHash("sha256")
+      .update(verificationCode)
+      .digest("hex");
+
+    // Set expiry to 10 minutes
+    user.resetPasswordToken = hashedCode;
+    user.resetPasswordExpires = Date.now() + 10 * 60 * 1000;
+    await user.save();
+
+    // Send email
+    const emailSent = await emailService.sendVerificationCode(
+      email,
+      verificationCode
+    );
+
+    if (!emailSent) {
+      return res.status(500).json({
+        status: false,
+        message: "Failed to send verification code. Please try again.",
+        data: null,
+      });
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "Verification code sent to your email",
+      data: null,
+    });
+  } catch (err) {
+    logger.error("Forgot password error", err);
+    next(err);
+  }
+}
+
+// Verify code
+async function verifyResetCode(req, res, next) {
+  try {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+      return res.status(400).json({
+        status: false,
+        message: "Email and verification code are required",
+        data: null,
+      });
+    }
+
+    const user = await User.findOne({
+      email,
+      provider: "local",
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid or expired verification code",
+        data: null,
+      });
+    }
+
+    // Hash the provided code and compare
+    const hashedCode = crypto.createHash("sha256").update(code).digest("hex");
+
+    if (hashedCode !== user.resetPasswordToken) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid verification code",
+        data: null,
+      });
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "Verification code is valid",
+      data: { email },
+    });
+  } catch (err) {
+    logger.error("Verify reset code error", err);
+    next(err);
+  }
+}
+
+// Reset password
+async function resetPassword(req, res, next) {
+  try {
+    const { email, code, newPassword } = req.body;
+
+    if (!email || !code || !newPassword) {
+      return res.status(400).json({
+        status: false,
+        message: "Email, verification code, and new password are required",
+        data: null,
+      });
+    }
+
+    const user = await User.findOne({
+      email,
+      provider: "local",
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid or expired verification code",
+        data: null,
+      });
+    }
+
+    // Verify code
+    const hashedCode = crypto.createHash("sha256").update(code).digest("hex");
+
+    if (hashedCode !== user.resetPasswordToken) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid verification code",
+        data: null,
+      });
+    }
+
+    // Update password
+    user.passwordHash = await passwordService.hashPassword(newPassword);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    return res.status(200).json({
+      status: true,
+      message: "Password reset successfully",
+      data: null,
+    });
+  } catch (err) {
+    logger.error("Reset password error", err);
+    next(err);
+  }
+}
+
+// Add to module.exports
 module.exports = {
   register,
   login,
@@ -381,4 +553,7 @@ module.exports = {
   socialLogin,
   logout,
   refresh,
+  forgotPassword,
+  verifyResetCode,
+  resetPassword,
 };

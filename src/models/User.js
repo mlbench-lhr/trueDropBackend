@@ -32,6 +32,8 @@ const UserSchema = new Schema({
   improvement: [{ type: String, required: true }],
   goal: { type: goalSchema, required: true },
   createdAt: { type: Date, default: Date.now },
+  resetPasswordToken: { type: String, required: false },
+  resetPasswordExpires: { type: Date, required: false },
 });
 UserSchema.index(
   { provider: 1, providerId: 1 },
