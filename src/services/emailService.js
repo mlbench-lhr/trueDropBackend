@@ -1,20 +1,13 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 const logger = require("../utils/logger");
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || smtp.gmail.com,
-  port: process.env.SMTP_PORT || 587,
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER || "mlbenchpvtltd@gmail.com",
-    pass: process.env.SMTP_PASS || "dgfs cswg wlsq axbw",
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function sendVerificationCode(email, code) {
   try {
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || '"Truedrop" <mlbenchpvtltd@gmail.com>',
+    logger.info("Attempting to send email to:", email);
+    await resend.emails.send({
+      from: process.env.EMAIL_FROM || "mlbenchpvtltd@gmail.com",
       to: email,
       subject: "Password Reset Verification Code",
       html: `
@@ -29,9 +22,10 @@ async function sendVerificationCode(email, code) {
         </div>
       `,
     });
+    logger.info("Email sent successfully");
     return true;
   } catch (error) {
-    logger.error("Email send error", error);
+    logger.error("Email send error:", error.message);
     return false;
   }
 }
