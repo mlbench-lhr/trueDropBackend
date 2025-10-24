@@ -62,7 +62,6 @@ async function register(req, res, next) {
         },
         tokens: {
           accessToken,
-          refreshToken,
           expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || "7d",
         },
       },
@@ -130,7 +129,6 @@ async function login(req, res, next) {
         },
         tokens: {
           accessToken,
-          refreshToken,
           expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || "7d",
         },
       },
@@ -236,7 +234,6 @@ async function socialRegister(req, res, next) {
         },
         tokens: {
           accessToken,
-          refreshToken,
           expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || "7d",
         },
       },
@@ -294,7 +291,6 @@ async function socialLogin(req, res, next) {
         },
         tokens: {
           accessToken,
-          refreshToken,
           expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || "7d",
         },
       },
