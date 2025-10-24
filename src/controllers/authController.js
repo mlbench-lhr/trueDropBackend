@@ -7,13 +7,21 @@ async function register(req, res, next) {
   try {
     const { email, password, name, alcoholType, improvement, createdAt, goal } =
       req.body;
-    console.log("req.body ------------",  email, password, name, alcoholType, improvement, createdAt, goal);
+
     if (!email || !password)
-      return res.status(400).json({ error: "email and password required" });
+      return res.status(400).json({
+        status: false,
+        message: "Email and password required",
+        data: null,
+      });
 
     const existing = await User.findOne({ email });
     if (existing)
-      return res.status(409).json({ error: "Email already registered" });
+      return res.status(409).json({
+        status: false,
+        message: "Email already registered",
+        data: null,
+      });
 
     const passwordHash = await passwordService.hashPassword(password);
     const user = await User.create({
@@ -31,11 +39,14 @@ async function register(req, res, next) {
     const refreshToken = jwtService.signRefresh(payload);
 
     return res.status(201).json({
-      user: user,
-      tokens: {
-        accessToken,
-        refreshToken,
-        expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || "15m",
+      status: true,
+      message: "User registered successfully",
+      data: {
+        user,
+        tokens: {
+          accessToken,
+          expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || "7d",
+        },
       },
     });
   } catch (err) {
@@ -48,31 +59,40 @@ async function login(req, res, next) {
   try {
     const { email, password } = req.body;
     if (!email || !password)
-      return res.status(400).json({ error: "email and password required" });
+      return res.status(400).json({
+        status: false,
+        message: "Email and password required",
+        data: null,
+      });
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ error: "Invalid credentials" });
+    if (!user)
+      return res
+        .status(401)
+        .json({ status: false, message: "Invalid credentials", data: null });
 
     const match = await passwordService.comparePassword(
       password,
       user.passwordHash
     );
-    if (!match) return res.status(401).json({ error: "Invalid credentials" });
+    if (!match)
+      return res
+        .status(401)
+        .json({ status: false, message: "Invalid credentials", data: null });
 
     const payload = { userId: user._id.toString(), email: user.email };
     const accessToken = jwtService.signAccess(payload);
     const refreshToken = jwtService.signRefresh(payload);
 
     return res.status(200).json({
-      user: {
-        id: user._id.toString(),
-        email: user.email,
-        createdAt: user.createdAt,
-      },
-      tokens: {
-        accessToken,
-        refreshToken,
-        expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || "15m",
+      status: true,
+      message: "Login successful",
+      data: {
+        user: user,
+        tokens: {
+          accessToken,
+          expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || "7d",
+        },
       },
     });
   } catch (err) {
@@ -85,27 +105,38 @@ async function refresh(req, res, next) {
   try {
     const { refreshToken } = req.body;
     if (!refreshToken)
-      return res.status(400).json({ error: "refreshToken required" });
+      return res
+        .status(400)
+        .json({ status: false, message: "Refresh token required", data: null });
 
     let decoded;
     try {
       decoded = jwtService.verifyRefresh(refreshToken);
     } catch (e) {
-      return res.status(401).json({ error: "Invalid refresh token" });
+      return res
+        .status(401)
+        .json({ status: false, message: "Invalid refresh token", data: null });
     }
 
     const user = await User.findById(decoded.userId);
-    if (!user) return res.status(401).json({ error: "User not found" });
+    if (!user)
+      return res
+        .status(401)
+        .json({ status: false, message: "User not found", data: null });
 
     const payload = { userId: user._id.toString(), email: user.email };
     const accessToken = jwtService.signAccess(payload);
     const newRefreshToken = jwtService.signRefresh(payload);
 
     return res.status(200).json({
-      tokens: {
-        accessToken,
-        refreshToken: newRefreshToken,
-        expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || "15m",
+      status: true,
+      message: "Token refreshed successfully",
+      data: {
+        tokens: {
+          accessToken,
+          refreshToken: newRefreshToken,
+          expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || "7d",
+        },
       },
     });
   } catch (err) {
@@ -118,15 +149,21 @@ async function logout(req, res, next) {
   try {
     const { refreshToken } = req.body;
     if (!refreshToken)
-      return res.status(400).json({ error: "refreshToken required" });
+      return res
+        .status(400)
+        .json({ status: false, message: "Refresh token required", data: null });
 
     try {
       jwtService.verifyRefresh(refreshToken);
     } catch (e) {
-      return res.status(400).json({ error: "Invalid refresh token" });
+      return res
+        .status(400)
+        .json({ status: false, message: "Invalid refresh token", data: null });
     }
 
-    return res.status(200).json({ message: "Logged out" });
+    return res
+      .status(200)
+      .json({ status: true, message: "Logged out successfully", data: null });
   } catch (err) {
     logger.error("Logout error", err);
     next(err);

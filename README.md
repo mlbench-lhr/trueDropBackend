@@ -33,7 +33,7 @@ Configuration (environment variables):
 - MONGO_URI: MongoDB connection URI
 - JWT_ACCESS_SECRET: secret for signing access tokens
 - JWT_REFRESH_SECRET: secret for signing refresh tokens
-- ACCESS_TOKEN_EXPIRES_IN: e.g. 15m
+- ACCESS_TOKEN_EXPIRES_IN: e.g. 7d
 - REFRESH_TOKEN_EXPIRES_IN: e.g. 7d
 
 API Endpoints:
@@ -44,7 +44,7 @@ API Endpoints:
   Response 201:
     {
       "user": { "id": "...", "email": "...", "createdAt": "..." },
-      "tokens": { "accessToken": "...", "refreshToken": "...", "expiresIn": "15m" }
+      "tokens": { "accessToken": "...", "refreshToken": "...", "expiresIn": "7d" }
     }
 
 - POST /api/auth/login
@@ -56,7 +56,7 @@ API Endpoints:
   Request JSON body:
     { "refreshToken": "..." }
   Response 200:
-    { "tokens": { "accessToken": "...", "refreshToken": "...", "expiresIn": "15m" } }
+    { "tokens": { "accessToken": "...", "refreshToken": "...", "expiresIn": "7d" } }
 
 - POST /api/auth/logout
   Request JSON body:
