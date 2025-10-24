@@ -9,5 +9,8 @@ router.post('/login', validate(validators.login), authController.login);
 router.post('/social/register', validate(validators.socialRegister), authController.socialRegister);
 router.post('/social/login', validate(validators.socialLogin), authController.socialLogin);
 router.post('/logout', validate(validators.logout), authController.logout);
+router.post('/forgot-password', validate(validators.forgotPassword), authController.forgotPassword);
+router.post('/verify-reset-code', validate(validators.verifyResetCode), authController.verifyResetCode);
+router.post('/reset-password', validate(validators.resetPassword), authController.resetPassword);
 
 module.exports = router;

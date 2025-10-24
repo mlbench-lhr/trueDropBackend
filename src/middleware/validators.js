@@ -55,3 +55,20 @@ exports.logout = () =>
   Joi.object({
     refreshToken: Joi.string().required(),
   });
+exports.forgotPassword = () =>
+  Joi.object({
+    email: Joi.string().email().required(),
+  });
+
+exports.verifyResetCode = () =>
+  Joi.object({
+    email: Joi.string().email().required(),
+    code: Joi.string().length(6).required(),
+  });
+
+exports.resetPassword = () =>
+  Joi.object({
+    email: Joi.string().email().required(),
+    code: Joi.string().length(6).required(),
+    newPassword: Joi.string().min(8).required(),
+  });
