@@ -377,6 +377,7 @@ const crypto = require("crypto");
 async function forgotPassword(req, res, next) {
   try {
     const { email } = req.body;
+    logger.info("Forgot password request for:", email);
 
     if (!email) {
       return res.status(400).json({
@@ -387,6 +388,7 @@ async function forgotPassword(req, res, next) {
     }
 
     const user = await User.findOne({ email, provider: "local" });
+    logger.info("User found:", !!user);
     if (!user) {
       // For security, don't reveal if email exists
       return res.status(200).json({
@@ -411,12 +413,14 @@ async function forgotPassword(req, res, next) {
     user.resetPasswordToken = hashedCode;
     user.resetPasswordExpires = Date.now() + 10 * 60 * 1000;
     await user.save();
+    logger.info("Token saved, sending email...");
 
     // Send email
     const emailSent = await emailService.sendVerificationCode(
       email,
       verificationCode
     );
+    logger.info("Email sent:", emailSent);
 
     if (!emailSent) {
       return res.status(500).json({
