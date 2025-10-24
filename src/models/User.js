@@ -18,11 +18,28 @@ const UserSchema = new Schema({
     trim: true,
   },
   name: { type: String, required: true },
-  passwordHash: { type: String, required: true },
+  passwordHash: { type: String, required: false },
+  provider: {
+    type: String,
+    enum: ["local", "google", "facebook", "apple"],
+    default: "local",
+    required: true,
+  },
+  providerId: { type: String, required: false },
+  isEmailVerified: { type: Boolean, default: false },
+  profilePicture: { type: String, required: false },
   alcoholType: { type: String, required: true },
   improvement: [{ type: String, required: true }],
+  goal: { type: goalSchema, required: true },
   createdAt: { type: Date, default: Date.now },
-  goal: goalSchema,
 });
+UserSchema.index(
+  { provider: 1, providerId: 1 },
+  {
+    unique: true,
+    sparse: true,
+    partialFilterExpression: { providerId: { $exists: true, $ne: null } },
+  }
+);
 
 module.exports = mongoose.model("User", UserSchema);
