@@ -46,6 +46,23 @@ exports.socialLogin = () =>
     providerId: Joi.string().required(),
     email: Joi.string().email().optional(), // Optional fallback for matching
   });
+exports.socialAuth = () =>
+  Joi.object({
+    provider: Joi.string().valid("google", "facebook", "apple").required(),
+    providerId: Joi.string().required(),
+    email: Joi.string().email().required(),
+    name: Joi.string().optional(),
+    profilePicture: Joi.string().uri().optional().allow("", null),
+    alcoholType: Joi.string().optional(),
+    improvement: Joi.array().items(Joi.string()).min(1).optional(),
+    goal: Joi.object({
+      amount: Joi.number().optional(),
+      frequency: Joi.string().optional(),
+      goalType: Joi.string().optional(),
+      onAverage: Joi.number().optional(),
+      actualGoal: Joi.number().optional(),
+    }).optional(),
+  });
 exports.refresh = () =>
   Joi.object({
     refreshToken: Joi.string().required(),

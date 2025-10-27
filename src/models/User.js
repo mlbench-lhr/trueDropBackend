@@ -2,13 +2,13 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const goalSchema = new Schema({
-  amount: { type: Number, required: true },
+  amount: { type: Number, required: false },
   frequency: {
     type: String,
-    required: true,
+    required: false,
     enum: ["daily", "weekly", "monthly"],
   },
-  goalType: { type: String, required: true },
+  goalType: { type: String, required: false },
   onAverage: { type: Number, required: false },
   actualGoal: { type: Number, required: false },
 });
