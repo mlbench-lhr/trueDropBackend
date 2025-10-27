@@ -3,7 +3,9 @@ const Joi = require("joi");
 exports.register = () =>
   Joi.object({
     email: Joi.string().email().required(),
-    name: Joi.string().required(),
+    firstName: Joi.string().required(),
+    lastName: Joi.string().required(),
+    userName: Joi.string().required(),
     password: Joi.string().min(8).required(),
     alcoholType: Joi.string().required(),
     improvement: Joi.array().items(Joi.string()).min(1).required(),
@@ -51,7 +53,9 @@ exports.socialAuth = () =>
     provider: Joi.string().valid("google", "facebook", "apple").required(),
     providerId: Joi.string().required(),
     email: Joi.string().email().required(),
-    name: Joi.string().optional(),
+    firstName: Joi.string().optional(),
+    lastName: Joi.string().optional(),
+    userName: Joi.string().optional(),
     profilePicture: Joi.string().uri().optional().allow("", null),
     alcoholType: Joi.string().optional(),
     improvement: Joi.array().items(Joi.string()).min(1).optional(),

@@ -21,7 +21,9 @@ const UserSchema = new Schema({
     lowercase: true,
     trim: true,
   },
-  name: { type: String, required: true },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  userName: { type: String, required: true },
   passwordHash: { type: String, required: false },
   provider: {
     type: String,
