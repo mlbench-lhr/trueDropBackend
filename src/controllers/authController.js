@@ -9,14 +9,32 @@ const Fields = require("../models/Fields");
 // Traditional Email/Password Registration
 async function register(req, res, next) {
   try {
-    const { email, password, name, alcoholType, improvement, goal } = req.body;
+    const {
+      email,
+      password,
+      userName,
+      firstName,
+      lastName,
+      alcoholType,
+      improvement,
+      goal,
+    } = req.body;
 
     // Validate required fields
-    if (!email || !password || !name || !alcoholType || !improvement || !goal) {
+    if (
+      !email ||
+      !password ||
+      !userName ||
+      !firstName ||
+      !lastName ||
+      !alcoholType ||
+      !improvement ||
+      !goal
+    ) {
       return res.status(400).json({
         status: false,
         message:
-          "All fields are required (email, password, name, alcoholType, improvement, goal)",
+          "All fields are required (email, password, userName, lastName, firstName, alcoholType, improvement, goal)",
         data: null,
       });
     }
@@ -36,7 +54,9 @@ async function register(req, res, next) {
     const user = await User.create({
       email,
       passwordHash,
-      name,
+      userName,
+      firstName,
+      lastName,
       alcoholType,
       improvement,
       goal,
@@ -54,7 +74,6 @@ async function register(req, res, next) {
     const improvementNames = improvementFields.map((f) => f.name);
     const payload = { userId: user._id.toString(), email: user.email };
     const accessToken = jwtService.signAccess(payload);
-    const refreshToken = jwtService.signRefresh(payload);
 
     return res.status(201).json({
       status: true,
@@ -63,7 +82,9 @@ async function register(req, res, next) {
         user: {
           _id: user._id,
           email: user.email,
-          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          userName: user.userName,
           alcoholType: alcoholTypeName,
           improvement: improvementNames,
           goal: user.goal,
@@ -133,7 +154,9 @@ async function login(req, res, next) {
         user: {
           _id: user._id,
           email: user.email,
-          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          userName: user.userName,
           alcoholType: alcoholTypeName,
           improvement: improvementNames,
           goal: user.goal,
@@ -156,7 +179,9 @@ async function socialAuth(req, res, next) {
       provider,
       providerId,
       email,
-      name,
+      userName,
+      firstName,
+      lastName,
       profilePicture,
       alcoholType,
       improvement,
@@ -180,11 +205,18 @@ async function socialAuth(req, res, next) {
       }
 
       // If required registration fields are missing
-      if (!name || !alcoholType || !improvement || !goal) {
+      if (
+        !userName ||
+        !firstName ||
+        !lastName ||
+        !alcoholType ||
+        !improvement ||
+        !goal
+      ) {
         return res.status(400).json({
           status: false,
           message:
-            "New users must provide name, alcoholType, improvement, and goal",
+            "New users must provide userName, firstName, lastName, alcoholType, improvement, and goal",
           data: null,
         });
       }
@@ -192,7 +224,9 @@ async function socialAuth(req, res, next) {
       // Register new user
       user = await User.create({
         email,
-        name,
+        userName,
+        firstName,
+        lastName,
         provider,
         providerId,
         profilePicture,
@@ -228,7 +262,9 @@ async function socialAuth(req, res, next) {
         user: {
           _id: user._id,
           email: user.email,
-          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          userName: user.userName,
           alcoholType: alcoholTypeName,
           improvement: improvementNames,
           goal: user.goal,
