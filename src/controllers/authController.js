@@ -288,6 +288,91 @@ async function socialLogin(req, res, next) {
     next(err);
   }
 }
+async function socialAuth(req, res, next) {
+  try {
+    const {
+      provider,
+      providerId,
+      email,
+      name,
+      profilePicture,
+      alcoholType,
+      improvement,
+      goal,
+    } = req.body;
+
+    // Check if user exists
+    let user = await User.findOne({ provider, providerId });
+
+    if (!user) {
+      // Try matching by email
+      const existingByEmail = await User.findOne({ email });
+
+      if (existingByEmail) {
+        return res.status(409).json({
+          status: false,
+          message: `Email already registered with ${existingByEmail.provider} provider`,
+          data: null,
+        });
+      }
+
+      // If required registration fields are missing
+      if (!name || !alcoholType || !improvement || !goal) {
+        return res.status(400).json({
+          status: false,
+          message:
+            "New users must provide name, alcoholType, improvement, and goal",
+          data: null,
+        });
+      }
+
+      // Register new user
+      user = await User.create({
+        email,
+        name,
+        provider,
+        providerId,
+        profilePicture,
+        alcoholType,
+        improvement,
+        goal,
+        isEmailVerified: true,
+      });
+
+      message = "User registered successfully";
+      statusCode = 201;
+    } else {
+      message = "Login successful";
+      statusCode = 200;
+    }
+
+    // Generate tokens
+    const payload = { userId: user._id.toString(), email: user.email };
+    const accessToken = jwtService.signAccess(payload);
+    const refreshToken = jwtService.signRefresh(payload);
+
+    return res.status(statusCode).json({
+      status: true,
+      message,
+      data: {
+        user: {
+          _id: user._id,
+          email: user.email,
+          name: user.name,
+          alcoholType: user.alcoholType,
+          improvement: user.improvement,
+          goal: user.goal,
+          provider: user.provider,
+          profilePicture: user.profilePicture,
+        },
+        token: accessToken,
+      },
+    });
+  } catch (err) {
+    logger.error("Social auth error", err);
+    next(err);
+  }
+}
 
 async function refresh(req, res, next) {
   try {
@@ -540,4 +625,5 @@ module.exports = {
   forgotPassword,
   verifyResetCode,
   resetPassword,
+  socialAuth,
 };
