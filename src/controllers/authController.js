@@ -2,6 +2,9 @@ const User = require("../models/User");
 const passwordService = require("../services/passwordService");
 const jwtService = require("../services/jwtService");
 const logger = require("../utils/logger");
+const emailService = require("../services/emailService");
+const crypto = require("crypto");
+const Fields = require("../models/Fields");
 
 // Traditional Email/Password Registration
 async function register(req, res, next) {
@@ -42,6 +45,13 @@ async function register(req, res, next) {
     });
 
     // Generate tokens
+    const alcoholField = await Fields.findById(user.alcoholType).lean();
+    const improvementFields = await Fields.find({
+      _id: { $in: user.improvement },
+    }).lean();
+
+    const alcoholTypeName = alcoholField ? alcoholField.name : null;
+    const improvementNames = improvementFields.map((f) => f.name);
     const payload = { userId: user._id.toString(), email: user.email };
     const accessToken = jwtService.signAccess(payload);
     const refreshToken = jwtService.signRefresh(payload);
@@ -54,8 +64,8 @@ async function register(req, res, next) {
           _id: user._id,
           email: user.email,
           name: user.name,
-          alcoholType: user.alcoholType,
-          improvement: user.improvement,
+          alcoholType: alcoholTypeName,
+          improvement: improvementNames,
           goal: user.goal,
           provider: user.provider,
           profilePicture: user.profilePicture,
@@ -106,9 +116,15 @@ async function login(req, res, next) {
     }
 
     // Generate tokens
+    const alcoholField = await Fields.findById(user.alcoholType).lean();
+    const improvementFields = await Fields.find({
+      _id: { $in: user.improvement },
+    }).lean();
+
+    const alcoholTypeName = alcoholField ? alcoholField.name : null;
+    const improvementNames = improvementFields.map((f) => f.name);
     const payload = { userId: user._id.toString(), email: user.email };
     const accessToken = jwtService.signAccess(payload);
-    const refreshToken = jwtService.signRefresh(payload);
 
     return res.status(200).json({
       status: true,
@@ -118,8 +134,8 @@ async function login(req, res, next) {
           _id: user._id,
           email: user.email,
           name: user.name,
-          alcoholType: user.alcoholType,
-          improvement: user.improvement,
+          alcoholType: alcoholTypeName,
+          improvement: improvementNames,
           goal: user.goal,
           provider: user.provider,
           profilePicture: user.profilePicture,
@@ -133,161 +149,7 @@ async function login(req, res, next) {
   }
 }
 
-// Social Registration (Google, Facebook, Apple, etc.)
-async function socialRegister(req, res, next) {
-  try {
-    const {
-      provider,
-      providerId,
-      email,
-      name,
-      profilePicture,
-      alcoholType,
-      improvement,
-      goal,
-    } = req.body;
-
-    // Validate required fields
-    if (
-      !provider ||
-      !providerId ||
-      !email ||
-      !name ||
-      !alcoholType ||
-      !improvement ||
-      !goal
-    ) {
-      return res.status(400).json({
-        status: false,
-        message:
-          "All fields are required (provider, providerId, email, name, alcoholType, improvement, goal)",
-        data: null,
-      });
-    }
-
-    // Validate provider
-    if (!["google", "facebook", "apple"].includes(provider)) {
-      return res.status(400).json({
-        status: false,
-        message: "Invalid provider. Must be 'google', 'facebook', or 'apple'",
-        data: null,
-      });
-    }
-
-    // Check if user already exists with this provider
-    const existingByProvider = await User.findOne({ provider, providerId });
-    if (existingByProvider) {
-      return res.status(409).json({
-        status: false,
-        message: "Account already exists with this provider",
-        data: null,
-      });
-    }
-
-    // Check if email exists with different provider
-    const existingByEmail = await User.findOne({ email });
-    if (existingByEmail) {
-      return res.status(409).json({
-        status: false,
-        message: `Email already registered with ${existingByEmail.provider} provider`,
-        data: null,
-      });
-    }
-
-    // Create user
-    const user = await User.create({
-      email,
-      name,
-      provider,
-      providerId,
-      profilePicture,
-      alcoholType,
-      improvement,
-      goal,
-      isEmailVerified: true, // Social logins have verified emails
-    });
-
-    // Generate tokens
-    const payload = { userId: user._id.toString(), email: user.email };
-    const accessToken = jwtService.signAccess(payload);
-    const refreshToken = jwtService.signRefresh(payload);
-
-    return res.status(201).json({
-      status: true,
-      message: "User registered successfully",
-      data: {
-        user: {
-          _id: user._id,
-          email: user.email,
-          name: user.name,
-          alcoholType: user.alcoholType,
-          improvement: user.improvement,
-          goal: user.goal,
-          provider: user.provider,
-          profilePicture: user.profilePicture,
-        },
-        token: accessToken,
-      },
-    });
-  } catch (err) {
-    logger.error("Social register error", err);
-    next(err);
-  }
-}
-
-// Social Login (Google, Facebook, Apple, etc.)
-async function socialLogin(req, res, next) {
-  try {
-    const { provider, providerId, email } = req.body;
-
-    if (!provider || !providerId) {
-      return res.status(400).json({
-        status: false,
-        message: "Provider and providerId required",
-        data: null,
-      });
-    }
-
-    // Find user by provider and providerId
-    let user = await User.findOne({ provider, providerId });
-
-    // Fallback: try to find by email if providerId doesn't match
-
-    if (!user) {
-      return res.status(404).json({
-        status: false,
-        message: "User not found. Please register first.",
-        data: null,
-      });
-    }
-
-    // Generate tokens
-    const payload = { userId: user._id.toString(), email: user.email };
-    const accessToken = jwtService.signAccess(payload);
-    const refreshToken = jwtService.signRefresh(payload);
-
-    return res.status(200).json({
-      status: true,
-      message: "Login successful",
-      data: {
-        user: {
-          _id: user._id,
-          email: user.email,
-          name: user.name,
-          alcoholType: user.alcoholType,
-          improvement: user.improvement,
-          goal: user.goal,
-          provider: user.provider,
-          profilePicture: user.profilePicture,
-        },
-        token: accessToken,
-      },
-    });
-  } catch (err) {
-    logger.error("Social login error", err);
-    next(err);
-  }
-}
+// SOCIAL AUTH
 async function socialAuth(req, res, next) {
   try {
     const {
@@ -303,6 +165,7 @@ async function socialAuth(req, res, next) {
 
     // Check if user exists
     let user = await User.findOne({ provider, providerId });
+    let message, statusCode;
 
     if (!user) {
       // Try matching by email
@@ -346,10 +209,17 @@ async function socialAuth(req, res, next) {
       statusCode = 200;
     }
 
-    // Generate tokens
+    // Get readable field names
+    const alcoholField = await Fields.findById(user.alcoholType).lean();
+    const improvementFields = await Fields.find({
+      _id: { $in: user.improvement },
+    }).lean();
+
+    const alcoholTypeName = alcoholField ? alcoholField.name : null;
+    const improvementNames = improvementFields.map((f) => f.name);
+
     const payload = { userId: user._id.toString(), email: user.email };
     const accessToken = jwtService.signAccess(payload);
-    const refreshToken = jwtService.signRefresh(payload);
 
     return res.status(statusCode).json({
       status: true,
@@ -359,8 +229,8 @@ async function socialAuth(req, res, next) {
           _id: user._id,
           email: user.email,
           name: user.name,
-          alcoholType: user.alcoholType,
-          improvement: user.improvement,
+          alcoholType: alcoholTypeName,
+          improvement: improvementNames,
           goal: user.goal,
           provider: user.provider,
           profilePicture: user.profilePicture,
@@ -373,6 +243,7 @@ async function socialAuth(req, res, next) {
     next(err);
   }
 }
+module.exports = { login, socialAuth };
 
 async function refresh(req, res, next) {
   try {
@@ -438,9 +309,6 @@ async function logout(req, res, next) {
     next(err);
   }
 }
-
-const emailService = require("../services/emailService");
-const crypto = require("crypto");
 
 // Send verification code
 async function forgotPassword(req, res, next) {
@@ -618,8 +486,6 @@ async function resetPassword(req, res, next) {
 module.exports = {
   register,
   login,
-  socialRegister,
-  socialLogin,
   logout,
   refresh,
   forgotPassword,
