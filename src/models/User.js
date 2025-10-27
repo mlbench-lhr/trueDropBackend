@@ -31,7 +31,7 @@ const UserSchema = new Schema({
   },
   providerId: { type: String, required: false },
   isEmailVerified: { type: Boolean, default: false },
-  profilePicture: { type: String, required: false },
+  profilePicture: { type: String, required: false, default: null },
   alcoholType: { type: String, required: true },
   improvement: [{ type: String, required: true }],
   goal: { type: goalSchema, required: true },
