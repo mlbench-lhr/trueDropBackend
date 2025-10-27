@@ -3,7 +3,11 @@ const { Schema } = mongoose;
 
 const goalSchema = new Schema({
   amount: { type: Number, required: true },
-  frequency: { type: String, required: true },
+  frequency: {
+    type: String,
+    required: true,
+    enum: ["daily", "weekly", "monthly"],
+  },
   goalType: { type: String, required: true },
   onAverage: { type: Number, required: false },
   actualGoal: { type: Number, required: false },
