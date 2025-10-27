@@ -5,8 +5,8 @@ const goalSchema = new Schema({
   amount: { type: Number, required: true },
   frequency: { type: String, required: true },
   goalType: { type: String, required: true },
-  onAverage: { type: String, required: false },
-  actualGoal: { type: String, required: false },
+  onAverage: { type: Number, required: false },
+  actualGoal: { type: Number, required: false },
 });
 
 const UserSchema = new Schema({
