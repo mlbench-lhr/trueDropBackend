@@ -60,10 +60,7 @@ async function register(req, res, next) {
           provider: user.provider,
           profilePicture: user.profilePicture,
         },
-        tokens: {
-          accessToken,
-          expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || "7d",
-        },
+        token: accessToken,
       },
     });
   } catch (err) {
@@ -127,10 +124,7 @@ async function login(req, res, next) {
           provider: user.provider,
           profilePicture: user.profilePicture,
         },
-        tokens: {
-          accessToken,
-          expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || "7d",
-        },
+        token: accessToken,
       },
     });
   } catch (err) {
@@ -232,10 +226,7 @@ async function socialRegister(req, res, next) {
           provider: user.provider,
           profilePicture: user.profilePicture,
         },
-        tokens: {
-          accessToken,
-          expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || "7d",
-        },
+        token: accessToken,
       },
     });
   } catch (err) {
@@ -289,10 +280,7 @@ async function socialLogin(req, res, next) {
           provider: user.provider,
           profilePicture: user.profilePicture,
         },
-        tokens: {
-          accessToken,
-          expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || "7d",
-        },
+        token: accessToken,
       },
     });
   } catch (err) {
@@ -332,11 +320,7 @@ async function refresh(req, res, next) {
       status: true,
       message: "Token refreshed successfully",
       data: {
-        tokens: {
-          accessToken,
-          refreshToken: newRefreshToken,
-          expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || "7d",
-        },
+        token: accessToken,
       },
     });
   } catch (err) {

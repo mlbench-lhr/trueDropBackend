@@ -11,8 +11,8 @@ exports.register = () =>
       amount: Joi.number().required(),
       frequency: Joi.string().required(),
       goalType: Joi.string().required(),
-      onAverage: Joi.string().optional().allow(""),
-      actualGoal: Joi.string().optional().allow(""),
+      onAverage: Joi.number().optional(),
+      actualGoal: Joi.number().optional(),
     }).required(),
   });
 
@@ -35,8 +35,8 @@ exports.socialRegister = () =>
       amount: Joi.number().required(),
       frequency: Joi.string().required(),
       goalType: Joi.string().required(),
-      onAverage: Joi.string().optional().allow(""),
-      actualGoal: Joi.string().optional().allow(""),
+      onAverage: Joi.number().optional(),
+      actualGoal: Joi.number().optional(),
     }).required(),
   });
 
