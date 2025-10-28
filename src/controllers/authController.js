@@ -197,40 +197,39 @@ async function socialAuth(req, res, next) {
       const existingByEmail = await User.findOne({ email });
 
       if (existingByEmail) {
-        return res.status(409).json({
-          status: false,
-          message: `Email already registered with ${existingByEmail.provider} provider`,
-          data: null,
+        // User exists with same email but different provider - just log them in
+        user = existingByEmail;
+        message = "Login successful";
+        statusCode = 200;
+      } else {
+        // Completely new user - require registration fields
+        if (!userName || !alcoholType || !improvement || !goal) {
+          return res.status(400).json({
+            status: false,
+            message:
+              "New users must provide userName, alcoholType, improvement, and goal",
+            data: null,
+          });
+        }
+
+        // Register new user
+        user = await User.create({
+          email,
+          userName,
+          firstName,
+          lastName,
+          provider,
+          providerId,
+          profilePicture,
+          alcoholType,
+          improvement,
+          goal,
+          isEmailVerified: true,
         });
+
+        message = "User registered successfully";
+        statusCode = 201;
       }
-
-      // If required registration fields are missing
-      if (!userName || !alcoholType || !improvement || !goal) {
-        return res.status(400).json({
-          status: false,
-          message:
-            "New users must provide userName, alcoholType, improvement, and goal",
-          data: null,
-        });
-      }
-
-      // Register new user
-      user = await User.create({
-        email,
-        userName,
-        firstName,
-        lastName,
-        provider,
-        providerId,
-        profilePicture,
-        alcoholType,
-        improvement,
-        goal,
-        isEmailVerified: true,
-      });
-
-      message = "User registered successfully";
-      statusCode = 201;
     } else {
       message = "Login successful";
       statusCode = 200;
@@ -363,7 +362,7 @@ async function forgotPassword(req, res, next) {
         data: null,
       });
     }
-    
+
     // Generate 4-digit code
     const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
 
