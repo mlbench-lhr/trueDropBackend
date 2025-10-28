@@ -7,15 +7,6 @@ exports.register = () =>
     lastName: Joi.string().required(),
     userName: Joi.string().required(),
     password: Joi.string().min(8).required(),
-    alcoholType: Joi.string().required(),
-    improvement: Joi.array().items(Joi.string()).min(1).required(),
-    goal: Joi.object({
-      amount: Joi.number().required(),
-      frequency: Joi.string().required(),
-      goalType: Joi.string().required(),
-      onAverage: Joi.number().optional(),
-      actualGoal: Joi.number().optional(),
-    }).required(),
   });
 
 exports.login = () =>
@@ -57,15 +48,18 @@ exports.socialAuth = () =>
     lastName: Joi.string().optional(),
     userName: Joi.string().optional(),
     profilePicture: Joi.string().uri().optional().allow("", null),
-    alcoholType: Joi.string().optional(),
-    improvement: Joi.array().items(Joi.string()).min(1).optional(),
+  });
+exports.addUserDetails = () =>
+  Joi.object({
+    alcoholType: Joi.string().required(),
+    improvement: Joi.array().items(Joi.string()).min(1).required(),
     goal: Joi.object({
-      amount: Joi.number().optional(),
-      frequency: Joi.string().optional(),
+      amount: Joi.number().required(),
+      frequency: Joi.string().valid("daily", "weekly", "monthly").required(),
       goalType: Joi.string().optional(),
       onAverage: Joi.number().optional(),
       actualGoal: Joi.number().optional(),
-    }).optional(),
+    }).required(),
   });
 exports.refresh = () =>
   Joi.object({
