@@ -127,3 +127,19 @@ exports.updateJournal = () =>
     feeling: Joi.string().optional(),
     description: Joi.string().optional(),
   }).min(1); // At least one field must be present
+
+exports.addCoping = () =>
+  Joi.object({
+    tag: Joi.string().required(),
+    title: Joi.string().required(),
+    strategy: Joi.string().required(),
+    description: Joi.string().required(),
+  });
+
+exports.updateCoping = () =>
+  Joi.object({
+    tag: Joi.string().required(),
+    title: Joi.string().required(),
+    strategy: Joi.string().required(),
+    description: Joi.string().required(),
+  }).min(1); // At least one field must be present
