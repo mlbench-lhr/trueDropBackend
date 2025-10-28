@@ -32,7 +32,6 @@ async function sendVerificationCode(email, code) {
     });
 
     const data = await response.json();
-    console.log("response-------", data);
 
     if (!response.ok) throw new Error(data.message || "Failed to send email");
 

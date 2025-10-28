@@ -2,7 +2,6 @@ module.exports = function validate(schemaFn) {
   return (req, res, next) => {
     try {
       const schema = schemaFn();
-      console.log("req.body------", req.body);
       const { error, value } = schema.validate(req.body, {
         abortEarly: false,
         stripUnknown: true,
