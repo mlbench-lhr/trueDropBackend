@@ -22,6 +22,7 @@ const UserSchema = new Schema({
     trim: true,
   },
   firstName: { type: String },
+  bio: { type: String },
   lastName: { type: String },
   userName: { type: String, required: true },
   passwordHash: { type: String, required: false },
