@@ -205,12 +205,7 @@ async function socialAuth(req, res, next) {
       }
 
       // If required registration fields are missing
-      if (
-        !userName ||
-        !alcoholType ||
-        !improvement ||
-        !goal
-      ) {
+      if (!userName || !alcoholType || !improvement || !goal) {
         return res.status(400).json({
           status: false,
           message:
@@ -368,11 +363,9 @@ async function forgotPassword(req, res, next) {
         data: null,
       });
     }
-
-    // Generate 6-digit code
-    const verificationCode = Math.floor(
-      100000 + Math.random() * 900000
-    ).toString();
+    
+    // Generate 4-digit code
+    const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
 
     // Hash the code before storing
     const hashedCode = crypto
