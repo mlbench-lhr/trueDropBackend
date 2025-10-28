@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "bcryptjs": "latest",
+    "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
@@ -19,8 +20,10 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.5.1",
     "morgan": "^1.10.0",
+    "multer": "^2.0.2",
     "nodemailer": "^7.0.10",
-    "resend": "^6.2.2"
+    "resend": "^6.2.2",
+    "streamifier": "^0.1.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

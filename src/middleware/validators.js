@@ -93,3 +93,11 @@ exports.resetPassword = () =>
     code: Joi.string().length(6).required(),
     newPassword: Joi.string().min(8).required(),
   });
+
+exports.editProfile = () =>
+  Joi.object({
+    firstName: Joi.string().required(),
+    lastName: Joi.string().required(),
+    userName: Joi.string().required(),
+    bio: Joi.string().optional(),
+  });
