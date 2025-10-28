@@ -197,14 +197,12 @@ async function socialAuth(req, res, next) {
       const existingByEmail = await User.findOne({ email });
 
       if (existingByEmail) {
-        return res.status(409).json({
-          status: false,
-          message: `Email already registered with ${existingByEmail.provider} provider`,
-          data: null,
-        });
-      }
-
-      // If required registration fields are missing
+        // User exists with same email but different provider - just log them in
+        user = existingByEmail;
+        message = "Login successful";
+        statusCode = 200;
+      } else {
+        // Completely new user - require registration fields
       if (!userName || !alcoholType || !improvement || !goal) {
         return res.status(400).json({
           status: false,
@@ -231,6 +229,7 @@ async function socialAuth(req, res, next) {
 
       message = "User registered successfully";
       statusCode = 201;
+    }
     } else {
       message = "Login successful";
       statusCode = 200;

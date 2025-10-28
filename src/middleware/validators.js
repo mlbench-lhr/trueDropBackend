@@ -114,3 +114,16 @@ exports.deleteAccount = () =>
       otherwise: Joi.optional(),
     }),
   });
+// Add to your validators file
+
+exports.addJournal = () =>
+  Joi.object({
+    feeling: Joi.string().required(),
+    description: Joi.string().required(),
+  });
+
+exports.updateJournal = () =>
+  Joi.object({
+    feeling: Joi.string().optional(),
+    description: Joi.string().optional(),
+  }).min(1); // At least one field must be present
