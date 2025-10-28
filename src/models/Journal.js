@@ -7,7 +7,7 @@ const JournalSchema = new Schema(
     feeling: {
       type: String,
       required: true,
-      enum: ["good", "weekly", "monthly"],
+      enum: ["good", "okay", "challenging"],
     },
     description: { type: String, required: true },
   },

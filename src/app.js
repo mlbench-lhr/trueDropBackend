@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
-app.use("/api/journals", journalRoutes);
+app.use("/api/journal", journalRoutes);
 app.use(cors());
 
 app.use((req, res, next) => {
