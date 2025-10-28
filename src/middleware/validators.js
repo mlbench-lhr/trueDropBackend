@@ -106,3 +106,11 @@ exports.changePassword = () =>
     currentPassword: Joi.string().required().min(6),
     newPassword: Joi.string().required().min(6),
   });
+exports.deleteAccount = () =>
+  Joi.object({
+    password: Joi.string().when("$provider", {
+      is: "local",
+      then: Joi.required(),
+      otherwise: Joi.optional(),
+    }),
+  });

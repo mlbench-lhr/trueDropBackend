@@ -32,4 +32,11 @@ router.put(
   validate(validators.changePassword),
   profileController.changePassword
 );
+
+router.delete(
+  "/deleteAccount",
+  auth,
+  validate(validators.deleteAccount),
+  profileController.deleteAccount
+);
 module.exports = router;

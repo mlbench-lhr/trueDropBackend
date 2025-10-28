@@ -229,7 +229,81 @@ async function changePassword(req, res, next) {
   }
 }
 
+async function deleteAccount(req, res, next) {
+  try {
+    const { password } = req.body;
+    const userId = req.user.userId;
+
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: false,
+        message: "User not found",
+        data: null,
+      });
+    }
+
+    // Verify password for local accounts
+    if (user.provider === "local") {
+      if (!password) {
+        return res.status(400).json({
+          status: false,
+          message: "Password is required to delete account",
+          data: null,
+        });
+      }
+
+      const isPasswordValid = await passwordService.comparePassword(
+        password,
+        user.passwordHash
+      );
+
+      if (!isPasswordValid) {
+        return res.status(401).json({
+          status: false,
+          message: "Password is incorrect",
+          data: null,
+        });
+      }
+    }
+
+    // Delete profile picture from Cloudinary if exists
+    if (user.profilePicture && user.profilePicture.includes("cloudinary")) {
+      try {
+        const publicId = user.profilePicture
+          .split("/")
+          .slice(-2)
+          .join("/")
+          .split(".")[0];
+        await cloudinary.uploader.destroy(publicId);
+        logger.info(`Deleted profile picture for user ${userId}`);
+      } catch (cloudinaryError) {
+        logger.warn(
+          `Failed to delete profile picture for user ${userId}`,
+          cloudinaryError
+        );
+        // Continue with account deletion even if image deletion fails
+      }
+    }
+
+    // Delete user account
+    await User.findByIdAndDelete(userId);
+
+    logger.info(`User account deleted: ${userId}`);
+
+    return res.status(200).json({
+      status: true,
+      message: "Account deleted successfully",
+      data: null,
+    });
+  } catch (err) {
+    logger.error("Delete account error", err);
+    next(err);
+  }
+}
 module.exports = {
+  deleteAccount,
   changePassword,
   editProfile,
 };
