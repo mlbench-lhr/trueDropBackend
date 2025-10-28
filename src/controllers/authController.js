@@ -207,8 +207,6 @@ async function socialAuth(req, res, next) {
       // If required registration fields are missing
       if (
         !userName ||
-        !firstName ||
-        !lastName ||
         !alcoholType ||
         !improvement ||
         !goal
@@ -216,7 +214,7 @@ async function socialAuth(req, res, next) {
         return res.status(400).json({
           status: false,
           message:
-            "New users must provide userName, firstName, lastName, alcoholType, improvement, and goal",
+            "New users must provide userName, alcoholType, improvement, and goal",
           data: null,
         });
       }
