@@ -9,32 +9,14 @@ const Fields = require("../models/Fields");
 // Traditional Email/Password Registration
 async function register(req, res, next) {
   try {
-    const {
-      email,
-      password,
-      userName,
-      firstName,
-      lastName,
-      alcoholType,
-      improvement,
-      goal,
-    } = req.body;
+    const { email, password, userName, firstName, lastName } = req.body;
 
     // Validate required fields
-    if (
-      !email ||
-      !password ||
-      !userName ||
-      !firstName ||
-      !lastName ||
-      !alcoholType ||
-      !improvement ||
-      !goal
-    ) {
+    if (!email || !password || !userName || !firstName || !lastName) {
       return res.status(400).json({
         status: false,
         message:
-          "All fields are required (email, password, userName, lastName, firstName, alcoholType, improvement, goal)",
+          "Email, password, userName, firstName, and lastName are required",
         data: null,
       });
     }
@@ -57,27 +39,98 @@ async function register(req, res, next) {
       userName,
       firstName,
       lastName,
-      alcoholType,
-      improvement,
-      goal,
       provider: "local",
       isEmailVerified: false,
     });
 
-    // Generate tokens
-    const alcoholField = await Fields.findById(user.alcoholType).lean();
-    const improvementFields = await Fields.find({
-      _id: { $in: user.improvement },
-    }).lean();
-
-    const alcoholTypeName = alcoholField ? alcoholField.name : null;
-    const improvementNames = improvementFields.map((f) => f.name);
+    // Generate token
     const payload = { userId: user._id.toString(), email: user.email };
     const accessToken = jwtService.signAccess(payload);
 
     return res.status(201).json({
       status: true,
       message: "User registered successfully",
+      data: {
+        user: {
+          _id: user._id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          userName: user.userName,
+          alcoholType: null,
+          improvement: [],
+          goal: null,
+          provider: user.provider,
+          profilePicture: user.profilePicture,
+        },
+        token: accessToken,
+      },
+    });
+  } catch (err) {
+    logger.error("Register error", err);
+    next(err);
+  }
+}
+
+// Traditional Email/Password Login
+async function login(req, res, next) {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        status: false,
+        message: "Email and password required",
+        data: null,
+      });
+    }
+
+    // Find user and verify it's a local account
+    const user = await User.findOne({ email, provider: "local" });
+    if (!user) {
+      return res.status(401).json({
+        status: false,
+        message: "Invalid credentials",
+        data: null,
+      });
+    }
+
+    // Compare password
+    const match = await passwordService.comparePassword(
+      password,
+      user.passwordHash
+    );
+    if (!match) {
+      return res.status(401).json({
+        status: false,
+        message: "Invalid credentials",
+        data: null,
+      });
+    }
+
+    // Get readable field names if they exist
+    let alcoholTypeName = null;
+    let improvementNames = [];
+
+    if (user.alcoholType) {
+      const alcoholField = await Fields.findById(user.alcoholType).lean();
+      alcoholTypeName = alcoholField ? alcoholField.name : null;
+    }
+
+    if (user.improvement && user.improvement.length > 0) {
+      const improvementFields = await Fields.find({
+        _id: { $in: user.improvement },
+      }).lean();
+      improvementNames = improvementFields.map((f) => f.name);
+    }
+
+    // Generate token
+    const payload = { userId: user._id.toString(), email: user.email };
+    const accessToken = jwtService.signAccess(payload);
+
+    return res.status(200).json({
+      status: true,
+      message: "Login successful",
       data: {
         user: {
           _id: user._id,
@@ -95,7 +148,196 @@ async function register(req, res, next) {
       },
     });
   } catch (err) {
-    logger.error("Register error", err);
+    logger.error("Login error", err);
+    next(err);
+  }
+}
+
+// SOCIAL AUTH
+async function socialAuth(req, res, next) {
+  try {
+    const {
+      provider,
+      providerId,
+      email,
+      userName,
+      firstName,
+      lastName,
+      profilePicture,
+    } = req.body;
+
+    // Check if user exists with this provider and providerId
+    let user = await User.findOne({ provider, providerId });
+    let message, statusCode;
+
+    if (!user) {
+      // Try matching by email (from any provider)
+      const existingByEmail = await User.findOne({ email });
+
+      if (existingByEmail) {
+        // User exists with same email but different provider - just log them in
+        user = existingByEmail;
+        message = "Login successful";
+        statusCode = 200;
+      } else {
+        // Completely new user - create account without additional details
+        if (!userName) {
+          return res.status(400).json({
+            status: false,
+            message: "userName is required for new users",
+            data: null,
+          });
+        }
+
+        // Register new user
+        user = await User.create({
+          email,
+          userName,
+          firstName,
+          lastName,
+          provider,
+          providerId,
+          profilePicture,
+          isEmailVerified: true,
+        });
+
+        message = "User registered successfully";
+        statusCode = 201;
+      }
+    } else {
+      // User exists with same provider and providerId
+      message = "Login successful";
+      statusCode = 200;
+    }
+
+    // Get readable field names if they exist
+    let alcoholTypeName = null;
+    let improvementNames = [];
+
+    if (user.alcoholType) {
+      const alcoholField = await Fields.findById(user.alcoholType).lean();
+      alcoholTypeName = alcoholField ? alcoholField.name : null;
+    }
+
+    if (user.improvement && user.improvement.length > 0) {
+      const improvementFields = await Fields.find({
+        _id: { $in: user.improvement },
+      }).lean();
+      improvementNames = improvementFields.map((f) => f.name);
+    }
+
+    const payload = { userId: user._id.toString(), email: user.email };
+    const accessToken = jwtService.signAccess(payload);
+
+    return res.status(statusCode).json({
+      status: true,
+      message,
+      data: {
+        user: {
+          _id: user._id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          userName: user.userName,
+          alcoholType: alcoholTypeName,
+          improvement: improvementNames,
+          goal: user.goal,
+          provider: user.provider,
+          profilePicture: user.profilePicture,
+        },
+        token: accessToken,
+      },
+    });
+  } catch (err) {
+    logger.error("Social auth error", err);
+    next(err);
+  }
+}
+
+// Add User Details (alcoholType, improvement, goal)
+async function addUserDetails(req, res, next) {
+  try {
+    const { alcoholType, improvement, goal } = req.body;
+    const userId = req.user.userId;
+
+    // Validate required fields
+    if (!alcoholType || !improvement || !goal) {
+      return res.status(400).json({
+        status: false,
+        message: "alcoholType, improvement, and goal are required",
+        data: null,
+      });
+    }
+
+    // Validate improvement is an array
+    if (!Array.isArray(improvement) || improvement.length === 0) {
+      return res.status(400).json({
+        status: false,
+        message: "improvement must be a non-empty array",
+        data: null,
+      });
+    }
+
+    // Validate goal structure
+    if (!goal.amount || !goal.frequency) {
+      return res.status(400).json({
+        status: false,
+        message:
+          "goal must include amount, frequency, goalType, onAverage, and actualGoal",
+        data: null,
+      });
+    }
+
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: false,
+        message: "User not found",
+        data: null,
+      });
+    }
+
+    // Update user with details
+    user.alcoholType = alcoholType;
+    user.improvement = improvement;
+    user.goal = goal;
+    await user.save();
+
+    // Get readable field names
+    const alcoholField = await Fields.findById(user.alcoholType).lean();
+    const improvementFields = await Fields.find({
+      _id: { $in: user.improvement },
+    }).lean();
+
+    const alcoholTypeName = alcoholField ? alcoholField.name : null;
+    const improvementNames = improvementFields.map((f) => f.name);
+
+    // Generate new token
+    const payload = { userId: user._id.toString(), email: user.email };
+    const accessToken = jwtService.signAccess(payload);
+
+    return res.status(200).json({
+      status: true,
+      message: "User details added successfully",
+      data: {
+        user: {
+          _id: user._id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          userName: user.userName,
+          alcoholType: alcoholTypeName,
+          improvement: improvementNames,
+          goal: user.goal,
+          provider: user.provider,
+          profilePicture: user.profilePicture,
+        },
+        token: accessToken,
+      },
+    });
+  } catch (err) {
+    logger.error("Add user details error", err);
     next(err);
   }
 }
@@ -171,107 +413,6 @@ async function login(req, res, next) {
     next(err);
   }
 }
-
-// SOCIAL AUTH
-async function socialAuth(req, res, next) {
-  try {
-    const {
-      provider,
-      providerId,
-      email,
-      userName,
-      firstName,
-      lastName,
-      profilePicture,
-      alcoholType,
-      improvement,
-      goal,
-    } = req.body;
-
-    // Check if user exists
-    let user = await User.findOne({ provider, providerId });
-    let message, statusCode;
-
-    if (!user) {
-      // Try matching by email
-      const existingByEmail = await User.findOne({ email });
-
-      if (existingByEmail) {
-        // User exists with same email but different provider - just log them in
-        user = existingByEmail;
-        message = "Login successful";
-        statusCode = 200;
-      } else {
-        // Completely new user - require registration fields
-        if (!userName || !alcoholType || !improvement || !goal) {
-          return res.status(400).json({
-            status: false,
-            message:
-              "New users must provide userName, alcoholType, improvement, and goal",
-            data: null,
-          });
-        }
-
-        // Register new user
-        user = await User.create({
-          email,
-          userName,
-          firstName,
-          lastName,
-          provider,
-          providerId,
-          profilePicture,
-          alcoholType,
-          improvement,
-          goal,
-          isEmailVerified: true,
-        });
-
-        message = "User registered successfully";
-        statusCode = 201;
-      }
-    } else {
-      message = "Login successful";
-      statusCode = 200;
-    }
-
-    // Get readable field names
-    const alcoholField = await Fields.findById(user.alcoholType).lean();
-    const improvementFields = await Fields.find({
-      _id: { $in: user.improvement },
-    }).lean();
-
-    const alcoholTypeName = alcoholField ? alcoholField.name : null;
-    const improvementNames = improvementFields.map((f) => f.name);
-
-    const payload = { userId: user._id.toString(), email: user.email };
-    const accessToken = jwtService.signAccess(payload);
-
-    return res.status(statusCode).json({
-      status: true,
-      message,
-      data: {
-        user: {
-          _id: user._id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          userName: user.userName,
-          alcoholType: alcoholTypeName,
-          improvement: improvementNames,
-          goal: user.goal,
-          provider: user.provider,
-          profilePicture: user.profilePicture,
-        },
-        token: accessToken,
-      },
-    });
-  } catch (err) {
-    logger.error("Social auth error", err);
-    next(err);
-  }
-}
-module.exports = { login, socialAuth };
 
 async function refresh(req, res, next) {
   try {
@@ -518,4 +659,5 @@ module.exports = {
   verifyResetCode,
   resetPassword,
   socialAuth,
+  addUserDetails,
 };

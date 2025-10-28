@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const profileController = require("../controllers/profileController");
+const authController = require('../controllers/authController');
 const validate = require("../middleware/validate");
 const validators = require("../middleware/validators");
 
@@ -39,4 +40,12 @@ router.delete(
   validate(validators.deleteAccount),
   profileController.deleteAccount
 );
+
+router.post(
+  "/addUserDetails",
+  auth,
+  validate(validators.addUserDetails),
+  authController.addUserDetails
+);
+
 module.exports = router;

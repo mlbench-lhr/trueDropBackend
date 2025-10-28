@@ -35,9 +35,9 @@ const UserSchema = new Schema({
   providerId: { type: String, required: false },
   isEmailVerified: { type: Boolean, default: false },
   profilePicture: { type: String, required: false, default: null },
-  alcoholType: { type: String, required: true },
-  improvement: [{ type: String, required: true }],
-  goal: { type: goalSchema, required: true },
+  alcoholType: { type: String, required: false }, // ✅ Changed from required: true to false
+  improvement: [{ type: String, required: false }], // ✅ Changed from required: true to false
+  goal: { type: goalSchema, required: false }, // ✅ Changed from required: true to false
   createdAt: { type: Date, default: Date.now },
   resetPasswordToken: { type: String, required: false },
   resetPasswordExpires: { type: Date, required: false },
