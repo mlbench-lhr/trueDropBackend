@@ -203,33 +203,33 @@ async function socialAuth(req, res, next) {
         statusCode = 200;
       } else {
         // Completely new user - require registration fields
-      if (!userName || !alcoholType || !improvement || !goal) {
-        return res.status(400).json({
-          status: false,
-          message:
-            "New users must provide userName, alcoholType, improvement, and goal",
-          data: null,
+        if (!userName || !alcoholType || !improvement || !goal) {
+          return res.status(400).json({
+            status: false,
+            message:
+              "New users must provide userName, alcoholType, improvement, and goal",
+            data: null,
+          });
+        }
+
+        // Register new user
+        user = await User.create({
+          email,
+          userName,
+          firstName,
+          lastName,
+          provider,
+          providerId,
+          profilePicture,
+          alcoholType,
+          improvement,
+          goal,
+          isEmailVerified: true,
         });
+
+        message = "User registered successfully";
+        statusCode = 201;
       }
-
-      // Register new user
-      user = await User.create({
-        email,
-        userName,
-        firstName,
-        lastName,
-        provider,
-        providerId,
-        profilePicture,
-        alcoholType,
-        improvement,
-        goal,
-        isEmailVerified: true,
-      });
-
-      message = "User registered successfully";
-      statusCode = 201;
-    }
     } else {
       message = "Login successful";
       statusCode = 200;
@@ -362,7 +362,7 @@ async function forgotPassword(req, res, next) {
         data: null,
       });
     }
-    
+
     // Generate 4-digit code
     const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
 
