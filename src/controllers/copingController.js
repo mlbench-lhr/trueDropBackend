@@ -1,4 +1,4 @@
-const Coping = require("../models/coping");
+const Coping = require("../models/Coping");
 const logger = require("../utils/logger");
 
 // Create a new coping entry
