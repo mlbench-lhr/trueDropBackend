@@ -7,14 +7,14 @@ const auth = require("../middleware/auth");
 
 // Create a new journal entry
 router.post(
-  "/",
+  "/add",
   auth,
   validate(validators.addJournal),
   journalController.addJournal
 );
 
 // Get all journal entries
-router.get("/", auth, journalController.getAllJournals);
+router.get("/getAll", auth, journalController.getAllJournals);
 
 // Update a journal entry
 router.put(
