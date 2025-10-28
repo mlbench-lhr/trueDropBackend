@@ -101,3 +101,8 @@ exports.editProfile = () =>
     userName: Joi.string().required(),
     bio: Joi.string().optional(),
   });
+exports.changePassword = () =>
+  Joi.object({
+    currentPassword: Joi.string().required().min(6),
+    newPassword: Joi.string().required().min(6),
+  });

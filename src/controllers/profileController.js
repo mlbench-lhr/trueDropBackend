@@ -151,7 +151,85 @@ async function editProfile(req, res, next) {
     next(err);
   }
 }
+const passwordService = require("../services/passwordService");
+
+async function changePassword(req, res, next) {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.userId;
+
+    // Validate required fields
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        status: false,
+        message: "Current password and new password are required",
+        data: null,
+      });
+    }
+
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: false,
+        message: "User not found",
+        data: null,
+      });
+    }
+
+    // Check if user is a local provider (has password)
+    if (user.provider !== "local") {
+      return res.status(400).json({
+        status: false,
+        message: "Password change is only available for local accounts",
+        data: null,
+      });
+    }
+
+    // Verify current password
+    const isPasswordValid = await passwordService.comparePassword(
+      currentPassword,
+      user.passwordHash
+    );
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        status: false,
+        message: "Current password is incorrect",
+        data: null,
+      });
+    }
+
+    // Check if new password is same as current password
+    const isSamePassword = await passwordService.comparePassword(
+      newPassword,
+      user.passwordHash
+    );
+
+    if (isSamePassword) {
+      return res.status(400).json({
+        status: false,
+        message: "New password must be different from current password",
+        data: null,
+      });
+    }
+
+    // Hash and update new password
+    user.passwordHash = await passwordService.hashPassword(newPassword);
+    await user.save();
+
+    return res.status(200).json({
+      status: true,
+      message: "Password changed successfully",
+      data: null,
+    });
+  } catch (err) {
+    logger.error("Change password error", err);
+    next(err);
+  }
+}
 
 module.exports = {
+  changePassword,
   editProfile,
 };

@@ -26,4 +26,10 @@ router.put(
   profileController.editProfile
 );
 
+router.put(
+  "/changePassword",
+  auth,
+  validate(validators.changePassword),
+  profileController.changePassword
+);
 module.exports = router;
