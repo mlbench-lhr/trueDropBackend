@@ -134,6 +134,7 @@ async function updateJournal(req, res, next) {
       data: {
         journal: {
           _id: journal._id,
+          userId: journal.userId,
           feeling: journal.feeling,
           description: journal.description,
           createdAt: journal.createdAt,
