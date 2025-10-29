@@ -42,16 +42,13 @@ async function addJournal(req, res, next) {
       message: `${createdJournals.length} journal ${
         createdJournals.length === 1 ? "entry" : "entries"
       } created successfully`,
-      data: {
-        journals: createdJournals.map((journal) => ({
-          _id: journal._id,
-          feeling: journal.feeling,
-          description: journal.description,
-          createdAt: journal.createdAt,
-          updatedAt: journal.updatedAt,
-        })),
-        count: createdJournals.length,
-      },
+      data: createdJournals.map((journal) => ({
+        _id: journal._id,
+        feeling: journal.feeling,
+        description: journal.description,
+        createdAt: journal.createdAt,
+        updatedAt: journal.updatedAt,
+      })),
     });
   } catch (err) {
     logger.error("Add journal error", err);
