@@ -6,7 +6,6 @@ const goalSchema = new Schema({
   frequency: {
     type: String,
     required: false,
-    enum: ["daily", "weekly", "monthly"],
   },
   goalType: { type: String, required: false },
   onAverage: { type: Number, required: false },
@@ -28,7 +27,6 @@ const UserSchema = new Schema({
   passwordHash: { type: String, required: false },
   provider: {
     type: String,
-    enum: ["local", "google", "facebook", "apple"],
     default: "local",
     required: true,
   },

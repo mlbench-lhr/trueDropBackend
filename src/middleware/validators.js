@@ -17,7 +17,7 @@ exports.login = () =>
 
 exports.socialRegister = () =>
   Joi.object({
-    provider: Joi.string().valid("google", "facebook", "apple").required(),
+    provider: Joi.string().required(),
     providerId: Joi.string().required(),
     email: Joi.string().email().required(),
     name: Joi.string().required(),
@@ -35,13 +35,13 @@ exports.socialRegister = () =>
 
 exports.socialLogin = () =>
   Joi.object({
-    provider: Joi.string().valid("google", "facebook", "apple").required(),
+    provider: Joi.string().required(),
     providerId: Joi.string().required(),
     email: Joi.string().email().optional(), // Optional fallback for matching
   });
 exports.socialAuth = () =>
   Joi.object({
-    provider: Joi.string().valid("google", "facebook", "apple").required(),
+    provider: Joi.string().required(),
     providerId: Joi.string().required(),
     email: Joi.string().email().required(),
     firstName: Joi.string().optional(),
@@ -55,7 +55,7 @@ exports.addUserDetails = () =>
     improvement: Joi.array().items(Joi.string()).min(1).required(),
     goal: Joi.object({
       amount: Joi.number().required(),
-      frequency: Joi.string().valid("daily", "weekly", "monthly").required(),
+      frequency: Joi.string().required(),
       goalType: Joi.string().optional(),
       onAverage: Joi.number().optional(),
       actualGoal: Joi.number().optional(),
