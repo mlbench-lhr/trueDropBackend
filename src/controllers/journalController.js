@@ -4,36 +4,53 @@ const logger = require("../utils/logger");
 // Create a new journal entry
 async function addJournal(req, res, next) {
   try {
-    const { feeling, description } = req.body;
+    const { journals } = req.body;
     const userId = req.user.userId;
 
-    if (!feeling || !description) {
+    if (!journals || !Array.isArray(journals) || journals.length === 0) {
       return res.status(400).json({
         status: false,
-        message: "Feeling and description are required",
+        message:
+          "Journals array is required and must contain at least one entry",
         data: null,
       });
     }
 
-    const journal = new Journal({
-      userId,
-      feeling,
-      description,
-    });
+    // Validate each journal entry
+    for (const journal of journals) {
+      if (!journal.feeling || !journal.description) {
+        return res.status(400).json({
+          status: false,
+          message: "Each journal entry must have feeling and description",
+          data: null,
+        });
+      }
+    }
 
-    await journal.save();
+    // Prepare journal entries with userId
+    const journalEntries = journals.map((journal) => ({
+      userId,
+      feeling: journal.feeling,
+      description: journal.description,
+    }));
+
+    // Insert all journals at once
+    const createdJournals = await Journal.insertMany(journalEntries);
 
     return res.status(201).json({
       status: true,
-      message: "Journal entry created successfully",
+      message: `${createdJournals.length} journal ${
+        createdJournals.length === 1 ? "entry" : "entries"
+      } created successfully`,
       data: {
-        journal: {
+        journals: createdJournals.map((journal) => ({
           _id: journal._id,
           feeling: journal.feeling,
           description: journal.description,
           createdAt: journal.createdAt,
           updatedAt: journal.updatedAt,
-        },
+        })),
+        count: createdJournals.length,
       },
     });
   } catch (err) {
