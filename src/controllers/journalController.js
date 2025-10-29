@@ -44,6 +44,7 @@ async function addJournal(req, res, next) {
       } created successfully`,
       data: createdJournals.map((journal) => ({
         _id: journal._id,
+        userId: journal.userId,
         feeling: journal.feeling,
         description: journal.description,
         createdAt: journal.createdAt,
