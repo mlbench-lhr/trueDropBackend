@@ -112,8 +112,15 @@ exports.deleteAccount = () =>
 
 exports.addJournal = () =>
   Joi.object({
-    feeling: Joi.string().required(),
-    description: Joi.string().required(),
+    journals: Joi.array()
+      .items(
+        Joi.object({
+          feeling: Joi.string().required(),
+          description: Joi.string().required(),
+        })
+      )
+      .min(1)
+      .required(),
   });
 
 exports.updateJournal = () =>
