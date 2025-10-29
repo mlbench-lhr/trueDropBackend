@@ -7,7 +7,6 @@ const CopingSchema = new Schema(
     tag: {
       type: String,
       required: true,
-      enum: ["Quick Relief", "Get Moving", "Inner Peace"],
     },
     title: { type: String, required: true },
     strategy: { type: String, required: true },
