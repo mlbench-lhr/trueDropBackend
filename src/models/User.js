@@ -1,3 +1,4 @@
+const { required } = require("joi");
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
@@ -10,6 +11,7 @@ const goalSchema = new Schema({
   goalType: { type: String, required: false },
   onAverage: { type: Number, required: false },
   actualGoal: { type: Number, required: false },
+  createdAt: { type: Date, required: false, default: Date.now },
 });
 
 const UserSchema = new Schema({
