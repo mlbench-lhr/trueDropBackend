@@ -78,13 +78,13 @@ exports.forgotPassword = () =>
 exports.verifyResetCode = () =>
   Joi.object({
     email: Joi.string().email().required(),
-    code: Joi.string().length(6).required(),
+    code: Joi.string().length(4).required(),
   });
 
 exports.resetPassword = () =>
   Joi.object({
     email: Joi.string().email().required(),
-    code: Joi.string().length(6).required(),
+    code: Joi.string().length(4).required(),
     newPassword: Joi.string().min(8).required(),
   });
 
