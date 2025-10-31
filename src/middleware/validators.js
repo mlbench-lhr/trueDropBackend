@@ -81,7 +81,6 @@ exports.verifyResetCode = () =>
     code: Joi.string().length(4).required(),
   });
 
-  
 exports.resetPassword = () =>
   Joi.object({
     email: Joi.string().email().required(),
