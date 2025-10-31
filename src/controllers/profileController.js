@@ -142,6 +142,7 @@ async function editProfile(req, res, next) {
           goal: user.goal,
           provider: user.provider,
           profilePicture: user.profilePicture,
+          createdAt: user.createdAt,
         },
         token: accessToken,
       },
