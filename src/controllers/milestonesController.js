@@ -1,58 +1,86 @@
 const Milestones = require("../models/Milestones");
+const User = require("../models/User");
+const UsersMilestones = require("../models/UsersMilestones");
 const logger = require("../utils/logger");
 
 // Create a new milestones entry
-async function addMilestones(req, res, next) {
+async function updateMilestones(req, res, next) {
   try {
-    const { tag, title, strategy, description } = req.body;
+    const { milestoneId, soberDays, completedOn } = req.body;
     const userId = req.user.userId;
 
-    if (!tag || !title || !strategy || !description) {
+    if (!milestoneId || !userId) {
       return res.status(400).json({
         status: false,
-        message: "Tag, title, strategy, and description are required",
+        message: "milestoneId and userId is required",
         data: null,
       });
     }
-
-    // Validate tag enum
-    const validTags = ["Quick Relief", "Get Moving", "Inner Peace"];
-    if (!validTags.includes(tag)) {
-      return res.status(400).json({
-        status: false,
-        message:
-          "Invalid tag. Must be one of: Quick Relief, Get Moving, Inner Peace",
-        data: null,
-      });
-    }
-
-    const milestones = new Milestones({
+    const userFromDb = await User.findById(userId);
+    const frequencyInNumber = { daily: 1, weekly: 7, monthly: 30 };
+    const moneySaved =
+      (soberDays / frequencyInNumber[userFromDb?.goal?.frequency]) *
+      userFromDb?.goal?.amount;
+    const alreadyUserMilestone = await UsersMilestones.findOne({
       userId,
-      tag,
-      title,
-      strategy,
-      description,
-    });
-
-    await milestones.save();
+      milestoneId,
+    }).populate(
+      "milestoneId",
+      "frequency tag title description dayCount nextMilestone -_id"
+    );
+    let milestoneForResponse = {};
+    let userMilestone;
+    if (alreadyUserMilestone) {
+      milestoneForResponse = alreadyUserMilestone.milestoneId;
+      alreadyUserMilestone.soberDays = soberDays;
+      alreadyUserMilestone.completedOn = completedOn;
+      alreadyUserMilestone.moneySaved = moneySaved;
+      userMilestone = await alreadyUserMilestone.save();
+    } else {
+      const milestoneFromDb = await Milestones.findById(milestoneId).select(
+        "frequency tag title description dayCount nextMilestone -_id"
+      );
+      milestoneForResponse = milestoneFromDb;
+      userMilestone = new UsersMilestones({
+        userId,
+        milestoneId,
+        completedOn,
+        soberDays,
+        moneySaved,
+      });
+      await userMilestone.save();
+    }
+    const nextMilestone = await Milestones.findById(
+      milestoneForResponse.nextMilestone
+    ).select("_id frequency tag title description dayCount");
 
     return res.status(201).json({
       status: true,
-      message: "Milestones entry created successfully",
+      message: "Milestone updated successfully",
       data: {
-        milestones: {
-          _id: milestones._id,
-          tag: milestones.tag,
-          title: milestones.title,
-          strategy: milestones.strategy,
-          description: milestones.description,
-          createdAt: milestones.createdAt,
-          updatedAt: milestones.updatedAt,
+        currentMilestone: {
+          milestoneId: milestoneId,
+          frequency: milestoneForResponse.frequency,
+          tag: milestoneForResponse.tag,
+          title: milestoneForResponse.title,
+          description: milestoneForResponse.description,
+          dayCount: milestoneForResponse.dayCount,
+          completedOn: userMilestone.completedOn,
+          soberDays: userMilestone.soberDays,
+          moneySaved: userMilestone.moneySaved,
+        },
+        nextMilestone: {
+          milestoneId: nextMilestone._id,
+          frequency: nextMilestone.frequency,
+          tag: nextMilestone.tag,
+          title: nextMilestone.title,
+          description: nextMilestone.description,
+          dayCount: nextMilestone.dayCount,
         },
       },
     });
   } catch (err) {
-    logger.error("Add milestones error", err);
+    logger.error("Add/Update milestones error", err);
     next(err);
   }
 }
@@ -78,72 +106,6 @@ async function getAllMilestones(req, res, next) {
   }
 }
 
-// Update a milestones entry
-async function updateMilestones(req, res, next) {
-  try {
-    const { milestonesId } = req.params;
-    const { tag, title, strategy, description } = req.body;
-    const userId = req.user.userId;
-
-    if (!tag && !title && !strategy && !description) {
-      return res.status(400).json({
-        status: false,
-        message:
-          "At least one field (tag, title, strategy, or description) is required",
-        data: null,
-      });
-    }
-
-    // Validate tag enum if provided
-    if (tag) {
-      const validTags = ["Quick Relief", "Get Moving", "Inner Peace"];
-      if (!validTags.includes(tag)) {
-        return res.status(400).json({
-          status: false,
-          message:
-            "Invalid tag. Must be one of: Quick Relief, Get Moving, Inner Peace",
-          data: null,
-        });
-      }
-    }
-
-    const milestones = await Milestones.findOne({ _id: milestonesId, userId });
-
-    if (!milestones) {
-      return res.status(404).json({
-        status: false,
-        message: "Milestones entry not found",
-        data: null,
-      });
-    }
-
-    if (tag) milestones.tag = tag;
-    if (title) milestones.title = title;
-    if (strategy) milestones.strategy = strategy;
-    if (description) milestones.description = description;
-
-    await milestones.save();
-
-    return res.status(200).json({
-      status: true,
-      message: "Milestones entry updated successfully",
-      data: {
-        milestones: {
-          _id: milestones._id,
-          tag: milestones.tag,
-          title: milestones.title,
-          strategy: milestones.strategy,
-          description: milestones.description,
-          createdAt: milestones.createdAt,
-          updatedAt: milestones.updatedAt,
-        },
-      },
-    });
-  } catch (err) {
-    logger.error("Update milestones error", err);
-    next(err);
-  }
-}
 
 // Delete a milestones entry
 async function deleteMilestones(req, res, next) {
@@ -176,8 +138,7 @@ async function deleteMilestones(req, res, next) {
 }
 
 module.exports = {
-  addMilestones,
-  getAllMilestones,
   updateMilestones,
+  getAllMilestones,
   deleteMilestones,
 };

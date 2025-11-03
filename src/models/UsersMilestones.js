@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const CopingSchema = new Schema(
+const UserMilestonesSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     milestoneId: {
@@ -9,7 +9,7 @@ const CopingSchema = new Schema(
       ref: "Milestones",
       required: true,
     },
-    completedOn: { type: Date, required: false, default: Date.now },
+    completedOn: { type: Date, required: false, default: null },
     soberDays: { type: Number, required: false, default: 0 },
     moneySaved: { type: Number, required: false, default: 0 },
   },
@@ -17,6 +17,6 @@ const CopingSchema = new Schema(
 );
 
 // Index for faster queries
-CopingSchema.index({ userId: 1, createdAt: -1 });
+UserMilestonesSchema.index({ userId: 1, createdAt: -1 });
 
-module.exports = mongoose.model("Coping", CopingSchema);
+module.exports = mongoose.model("UserMilestones", UserMilestonesSchema);

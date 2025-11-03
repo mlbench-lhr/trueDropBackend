@@ -144,3 +144,10 @@ exports.updateCoping = () =>
     strategy: Joi.string().required(),
     description: Joi.string().required(),
   }).min(1); // At least one field must be present
+
+exports.updateMilestones = () =>
+  Joi.object({
+    milestoneId: Joi.string().required(),
+    soberDays: Joi.number().optional().allow(0),
+    completedOn: Joi.string().optional().allow(""),
+  }).min(1);
