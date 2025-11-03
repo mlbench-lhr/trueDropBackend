@@ -5,6 +5,7 @@ const logger = require("../utils/logger");
 const emailService = require("../services/emailService");
 const crypto = require("crypto");
 const Fields = require("../models/Fields");
+const Milestones = require("../models/Milestones");
 
 // Traditional Email/Password Registration
 async function register(req, res, next) {
@@ -322,6 +323,17 @@ async function addUserDetails(req, res, next) {
     // Generate new token
     const payload = { userId: user._id.toString(), email: user.email };
     const accessToken = jwtService.signAccess(payload);
+    const milestones = await Milestones.find({
+      frequency: user?.goal?.frequency,
+    })
+      .sort({ createdAt: 1 })
+      .select("tag description title _id dayCount")
+      .limit(2)
+      .lean();
+    const respMilestones = {
+      currentMilestone: milestones[0],
+      nextMilestone: milestones[1],
+    };
 
     return res.status(200).json({
       status: true,
@@ -340,6 +352,7 @@ async function addUserDetails(req, res, next) {
           profilePicture: user.profilePicture,
           createdAt: user.createdAt,
           bio: user.bio,
+          milestones: respMilestones,
         },
         token: accessToken,
       },
