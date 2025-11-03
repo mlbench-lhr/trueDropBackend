@@ -7,6 +7,7 @@ const MilestonesSchema = new Schema(
     title: { type: String, required: true },
     tag: { type: String, required: true },
     description: { type: String, required: true },
+    dayCount: { type: Number, required: true },
   },
   { timestamps: true }
 );
