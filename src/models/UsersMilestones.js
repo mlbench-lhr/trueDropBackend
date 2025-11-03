@@ -4,13 +4,14 @@ const { Schema } = mongoose;
 const CopingSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    tag: {
-      type: String,
+    milestoneId: {
+      type: Schema.Types.ObjectId,
+      ref: "Milestones",
       required: true,
     },
-    title: { type: String, required: true },
-    strategy: { type: String, required: true },
-    description: { type: String, required: true },
+    completedOn: { type: Date, required: false, default: Date.now },
+    soberDays: { type: Number, required: false, default: 0 },
+    moneySaved: { type: Number, required: false, default: 0 },
   },
   { timestamps: true }
 );
