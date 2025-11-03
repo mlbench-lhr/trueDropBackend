@@ -64,7 +64,7 @@ async function getAllMilestones(req, res, next) {
     console.log("frequency-------", frequency);
     const filter = { frequency: frequency };
     const milestones = await Milestones.find(filter)
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: 1 })
       .select("tag description title _id dayCount")
       .lean();
     return res.status(200).json({
