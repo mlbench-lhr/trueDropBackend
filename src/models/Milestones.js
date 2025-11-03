@@ -8,6 +8,7 @@ const MilestonesSchema = new Schema(
     tag: { type: String, required: true },
     description: { type: String, required: true },
     dayCount: { type: Number, required: true },
+    nextMilestone: { type: Schema.Types.ObjectId},
   },
   { timestamps: true }
 );

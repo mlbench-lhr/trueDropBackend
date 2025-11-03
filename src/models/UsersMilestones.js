@@ -1,21 +1,22 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const CopingSchema = new Schema(
+const UserMilestonesSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    tag: {
-      type: String,
+    milestoneId: {
+      type: Schema.Types.ObjectId,
+      ref: "Milestones",
       required: true,
     },
-    title: { type: String, required: true },
-    strategy: { type: String, required: true },
-    description: { type: String, required: true },
+    completedOn: { type: Date, required: false, default: null },
+    soberDays: { type: Number, required: false, default: 0 },
+    moneySaved: { type: Number, required: false, default: 0 },
   },
   { timestamps: true }
 );
 
 // Index for faster queries
-CopingSchema.index({ userId: 1, createdAt: -1 });
+UserMilestonesSchema.index({ userId: 1, createdAt: -1 });
 
-module.exports = mongoose.model("Coping", CopingSchema);
+module.exports = mongoose.model("UserMilestones", UserMilestonesSchema);

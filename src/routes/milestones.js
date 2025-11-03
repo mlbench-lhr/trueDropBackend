@@ -7,10 +7,10 @@ const auth = require("../middleware/auth");
 
 // Create a new milestones entry
 router.post(
-  "/add",
+  "/updateMilestone",
   auth,
-  validate(validators.addMilestones),
-  milestonesController.addMilestones
+  validate(validators.updateMilestones),
+  milestonesController.updateMilestones
 );
 
 // Get all milestones entries

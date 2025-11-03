@@ -331,8 +331,8 @@ async function addUserDetails(req, res, next) {
       .limit(2)
       .lean();
     const respMilestones = {
-      currentMilestone: milestones[0],
-      nextMilestone: milestones[1],
+      currentMilestone: { ...milestones[0], soberDays: 0 },
+      nextMilestone: { ...milestones[1], soberDays: 0 },
     };
 
     return res.status(200).json({
