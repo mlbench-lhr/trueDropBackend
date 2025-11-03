@@ -5,6 +5,7 @@ const authRoutes = require("./routes/auth");
 const profileRoutes = require("./routes/profile");
 const journalRoutes = require("./routes/journal");
 const copingRoutes = require("./routes/coping");
+const milestoneRoutes = require("./routes/milestones");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
@@ -23,6 +24,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/journal", journalRoutes);
 app.use("/api/coping", copingRoutes);
+app.use("/api/milestone", milestoneRoutes);
 app.use(cors());
 
 app.use((req, res, next) => {
