@@ -93,7 +93,7 @@ exports.editProfile = () =>
     firstName: Joi.string().required(),
     lastName: Joi.string().required(),
     userName: Joi.string().required(),
-    bio: Joi.string().optional(),
+    bio: Joi.string().optional().allow(""),
   });
 exports.changePassword = () =>
   Joi.object({
