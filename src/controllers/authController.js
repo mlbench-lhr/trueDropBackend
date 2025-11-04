@@ -6,6 +6,7 @@ const emailService = require("../services/emailService");
 const crypto = require("crypto");
 const Fields = require("../models/Fields");
 const Milestones = require("../models/Milestones");
+const UsersMilestones = require("../models/UsersMilestones");
 
 // Traditional Email/Password Registration
 async function register(req, res, next) {
@@ -71,89 +72,6 @@ async function register(req, res, next) {
     });
   } catch (err) {
     logger.error("Register error", err);
-    next(err);
-  }
-}
-
-// Traditional Email/Password Login
-async function login(req, res, next) {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({
-        status: false,
-        message: "Email and password required",
-        data: null,
-      });
-    }
-
-    // Find user and verify it's a local account
-    const user = await User.findOne({ email, provider: "local" });
-    if (!user) {
-      return res.status(401).json({
-        status: false,
-        message: "Invalid credentials",
-        data: null,
-      });
-    }
-
-    // Compare password
-    const match = await passwordService.comparePassword(
-      password,
-      user.passwordHash
-    );
-    if (!match) {
-      return res.status(401).json({
-        status: false,
-        message: "Invalid credentials",
-        data: null,
-      });
-    }
-
-    // Get readable field names if they exist
-    let alcoholTypeName = null;
-    let improvementNames = [];
-
-    if (user.alcoholType) {
-      const alcoholField = await Fields.findById(user.alcoholType).lean();
-      alcoholTypeName = alcoholField ? alcoholField.name : null;
-    }
-
-    if (user.improvement && user.improvement.length > 0) {
-      const improvementFields = await Fields.find({
-        _id: { $in: user.improvement },
-      }).lean();
-      improvementNames = improvementFields.map((f) => f.name);
-    }
-
-    // Generate token
-    const payload = { userId: user._id.toString(), email: user.email };
-    const accessToken = jwtService.signAccess(payload);
-
-    return res.status(200).json({
-      status: true,
-      message: "Login successful",
-      data: {
-        user: {
-          _id: user._id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          userName: user.userName,
-          alcoholType: alcoholTypeName || null,
-          improvement: improvementNames || null,
-          goal: user.goal || null,
-          provider: user.provider,
-          profilePicture: user.profilePicture,
-          createdAt: user.createdAt,
-          bio: user.bio,
-        },
-        token: accessToken,
-      },
-    });
-  } catch (err) {
-    logger.error("Login error", err);
     next(err);
   }
 }
@@ -420,6 +338,9 @@ async function login(req, res, next) {
       currentMilestone: { ...milestones[0], soberDays: 0 },
       nextMilestone: { ...milestones[1], soberDays: 0 },
     };
+    const hasUserMilestone = await UsersMilestones.countDocuments({
+      userId: user._id,
+    });
 
     return res.status(200).json({
       status: true,
@@ -439,6 +360,7 @@ async function login(req, res, next) {
           createdAt: user.createdAt,
           bio: user.bio,
           milestones: respMilestones,
+          isActiveMilestone: hasUserMilestone || false,
         },
         token: accessToken,
       },
