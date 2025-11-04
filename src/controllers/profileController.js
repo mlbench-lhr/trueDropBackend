@@ -13,10 +13,10 @@ async function editProfile(req, res, next) {
     const userId = req.user.userId; // Assuming you have auth middleware that sets req.user
 
     // Validate required fields
-    if (!userName || !firstName || !lastName || !bio) {
+    if (!userName || !firstName || !lastName) {
       return res.status(400).json({
         status: false,
-        message: "userName, firstName, lastName, and bio are required",
+        message: "userName, firstName, lastName are required",
         data: null,
       });
     }
