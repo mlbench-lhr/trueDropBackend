@@ -15,6 +15,11 @@ router.post(
 
 // Get all milestones entries
 router.get("/getAll", milestonesController.getAllMilestones);
+router.get(
+  "/getMilestoneHistory",
+  auth,
+  milestonesController.getMilestonesHistory
+);
 
 // Update a milestones entry
 router.put(

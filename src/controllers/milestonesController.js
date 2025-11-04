@@ -59,7 +59,7 @@ async function updateMilestones(req, res, next) {
       message: "Milestone updated successfully",
       data: {
         currentMilestone: {
-          milestoneId: milestoneId,
+          _id: milestoneId,
           frequency: milestoneForResponse.frequency,
           tag: milestoneForResponse.tag,
           title: milestoneForResponse.title,
@@ -70,7 +70,7 @@ async function updateMilestones(req, res, next) {
           moneySaved: userMilestone.moneySaved,
         },
         nextMilestone: {
-          milestoneId: nextMilestone._id,
+          _id: nextMilestone._id,
           frequency: nextMilestone.frequency,
           tag: nextMilestone.tag,
           title: nextMilestone.title,
@@ -106,6 +106,22 @@ async function getAllMilestones(req, res, next) {
   }
 }
 
+async function getMilestonesHistory(req, res, next) {
+  try {
+    const userId = req.user.userId;
+    const milestones = await UsersMilestones.find({ userId: userId })
+      .sort({ createdAt: 1 })
+      .lean();
+    return res.status(200).json({
+      status: true,
+      message: "Milestones retrieved successfully",
+      data: milestones,
+    });
+  } catch (err) {
+    logger.error("Get milestones error", err);
+    next(err);
+  }
+}
 
 // Delete a milestones entry
 async function deleteMilestones(req, res, next) {
@@ -141,4 +157,5 @@ module.exports = {
   updateMilestones,
   getAllMilestones,
   deleteMilestones,
+  getMilestonesHistory,
 };
