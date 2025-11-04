@@ -111,11 +111,22 @@ async function getMilestonesHistory(req, res, next) {
     const userId = req.user.userId;
     const milestones = await UsersMilestones.find({ userId: userId })
       .sort({ createdAt: 1 })
+      .select("milestoneId -_id")
+      .populate("milestoneId", "tag description title _id dayCount")
       .lean();
+    const milestoneForResponse = milestones.map((item) => {
+      return {
+        _id: item?.milestoneId?._id,
+        title: item?.milestoneId?.title,
+        tag: item?.milestoneId?.tag,
+        description: item?.milestoneId?.description,
+        dayCount: item?.milestoneId?.dayCount,
+      };
+    });
     return res.status(200).json({
       status: true,
       message: "Milestones retrieved successfully",
-      data: milestones,
+      data: milestoneForResponse,
     });
   } catch (err) {
     logger.error("Get milestones error", err);
