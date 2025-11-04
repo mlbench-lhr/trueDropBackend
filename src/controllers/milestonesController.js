@@ -59,7 +59,7 @@ async function updateMilestones(req, res, next) {
       message: "Milestone updated successfully",
       data: {
         currentMilestone: {
-          milestoneId: milestoneId,
+          _id: milestoneId,
           frequency: milestoneForResponse.frequency,
           tag: milestoneForResponse.tag,
           title: milestoneForResponse.title,
@@ -70,7 +70,7 @@ async function updateMilestones(req, res, next) {
           moneySaved: userMilestone.moneySaved,
         },
         nextMilestone: {
-          milestoneId: nextMilestone._id,
+          _id: nextMilestone._id,
           frequency: nextMilestone.frequency,
           tag: nextMilestone.tag,
           title: nextMilestone.title,
