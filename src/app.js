@@ -7,6 +7,7 @@ const journalRoutes = require("./routes/journal");
 const copingRoutes = require("./routes/coping");
 const milestoneRoutes = require("./routes/milestones");
 const walletRoutes = require("./routes/wallet");
+const podRoutes = require("./routes/pod");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
@@ -27,6 +28,7 @@ app.use("/api/journal", journalRoutes);
 app.use("/api/coping", copingRoutes);
 app.use("/api/milestone", milestoneRoutes);
 app.use("/api/wallet", walletRoutes);
+app.use("/api/pod", podRoutes);
 app.use(cors());
 
 app.use((req, res, next) => {
