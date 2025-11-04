@@ -16,15 +16,12 @@ async function getSaveAndSober(req, res, next) {
       .populate("milestoneId")
       .lean();
 
-    console.log(
-      "milestones.milestoneId----",
-      milestones[0].milestoneId.nextMilestone
-    );
-
-    const nextMilestones = await Milestones.findOne({
-      _id: milestones[0].milestoneId.nextMilestone,
-    }).lean();
-
+    let nextMilestones = null;
+    if (milestones[0]?.milestoneId?.nextMilestone) {
+      nextMilestones = await Milestones.findOne({
+        _id: milestones[0]?.milestoneId?.nextMilestone,
+      }).lean();
+    }
     console.log("nextMilestones-----", nextMilestones);
 
     const totalSoberDays = milestones.reduce(
@@ -36,10 +33,13 @@ async function getSaveAndSober(req, res, next) {
       0
     );
 
-    const nextTotalMoneySaved =
-      (nextMilestones.dayCount /
-        frequencyInNumber[userFromDb?.goal?.frequency]) *
-      userFromDb?.goal?.amount;
+    let nextTotalMoneySaved = 0;
+    if (nextMilestones?.dayCount) {
+      nextTotalMoneySaved =
+        (nextMilestones?.dayCount /
+          frequencyInNumber[userFromDb?.goal?.frequency]) *
+        userFromDb?.goal?.amount;
+    }
 
     return res.status(200).json({
       status: true,
