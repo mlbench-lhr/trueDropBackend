@@ -360,7 +360,7 @@ async function login(req, res, next) {
           createdAt: user.createdAt,
           bio: user.bio,
           milestones: respMilestones,
-          isActiveMilestone: hasUserMilestone || false,
+          isActiveMilestone: hasUserMilestone > 0 ? true : false,
         },
         token: accessToken,
       },
