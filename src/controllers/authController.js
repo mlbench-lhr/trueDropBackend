@@ -409,6 +409,17 @@ async function login(req, res, next) {
     const improvementNames = improvementFields.map((f) => f.name);
     const payload = { userId: user._id.toString(), email: user.email };
     const accessToken = jwtService.signAccess(payload);
+    const milestones = await Milestones.find({
+      frequency: user?.goal?.frequency,
+    })
+      .sort({ createdAt: 1 })
+      .select("tag description title _id dayCount")
+      .limit(2)
+      .lean();
+    const respMilestones = {
+      currentMilestone: { ...milestones[0], soberDays: 0 },
+      nextMilestone: { ...milestones[1], soberDays: 0 },
+    };
 
     return res.status(200).json({
       status: true,
@@ -427,6 +438,7 @@ async function login(req, res, next) {
           profilePicture: user.profilePicture,
           createdAt: user.createdAt,
           bio: user.bio,
+          milestones: respMilestones,
         },
         token: accessToken,
       },
