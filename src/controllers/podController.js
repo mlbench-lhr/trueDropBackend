@@ -88,6 +88,7 @@ async function searchUsers(req, res, next) {
           firstName: user.firstName,
           lastName: user.lastName,
           userName: user.userName,
+          profilePicture: user.profilePicture,
           soberDays: totalSoberDays,
         };
       })
