@@ -11,6 +11,7 @@ const PodSchema = new Schema(
   {
     name: { type: String, required: true },
     members: [{ type: Schema.Types.ObjectId, ref: "User", required: true }],
+    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
     description: { type: String, required: false },
     privacyLevel: { type: String, enum: ["public", "private"] },
     lastActiveTime: { type: Date, default: null },
