@@ -1,5 +1,6 @@
 const Pod = require("../models/Pod");
 const User = require("../models/User");
+const UsersMilestones = require("../models/UsersMilestones");
 const logger = require("../utils/logger");
 
 async function createPod(req, res, next) {
@@ -54,16 +55,48 @@ async function getPods(req, res, next) {
 async function searchUsers(req, res, next) {
   try {
     const userId = req.user.userId;
-    const { email } = req.query;
+    const { search } = req.query;
+
     const filter = { _id: { $ne: userId } };
-    if (email) {
-      filter.email = { $regex: email, $options: "i" };
+
+    if (search) {
+      filter.$or = [
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { userName: { $regex: search, $options: "i" } },
+      ];
     }
-    const users = await User.find(filter).select("email _id");
+
+    const users = await User.find(filter).select(
+      "_id firstName lastName userName"
+    );
+
+    const usersWithSoberDays = await Promise.all(
+      users.map(async (user) => {
+        const milestones = await UsersMilestones.find({
+          userId: user._id,
+          completedOn: { $exists: true },
+        }).lean();
+
+        const totalSoberDays = milestones.reduce(
+          (sum, m) => sum + (m.soberDays || 0),
+          0
+        );
+
+        return {
+          _id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          userName: user.userName,
+          soberDays: totalSoberDays,
+        };
+      })
+    );
+
     return res.status(200).json({
       status: true,
       message: "Users fetched successfully",
-      data: users,
+      data: usersWithSoberDays,
     });
   } catch (err) {
     logger.error("Search users error:", err);
