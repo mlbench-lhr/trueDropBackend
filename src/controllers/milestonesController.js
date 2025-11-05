@@ -35,6 +35,9 @@ async function updateMilestones(req, res, next) {
       alreadyUserMilestone.soberDays = soberDays;
       alreadyUserMilestone.completedOn = completedOn;
       alreadyUserMilestone.moneySaved = moneySaved;
+      if (soberDays >= milestoneForResponse.dayCount) {
+        alreadyUserMilestone.completedOn = new Date();
+      }
       userMilestone = await alreadyUserMilestone.save();
     } else {
       const milestoneFromDb = await Milestones.findById(milestoneId).select(
