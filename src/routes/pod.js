@@ -5,5 +5,6 @@ const auth = require("../middleware/auth");
 
 router.post("/createPod", auth, podController.createPod);
 router.get("/getPods", auth, podController.getPods);
+router.get("/searchUsers", auth, podController.searchUsers);
 
 module.exports = router;

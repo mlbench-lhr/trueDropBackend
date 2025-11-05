@@ -121,6 +121,7 @@ async function getMilestonesHistory(req, res, next) {
         tag: item?.milestoneId?.tag,
         description: item?.milestoneId?.description,
         dayCount: item?.milestoneId?.dayCount,
+        completedOn: item?.completedOn || null,
       };
     });
     return res.status(200).json({
