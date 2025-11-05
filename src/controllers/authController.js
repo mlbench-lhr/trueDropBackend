@@ -347,7 +347,7 @@ async function login(req, res, next) {
         soberDays: 0,
         updatedOn:
           userMilestoneUpdatedAtTime?.[userMilestoneUpdatedAtTime?.length - 1]
-            .updatedAt,
+            ?.updatedAt,
       },
       nextMilestone: { ...milestones[1], soberDays: 0 },
     };
