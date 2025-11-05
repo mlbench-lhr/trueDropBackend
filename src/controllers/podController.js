@@ -54,21 +54,19 @@ async function getPods(req, res, next) {
 async function searchUsers(req, res, next) {
   try {
     const userId = req.user.userId;
-    const users = await User.find({ _id: { $nin: userId } });
-    console.log("users---------", users);
-    const responseUsers = users.map((item) => {
-      return {
-        email: item.email,
-        _id: item._id,
-      };
-    });
-    return res.status(201).json({
+    const { email } = req.query;
+    const filter = { _id: { $ne: userId } };
+    if (email) {
+      filter.email = { $regex: email, $options: "i" };
+    }
+    const users = await User.find(filter).select("email _id");
+    return res.status(200).json({
       status: true,
-      message: `Users searched successfully`,
-      data: responseUsers,
+      message: "Users fetched successfully",
+      data: users,
     });
   } catch (err) {
-    logger.error("Add pod error", err);
+    logger.error("Search users error:", err);
     next(err);
   }
 }
