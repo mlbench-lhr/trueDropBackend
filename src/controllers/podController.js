@@ -12,6 +12,7 @@ async function createPod(req, res, next) {
       description,
       privacyLevel,
       members: [...members, userId],
+      createdBy: userId,
     });
     const createdPod = await dataToSave.save();
     console.log("createdPod---------", createdPod);
@@ -20,18 +21,76 @@ async function createPod(req, res, next) {
       status: true,
       message: `Pod added successfully`,
       data: {
-        _id: createdPod?._id,
-        name: createdPod?.name,
-        members: createdPod?.members,
-        description: createdPod?.description,
-        lastActiveTime: createdPod?.lastActiveTime,
-        chat: createdPod?.chat,
-        createdAt: createdPod?.createdAt,
-        createdBy: userId,
+        _id: createdPod._id,
+        name: createdPod.name,
+        members: createdPod.members,
+        description: createdPod.description,
+        lastActiveTime: createdPod.lastActiveTime,
+        chat: createdPod.chat,
+        createdAt: createdPod.createdAt,
+        createdBy: createdPod.createdBy,
       },
     });
   } catch (err) {
     logger.error("Add pod error", err);
+    next(err);
+  }
+}
+async function editPod(req, res, next) {
+  try {
+    const { podId } = req.params;
+    const { name, description, members, privacyLevel } = req.body;
+    const userId = req.user.userId;
+
+    const pod = await Pod.findById(podId);
+    if (!pod) {
+      return res.status(404).json({ status: false, message: "Pod not found" });
+    }
+    if (pod.createdBy.toString() !== userId.toString()) {
+      return res.status(403).json({ status: false, message: "Not authorized" });
+    }
+    if (name) pod.name = name;
+    if (description) pod.description = description;
+    if (privacyLevel) pod.privacyLevel = privacyLevel;
+    if (members && Array.isArray(members)) pod.members = members;
+
+    const updatedPod = await pod.save();
+
+    return res.status(200).json({
+      status: true,
+      message: "Pod updated successfully",
+      data: updatedPod,
+    });
+  } catch (err) {
+    logger.error("Edit pod error", err);
+    next(err);
+  }
+}
+
+// DELETE POD
+async function deletePod(req, res, next) {
+  try {
+    const { podId } = req.params;
+    const userId = req.user.userId;
+
+    const pod = await Pod.findById(podId);
+    if (!pod) {
+      return res.status(404).json({ status: false, message: "Pod not found" });
+    }
+
+    // Optional: only creator can delete
+    if (pod.createdBy.toString() !== userId.toString()) {
+      return res.status(403).json({ status: false, message: "Not authorized" });
+    }
+
+    await Pod.findByIdAndDelete(podId);
+
+    return res.status(200).json({
+      status: true,
+      message: "Pod deleted successfully",
+    });
+  } catch (err) {
+    logger.error("Delete pod error", err);
     next(err);
   }
 }
@@ -106,4 +165,4 @@ async function searchUsers(req, res, next) {
   }
 }
 
-module.exports = { createPod, getPods, searchUsers };
+module.exports = { createPod, getPods, searchUsers, editPod, deletePod };
