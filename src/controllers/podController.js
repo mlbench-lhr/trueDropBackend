@@ -38,16 +38,12 @@ async function createPod(req, res, next) {
 }
 async function editPod(req, res, next) {
   try {
-    const { podId } = req.params;
+    const { id } = req.params;
     const { name, description, members, privacyLevel } = req.body;
-    const userId = req.user.userId;
 
-    const pod = await Pod.findById(podId);
+    const pod = await Pod.findById(id);
     if (!pod) {
       return res.status(404).json({ status: false, message: "Pod not found" });
-    }
-    if (pod.createdBy.toString() !== userId.toString()) {
-      return res.status(403).json({ status: false, message: "Not authorized" });
     }
     if (name) pod.name = name;
     if (description) pod.description = description;
@@ -70,20 +66,15 @@ async function editPod(req, res, next) {
 // DELETE POD
 async function deletePod(req, res, next) {
   try {
-    const { podId } = req.params;
+    const { id } = req.params;
     const userId = req.user.userId;
 
-    const pod = await Pod.findById(podId);
+    const pod = await Pod.findById(id);
     if (!pod) {
       return res.status(404).json({ status: false, message: "Pod not found" });
     }
 
-    // Optional: only creator can delete
-    if (pod.createdBy.toString() !== userId.toString()) {
-      return res.status(403).json({ status: false, message: "Not authorized" });
-    }
-
-    await Pod.findByIdAndDelete(podId);
+    await Pod.findByIdAndDelete(id);
 
     return res.status(200).json({
       status: true,
