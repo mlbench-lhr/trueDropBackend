@@ -334,13 +334,23 @@ async function login(req, res, next) {
       .select("tag description title _id dayCount")
       .limit(2)
       .lean();
-    const respMilestones = {
-      currentMilestone: { ...milestones[0], soberDays: 0 },
-      nextMilestone: { ...milestones[1], soberDays: 0 },
-    };
+    const userMilestoneUpdatedAtTime = await UsersMilestones.find({
+      userId: user._id,
+      completedOn: { $nin: null },
+    });
     const hasUserMilestone = await UsersMilestones.countDocuments({
       userId: user._id,
     });
+    const respMilestones = {
+      currentMilestone: {
+        ...milestones[0],
+        soberDays: 0,
+        updatedOn:
+          userMilestoneUpdatedAtTime?.[userMilestoneUpdatedAtTime?.length - 1]
+            .updatedAt,
+      },
+      nextMilestone: { ...milestones[1], soberDays: 0 },
+    };
 
     return res.status(200).json({
       status: true,
@@ -396,7 +406,6 @@ async function refresh(req, res, next) {
 
     const payload = { userId: user._id.toString(), email: user.email };
     const accessToken = jwtService.signAccess(payload);
-    const newRefreshToken = jwtService.signRefresh(payload);
 
     return res.status(200).json({
       status: true,
