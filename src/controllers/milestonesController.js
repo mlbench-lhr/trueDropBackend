@@ -68,6 +68,7 @@ async function updateMilestones(req, res, next) {
           completedOn: userMilestone.completedOn,
           soberDays: userMilestone.soberDays,
           moneySaved: userMilestone.moneySaved,
+          updatedAt: userMilestone.updatedAt,
         },
         nextMilestone: {
           _id: nextMilestone._id,
