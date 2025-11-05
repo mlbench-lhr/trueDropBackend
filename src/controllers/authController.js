@@ -336,7 +336,6 @@ async function login(req, res, next) {
       .lean();
     const userMilestoneUpdatedAtTime = await UsersMilestones.find({
       userId: user._id,
-      completedOn: { $nin: null },
     });
     const hasUserMilestone = await UsersMilestones.countDocuments({
       userId: user._id,

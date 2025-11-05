@@ -27,6 +27,7 @@ async function createPod(req, res, next) {
         lastActiveTime: createdPod?.lastActiveTime,
         chat: createdPod?.chat,
         createdAt: createdPod?.createdAt,
+        createdBy: userId,
       },
     });
   } catch (err) {
