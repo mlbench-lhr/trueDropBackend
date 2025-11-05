@@ -21,27 +21,26 @@ async function updateMilestones(req, res, next) {
     const moneySaved =
       (soberDays / frequencyInNumber[userFromDb?.goal?.frequency]) *
       userFromDb?.goal?.amount;
-    const alreadyUserMilestone = await UsersMilestones.findOne({
+    let userMilestone = await UsersMilestones.findOne({
       userId,
       milestoneId,
     }).populate(
       "milestoneId",
-      "frequency tag title description dayCount nextMilestone -_id"
+      "frequency tag title description dayCount nextMilestone _id"
     );
     let milestoneForResponse = {};
-    let userMilestone;
-    if (alreadyUserMilestone) {
-      milestoneForResponse = alreadyUserMilestone.milestoneId;
-      alreadyUserMilestone.soberDays = soberDays;
-      alreadyUserMilestone.completedOn = completedOn;
-      alreadyUserMilestone.moneySaved = moneySaved;
-      if (soberDays >= milestoneForResponse.dayCount) {
-        alreadyUserMilestone.completedOn = new Date();
+    if (userMilestone) {
+      milestoneForResponse = userMilestone.milestoneId;
+      userMilestone.soberDays = soberDays;
+      userMilestone.completedOn = completedOn;
+      userMilestone.moneySaved = moneySaved;
+      if (soberDays >= milestoneForResponse.dayCount || completedOn) {
+        userMilestone.completedOn = new Date();
       }
-      userMilestone = await alreadyUserMilestone.save();
+      await userMilestone.save();
     } else {
       const milestoneFromDb = await Milestones.findById(milestoneId).select(
-        "frequency tag title description dayCount nextMilestone -_id"
+        "frequency tag title description dayCount nextMilestone _id"
       );
       milestoneForResponse = milestoneFromDb;
       userMilestone = new UsersMilestones({
@@ -53,34 +52,48 @@ async function updateMilestones(req, res, next) {
       });
       await userMilestone.save();
     }
-    const nextMilestone = await Milestones.findById(
-      milestoneForResponse.nextMilestone
-    ).select("_id frequency tag title description dayCount");
-
+    let currentMilestone = milestoneForResponse;
+    let nextMilestone = await Milestones.findById(
+      currentMilestone.nextMilestone
+    ).select("_id frequency tag title description dayCount nextMilestone");
+    if (soberDays >= currentMilestone.dayCount || completedOn) {
+      currentMilestone = nextMilestone;
+      if (nextMilestone?.nextMilestone) {
+        nextMilestone = await Milestones.findById(
+          nextMilestone.nextMilestone
+        ).select("_id frequency tag title description dayCount");
+      } else {
+        nextMilestone = null;
+      }
+    }
+    console.log("currentMilestone", currentMilestone);
+    console.log("nextMilestone", nextMilestone);
     return res.status(201).json({
       status: true,
       message: "Milestone updated successfully",
       data: {
         currentMilestone: {
-          _id: milestoneId,
-          frequency: milestoneForResponse.frequency,
-          tag: milestoneForResponse.tag,
-          title: milestoneForResponse.title,
-          description: milestoneForResponse.description,
-          dayCount: milestoneForResponse.dayCount,
+          _id: currentMilestone._id,
+          frequency: currentMilestone.frequency,
+          tag: currentMilestone.tag,
+          title: currentMilestone.title,
+          description: currentMilestone.description,
+          dayCount: currentMilestone.dayCount,
           completedOn: userMilestone.completedOn,
           soberDays: userMilestone.soberDays,
           moneySaved: userMilestone.moneySaved,
           updatedAt: userMilestone.updatedAt,
         },
-        nextMilestone: {
-          _id: nextMilestone._id,
-          frequency: nextMilestone.frequency,
-          tag: nextMilestone.tag,
-          title: nextMilestone.title,
-          description: nextMilestone.description,
-          dayCount: nextMilestone.dayCount,
-        },
+        nextMilestone: nextMilestone
+          ? {
+              _id: nextMilestone._id,
+              frequency: nextMilestone.frequency,
+              tag: nextMilestone.tag,
+              title: nextMilestone.title,
+              description: nextMilestone.description,
+              dayCount: nextMilestone.dayCount,
+            }
+          : null,
       },
     });
   } catch (err) {
