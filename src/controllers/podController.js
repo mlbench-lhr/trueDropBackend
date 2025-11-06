@@ -66,11 +66,16 @@ async function joinPod(req, res, next) {
   try {
     const { id } = req.params;
     const userId = req.user.userId;
-    const pod = await Pod.findById(id);
+    const pod = await Pod.findById(id).populate(
+      "createdBy",
+      "firstName lastName userName profilePicture location"
+    );
     if (!pod) {
       return res.status(404).json({ status: false, message: "Pod not found" });
     }
-    pod.members = [...pod.members, userId];
+    if (!pod.members.includes(userId)) {
+      pod.members.push(userId);
+    }
     const updatedPod = await pod.save();
     return res.status(200).json({
       status: true,
