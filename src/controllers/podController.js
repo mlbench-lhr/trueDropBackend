@@ -140,7 +140,7 @@ async function getPods(req, res, next) {
     const userPodIds = yourPods.map((pod) => pod._id);
     const availablePodsQuery = {
       privacyLevel: "public",
-      // _id: { $nin: userPodIds },
+      _id: { $nin: userPodIds },
     };
     if (searchQuery) {
       availablePodsQuery.name = { $regex: searchQuery, $options: "i" };
