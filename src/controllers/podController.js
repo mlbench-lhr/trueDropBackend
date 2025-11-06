@@ -62,6 +62,26 @@ async function editPod(req, res, next) {
     next(err);
   }
 }
+async function joinPod(req, res, next) {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+    const pod = await Pod.findById(id);
+    if (!pod) {
+      return res.status(404).json({ status: false, message: "Pod not found" });
+    }
+    pod.members = [...pod.members, userId];
+    const updatedPod = await pod.save();
+    return res.status(200).json({
+      status: true,
+      message: "Pod updated successfully",
+      data: updatedPod,
+    });
+  } catch (err) {
+    logger.error("Edit pod error", err);
+    next(err);
+  }
+}
 
 // DELETE POD
 async function deletePod(req, res, next) {
@@ -248,4 +268,11 @@ async function searchUsers(req, res, next) {
   }
 }
 
-module.exports = { createPod, getPods, searchUsers, editPod, deletePod };
+module.exports = {
+  createPod,
+  getPods,
+  searchUsers,
+  editPod,
+  deletePod,
+  joinPod,
+};
