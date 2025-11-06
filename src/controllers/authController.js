@@ -188,19 +188,10 @@ async function addUserDetails(req, res, next) {
     const userId = req.user.userId;
 
     // Validate required fields
-    if (!alcoholType || !improvement || !goal) {
+    if (!goal) {
       return res.status(400).json({
         status: false,
-        message: "alcoholType, improvement, and goal are required",
-        data: null,
-      });
-    }
-
-    // Validate improvement is an array
-    if (!Array.isArray(improvement) || improvement.length === 0) {
-      return res.status(400).json({
-        status: false,
-        message: "improvement must be a non-empty array",
+        message: "goal is required",
         data: null,
       });
     }
@@ -217,6 +208,16 @@ async function addUserDetails(req, res, next) {
 
     // Check if user exists
     const user = await User.findById(userId);
+    if (
+      (!alcoholType || !improvement) &&
+      (!user.alcoholType || !user?.improvement || user?.improvement?.length < 1)
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "alcoholType and improvement are required",
+        data: null,
+      });
+    }
     if (!user) {
       return res.status(404).json({
         status: false,
