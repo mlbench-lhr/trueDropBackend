@@ -231,7 +231,7 @@ async function searchUsers(req, res, next) {
     }
 
     const users = await User.find(filter).select(
-      "_id firstName lastName userName"
+      "_id firstName lastName userName profilePicture"
     );
 
     const usersWithSoberDays = await Promise.all(
@@ -251,7 +251,7 @@ async function searchUsers(req, res, next) {
           firstName: user.firstName,
           lastName: user.lastName,
           userName: user.userName,
-          profilePicture: user.profilePicture,
+          profilePicture: user.profilePicture || null,
           soberDays: totalSoberDays,
         };
       })
