@@ -153,6 +153,29 @@ async function socialAuth(req, res, next) {
     const payload = { userId: user._id.toString(), email: user.email };
     const accessToken = jwtService.signAccess(payload);
 
+    const milestones = await Milestones.find({
+      frequency: user?.goal?.frequency,
+    })
+      .sort({ createdAt: 1 })
+      .select("tag description title _id dayCount")
+      .limit(2)
+      .lean();
+    const userMilestoneUpdatedAtTime = await UsersMilestones.find({
+      userId: user._id,
+    });
+    const hasUserMilestone = await UsersMilestones.countDocuments({
+      userId: user._id,
+    });
+    const respMilestones = {
+      currentMilestone: {
+        ...milestones[0],
+        soberDays: 0,
+        updatedAt:
+          userMilestoneUpdatedAtTime?.[userMilestoneUpdatedAtTime?.length - 1]
+            ?.updatedAt,
+      },
+      nextMilestone: { ...milestones[1], soberDays: 0 },
+    };
     return res.status(statusCode).json({
       status: true,
       message,
@@ -171,6 +194,8 @@ async function socialAuth(req, res, next) {
           createdAt: user.createdAt,
           location: user.location,
           bio: user.bio,
+          milestones: respMilestones,
+          isActiveMilestone: hasUserMilestone > 0 ? true : false,
         },
         token: accessToken,
       },
