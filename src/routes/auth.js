@@ -16,7 +16,6 @@ router.post(
   validate(validators.socialAuth),
   authController.socialAuth
 );
-router.post("/logout", validate(validators.logout), authController.logout);
 router.post(
   "/forgot-password",
   validate(validators.forgotPassword),
