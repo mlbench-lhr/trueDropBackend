@@ -229,6 +229,30 @@ async function changePassword(req, res, next) {
     next(err);
   }
 }
+async function updateLocation(req, res, next) {
+  try {
+    const { location } = req.body;
+    const userId = req.user.userId;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: false,
+        message: "User not found",
+        data: null,
+      });
+    }
+    user.location = location;
+    await user.save();
+    return res.status(200).json({
+      status: true,
+      message: "Location updated successfully",
+      data: { location },
+    });
+  } catch (err) {
+    logger.error("location update error", err);
+    next(err);
+  }
+}
 
 async function deleteAccount(req, res, next) {
   try {
@@ -307,4 +331,5 @@ module.exports = {
   deleteAccount,
   changePassword,
   editProfile,
+  updateLocation,
 };

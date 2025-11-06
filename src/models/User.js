@@ -41,6 +41,10 @@ const UserSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
   resetPasswordToken: { type: String, required: false },
   resetPasswordExpires: { type: Date, required: false },
+  location: {
+    lat: { type: Number },
+    long: { type: Number },
+  },
 });
 UserSchema.index(
   { provider: 1, providerId: 1 },
