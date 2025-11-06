@@ -6,7 +6,13 @@ const logger = require("../utils/logger");
 // Create a new milestones entry
 async function updateMilestones(req, res, next) {
   try {
-    const { milestoneId, soberDays, completedOn } = req.body;
+    const {
+      milestoneId,
+      soberDays,
+      completedOn,
+      completedMilestoneId,
+      completedDate,
+    } = req.body;
     const userId = req.user.userId;
 
     if (!milestoneId || !userId) {
@@ -57,6 +63,7 @@ async function updateMilestones(req, res, next) {
       currentMilestone.nextMilestone
     ).select("_id frequency tag title description dayCount nextMilestone");
     if (soberDays >= currentMilestone.dayCount || completedOn) {
+      userMilestone.completedOn = new Date();
       currentMilestone = nextMilestone;
       if (nextMilestone?.nextMilestone) {
         nextMilestone = await Milestones.findById(
@@ -68,6 +75,13 @@ async function updateMilestones(req, res, next) {
     }
     console.log("currentMilestone", currentMilestone);
     console.log("nextMilestone", nextMilestone);
+    if (completedMilestoneId && completedDate) {
+      let updateCompleted = await UsersMilestones.updateOne({
+        userId: userId,
+        milestoneId: completedMilestoneId,
+        completedOn: completedDate,
+      });
+    }
     return res.status(201).json({
       status: true,
       message: "Milestone updated successfully",
