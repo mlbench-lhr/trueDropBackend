@@ -141,4 +141,6 @@ exports.updateMilestones = () =>
     milestoneId: Joi.string().required(),
     soberDays: Joi.number().optional().allow(0),
     completedOn: Joi.string().optional().allow(""),
+    completedMilestoneId: Joi.string().optional().allow(""),
+    completedDate: Joi.string().optional().allow(""),
   }).min(1);
