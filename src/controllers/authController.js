@@ -65,6 +65,7 @@ async function register(req, res, next) {
           provider: user.provider,
           profilePicture: user.profilePicture,
           createdAt: user.createdAt,
+          location: user.location,
           bio: user.bio,
         },
         token: accessToken,
@@ -168,6 +169,7 @@ async function socialAuth(req, res, next) {
           provider: user.provider,
           profilePicture: user.profilePicture,
           createdAt: user.createdAt,
+          location: user.location,
           bio: user.bio,
         },
         token: accessToken,
@@ -270,6 +272,7 @@ async function addUserDetails(req, res, next) {
           profilePicture: user.profilePicture,
           createdAt: user.createdAt,
           bio: user.bio,
+          location: user.location,
           milestones: respMilestones,
         },
         token: accessToken,
@@ -367,6 +370,7 @@ async function login(req, res, next) {
           provider: user.provider,
           profilePicture: user.profilePicture,
           createdAt: user.createdAt,
+          location: user.location,
           bio: user.bio,
           milestones: respMilestones,
           isActiveMilestone: hasUserMilestone > 0 ? true : false,
@@ -380,69 +384,6 @@ async function login(req, res, next) {
   }
 }
 
-async function refresh(req, res, next) {
-  try {
-    const { refreshToken } = req.body;
-    if (!refreshToken)
-      return res
-        .status(400)
-        .json({ status: false, message: "Refresh token required", data: null });
-
-    let decoded;
-    try {
-      decoded = jwtService.verifyRefresh(refreshToken);
-    } catch (e) {
-      return res
-        .status(401)
-        .json({ status: false, message: "Invalid refresh token", data: null });
-    }
-
-    const user = await User.findById(decoded.userId);
-    if (!user)
-      return res
-        .status(401)
-        .json({ status: false, message: "User not found", data: null });
-
-    const payload = { userId: user._id.toString(), email: user.email };
-    const accessToken = jwtService.signAccess(payload);
-
-    return res.status(200).json({
-      status: true,
-      message: "Token refreshed successfully",
-      data: {
-        token: accessToken,
-      },
-    });
-  } catch (err) {
-    logger.error("Refresh error", err);
-    next(err);
-  }
-}
-
-async function logout(req, res, next) {
-  try {
-    const { refreshToken } = req.body;
-    if (!refreshToken)
-      return res
-        .status(400)
-        .json({ status: false, message: "Refresh token required", data: null });
-
-    try {
-      jwtService.verifyRefresh(refreshToken);
-    } catch (e) {
-      return res
-        .status(400)
-        .json({ status: false, message: "Invalid refresh token", data: null });
-    }
-
-    return res
-      .status(200)
-      .json({ status: true, message: "Logged out successfully", data: null });
-  } catch (err) {
-    logger.error("Logout error", err);
-    next(err);
-  }
-}
 
 // Send verification code
 async function forgotPassword(req, res, next) {
@@ -618,8 +559,6 @@ async function resetPassword(req, res, next) {
 module.exports = {
   register,
   login,
-  logout,
-  refresh,
   forgotPassword,
   verifyResetCode,
   resetPassword,

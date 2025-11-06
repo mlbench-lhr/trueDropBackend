@@ -61,15 +61,6 @@ exports.addUserDetails = () =>
       actualGoal: Joi.number().optional(),
     }).required(),
   });
-exports.refresh = () =>
-  Joi.object({
-    refreshToken: Joi.string().required(),
-  });
-
-exports.logout = () =>
-  Joi.object({
-    refreshToken: Joi.string().required(),
-  });
 exports.forgotPassword = () =>
   Joi.object({
     email: Joi.string().email().required(),
