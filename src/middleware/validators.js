@@ -51,8 +51,8 @@ exports.socialAuth = () =>
   });
 exports.addUserDetails = () =>
   Joi.object({
-    alcoholType: Joi.string().required(),
-    improvement: Joi.array().items(Joi.string()).min(1).required(),
+    alcoholType: Joi.string().optional().allow("", null),
+    improvement: Joi.array().optional(),
     goal: Joi.object({
       amount: Joi.number().required(),
       frequency: Joi.string().required(),

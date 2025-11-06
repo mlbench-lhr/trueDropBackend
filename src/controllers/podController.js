@@ -89,18 +89,110 @@ async function deletePod(req, res, next) {
 async function getPods(req, res, next) {
   try {
     const userId = req.user.userId;
-    const userPods = await Pod.find({ members: { $in: [userId] } });
-    console.log("userPods---------", userPods);
-
-    return res.status(201).json({
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const searchQuery = req.query.search || "";
+    const radiusInKm = 1;
+    const skip = (page - 1) * limit;
+    const currentUser = await User.findById(userId).select("location");
+    if (
+      !currentUser ||
+      !currentUser.location ||
+      !currentUser.location.lat ||
+      !currentUser.location.long
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "User location not found. Please update your location.",
+      });
+    }
+    const userLat = currentUser.location.lat;
+    const userLong = currentUser.location.long;
+    const yourPods = await Pod.find({ members: { $in: [userId] } })
+      .populate("members", "firstName lastName userName profilePicture")
+      .populate("createdBy", "firstName lastName userName profilePicture")
+      .sort({ lastActiveTime: -1, createdAt: -1 });
+    const userPodIds = yourPods.map((pod) => pod._id);
+    const availablePodsQuery = {
+      privacyLevel: "public",
+      // _id: { $nin: userPodIds },
+    };
+    if (searchQuery) {
+      availablePodsQuery.name = { $regex: searchQuery, $options: "i" };
+    }
+    const publicPodsWithCreators = await Pod.find(availablePodsQuery)
+      .populate({
+        path: "createdBy",
+        select: "firstName lastName userName profilePicture location",
+      })
+      .populate("members", "firstName lastName userName profilePicture")
+      .lean();
+    const availablePodsWithDistance = publicPodsWithCreators
+      .map((pod) => {
+        if (
+          !pod.createdBy ||
+          !pod.createdBy.location ||
+          !pod.createdBy.location.lat ||
+          !pod.createdBy.location.long
+        ) {
+          return null;
+        }
+        const creatorLat = pod.createdBy.location.lat;
+        const creatorLong = pod.createdBy.location.long;
+        const distance = calculateDistance(
+          userLat,
+          userLong,
+          creatorLat,
+          creatorLong
+        );
+        return {
+          ...pod,
+          distance: distance,
+        };
+      })
+      .filter((pod) => pod !== null && pod.distance <= radiusInKm)
+      .sort((a, b) => a.distance - b.distance);
+    const totalItems = availablePodsWithDistance.length;
+    const totalPages = Math.ceil(totalItems / limit);
+    const paginatedAvailablePods = availablePodsWithDistance.slice(
+      skip,
+      skip + limit
+    );
+    return res.status(200).json({
       status: true,
-      message: `Pod added successfully`,
-      data: userPods,
+      message: "Pods retrieved successfully",
+      data: {
+        yourPods: yourPods,
+        availablePods: paginatedAvailablePods,
+        pagination: {
+          currentPage: page,
+          totalPages: totalPages,
+          totalItems: totalItems,
+          itemsPerPage: limit,
+        },
+      },
     });
   } catch (err) {
-    logger.error("Add pod error", err);
+    logger.error("Get pods error", err);
     next(err);
   }
+}
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = toRadians(lat2 - lat1);
+  const dLon = toRadians(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) *
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c;
+  return distance;
+}
+function toRadians(degrees) {
+  return degrees * (Math.PI / 180);
 }
 
 async function searchUsers(req, res, next) {
