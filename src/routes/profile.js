@@ -36,12 +36,7 @@ router.put(
   profileController.changePassword
 );
 
-router.delete(
-  "/deleteAccount",
-  auth,
-  validate(validators.deleteAccount),
-  profileController.deleteAccount
-);
+router.delete("/deleteAccount", auth, profileController.deleteAccount);
 
 router.post(
   "/addUserDetails",
