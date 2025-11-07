@@ -256,7 +256,6 @@ async function updateLocation(req, res, next) {
 
 async function deleteAccount(req, res, next) {
   try {
-    const { password } = req.body;
     const userId = req.user.userId;
 
     // Check if user exists
@@ -267,30 +266,6 @@ async function deleteAccount(req, res, next) {
         message: "User not found",
         data: null,
       });
-    }
-
-    // Verify password for local accounts
-    if (user.provider === "local") {
-      if (!password) {
-        return res.status(400).json({
-          status: false,
-          message: "Password is required to delete account",
-          data: null,
-        });
-      }
-
-      const isPasswordValid = await passwordService.comparePassword(
-        password,
-        user.passwordHash
-      );
-
-      if (!isPasswordValid) {
-        return res.status(401).json({
-          status: false,
-          message: "Password is incorrect",
-          data: null,
-        });
-      }
     }
 
     // Delete profile picture from Cloudinary if exists
