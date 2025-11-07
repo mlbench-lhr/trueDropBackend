@@ -11,7 +11,6 @@ const podRoutes = require("./routes/pod");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
-// Add this line to skip body parsing for multipart requests
 app.use((req, res, next) => {
   if (req.is("multipart/form-data")) {
     console.log("this------");
