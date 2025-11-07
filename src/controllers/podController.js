@@ -15,21 +15,30 @@ async function createPod(req, res, next) {
       createdBy: userId,
     });
     const createdPod = await dataToSave.save();
-    console.log("createdPod---------", createdPod);
+    let populatedPod = await Pod.findById(createdPod._id)
+      .populate("members", "firstName lastName userName profilePicture")
+      .populate("createdBy", "firstName lastName userName profilePicture")
+      .lean();
+    const getSoberDays = async (user) => {
+      const milestones = await UsersMilestones.find({
+        userId: user._id,
+        completedOn: { $exists: true },
+      }).lean();
+      const totalSoberDays = milestones.reduce(
+        (sum, m) => sum + (m.soberDays || 0),
+        0
+      );
+      return { ...user, soberDays: totalSoberDays };
+    };
+    populatedPod.members = await Promise.all(
+      populatedPod.members.map((member) => getSoberDays(member))
+    );
+    populatedPod.createdBy = await getSoberDays(populatedPod.createdBy);
 
     return res.status(201).json({
       status: true,
-      message: `Pod added successfully`,
-      data: {
-        _id: createdPod._id,
-        name: createdPod.name,
-        members: createdPod.members,
-        description: createdPod.description,
-        lastActiveTime: createdPod.lastActiveTime,
-        chat: createdPod.chat,
-        createdAt: createdPod.createdAt,
-        createdBy: createdPod.createdBy,
-      },
+      message: "Pod added successfully",
+      data: populatedPod,
     });
   } catch (err) {
     logger.error("Add pod error", err);
