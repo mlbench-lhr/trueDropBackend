@@ -239,15 +239,21 @@ async function searchUsers(req, res, next) {
     const userId = req.user.userId;
     const { search } = req.query;
 
-    const filter = { _id: { $ne: userId } };
-
-    if (search) {
-      filter.$or = [
+    if (!search || !search.trim()) {
+      return res.status(200).json({
+        status: true,
+        message: "No search query provided",
+        data: [],
+      });
+    }
+    const filter = {
+      _id: { $ne: userId },
+      $or: [
         { firstName: { $regex: search, $options: "i" } },
         { lastName: { $regex: search, $options: "i" } },
         { userName: { $regex: search, $options: "i" } },
-      ];
-    }
+      ],
+    };
 
     const users = await User.find(filter).select(
       "_id firstName lastName userName profilePicture"
