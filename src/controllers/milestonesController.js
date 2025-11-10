@@ -117,6 +117,23 @@ async function updateMilestones(req, res, next) {
           currentMilestone = await createNextMilestone(completedMilestoneRef);
         }
 
+        // Create or get UserMilestone for currentMilestone
+        let currentUserMilestone = await UsersMilestones.findOne({
+          userId,
+          milestoneId: currentMilestone._id,
+        });
+
+        if (!currentUserMilestone) {
+          currentUserMilestone = new UsersMilestones({
+            userId,
+            milestoneId: currentMilestone._id,
+            completedOn: null,
+            soberDays: 0,
+            moneySaved: 0,
+          });
+          await currentUserMilestone.save();
+        }
+
         // Second milestone after completed
         if (currentMilestone) {
           if (currentMilestone.nextMilestone) {
@@ -128,6 +145,25 @@ async function updateMilestones(req, res, next) {
           } else {
             // Create second milestone if it doesn't exist
             nextMilestone = await createNextMilestone(currentMilestone);
+          }
+
+          // Create or get UserMilestone for nextMilestone
+          if (nextMilestone) {
+            let nextUserMilestone = await UsersMilestones.findOne({
+              userId,
+              milestoneId: nextMilestone._id,
+            });
+
+            if (!nextUserMilestone) {
+              nextUserMilestone = new UsersMilestones({
+                userId,
+                milestoneId: nextMilestone._id,
+                completedOn: null,
+                soberDays: 0,
+                moneySaved: 0,
+              });
+              await nextUserMilestone.save();
+            }
           }
         }
       }
@@ -144,6 +180,23 @@ async function updateMilestones(req, res, next) {
         if (tempNext) {
           currentMilestone = tempNext;
 
+          // Create or get UserMilestone for currentMilestone
+          let currentUserMilestone = await UsersMilestones.findOne({
+            userId,
+            milestoneId: currentMilestone._id,
+          });
+
+          if (!currentUserMilestone) {
+            currentUserMilestone = new UsersMilestones({
+              userId,
+              milestoneId: currentMilestone._id,
+              completedOn: null,
+              soberDays: 0,
+              moneySaved: 0,
+            });
+            await currentUserMilestone.save();
+          }
+
           // Get next milestone
           if (tempNext.nextMilestone) {
             nextMilestone = await Milestones.findById(
@@ -154,6 +207,25 @@ async function updateMilestones(req, res, next) {
           } else {
             // Create next milestone if it doesn't exist
             nextMilestone = await createNextMilestone(tempNext);
+          }
+
+          // Create or get UserMilestone for nextMilestone
+          if (nextMilestone) {
+            let nextUserMilestone = await UsersMilestones.findOne({
+              userId,
+              milestoneId: nextMilestone._id,
+            });
+
+            if (!nextUserMilestone) {
+              nextUserMilestone = new UsersMilestones({
+                userId,
+                milestoneId: nextMilestone._id,
+                completedOn: null,
+                soberDays: 0,
+                moneySaved: 0,
+              });
+              await nextUserMilestone.save();
+            }
           }
         }
       } else if (currentMilestone.nextMilestone) {
@@ -166,9 +238,40 @@ async function updateMilestones(req, res, next) {
           // Create next milestone if it doesn't exist
           nextMilestone = await createNextMilestone(currentMilestone);
         }
+
+        // Create or get UserMilestone for nextMilestone
+        if (nextMilestone) {
+          let nextUserMilestone = await UsersMilestones.findOne({
+            userId,
+            milestoneId: nextMilestone._id,
+          });
+
+          if (!nextUserMilestone) {
+            nextUserMilestone = new UsersMilestones({
+              userId,
+              milestoneId: nextMilestone._id,
+              completedOn: null,
+              soberDays: 0,
+              moneySaved: 0,
+            });
+            await nextUserMilestone.save();
+          }
+        }
       } else {
         // Create next milestone if current doesn't have one
         nextMilestone = await createNextMilestone(currentMilestone);
+
+        // Create UserMilestone for the newly created nextMilestone
+        if (nextMilestone) {
+          let nextUserMilestone = new UsersMilestones({
+            userId,
+            milestoneId: nextMilestone._id,
+            completedOn: null,
+            soberDays: 0,
+            moneySaved: 0,
+          });
+          await nextUserMilestone.save();
+        }
       }
     }
 
@@ -204,6 +307,40 @@ async function updateMilestones(req, res, next) {
     logger.error("Add/Update milestones error", err);
     next(err);
   }
+}
+
+// Helper function to create next milestone
+async function createNextMilestone(previousMilestone) {
+  const newDayCount =
+    previousMilestone.dayCount + getDayIncrement(previousMilestone.frequency);
+
+  const newMilestone = new Milestones({
+    frequency: previousMilestone.frequency,
+    title: `${newDayCount} Days Milestone`,
+    tag: `${newDayCount}-days`,
+    description: `Completed ${newDayCount} days of sobriety`,
+    dayCount: newDayCount,
+    nextMilestone: null,
+  });
+
+  await newMilestone.save();
+
+  // Update previous milestone's nextMilestone reference
+  await Milestones.findByIdAndUpdate(previousMilestone._id, {
+    nextMilestone: newMilestone._id,
+  });
+
+  return newMilestone;
+}
+
+// Helper function to get day increment based on frequency
+function getDayIncrement(frequency) {
+  const increments = {
+    daily: 1,
+    weekly: 7,
+    monthly: 30,
+  };
+  return increments[frequency] || 1;
 }
 
 // Helper function to create next milestone
