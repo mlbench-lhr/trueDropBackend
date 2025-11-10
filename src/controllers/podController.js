@@ -58,10 +58,7 @@ async function editPod(req, res, next) {
     const { id } = req.params;
     const { name, description, members, privacyLevel } = req.body;
 
-    const pod = await Pod.findById(id).populate(
-      "createdBy",
-      "firstName lastName userName profilePicture"
-    );
+    const pod = await Pod.findById(id);
     if (!pod) {
       return res.status(404).json({ status: false, message: "Pod not found" });
     }
@@ -70,12 +67,15 @@ async function editPod(req, res, next) {
     if (privacyLevel) pod.privacyLevel = privacyLevel;
     if (members && Array.isArray(members)) pod.members = members;
 
-    const updatedPod = await pod.save();
+    await pod.save();
+    const updateResponse = await Pod.findById(id)
+      .populate("members", "firstName lastName userName profilePicture")
+      .populate("createdBy", "firstName lastName userName profilePicture");
 
     return res.status(200).json({
       status: true,
       message: "Pod updated successfully",
-      data: updatedPod,
+      data: updateResponse,
     });
   } catch (err) {
     logger.error("Edit pod error", err);
