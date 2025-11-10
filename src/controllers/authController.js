@@ -171,7 +171,7 @@ async function socialAuth(req, res, next) {
     let respMilestones = {
       currentMilestone: {
         _id: userMilestones[0]?._id || null,
-        frequency: userMilestones[0]?.completedOn || null,
+        frequency: milestones[0]?.completedOn || null,
         tag: milestones[0]?.tag,
         title: milestones[0]?.title,
         description: milestones[0]?.description,
@@ -183,7 +183,7 @@ async function socialAuth(req, res, next) {
       },
       nextMilestone: {
         _id: userMilestones[1]?._id || null,
-        frequency: userMilestones[1]?.completedOn || null,
+        frequency: milestones[1]?.completedOn || null,
         tag: milestones[1]?.tag,
         title: milestones[1]?.title,
         description: milestones[1]?.description,
@@ -318,7 +318,7 @@ async function addUserDetails(req, res, next) {
     const respMilestones = {
       currentMilestone: {
         _id: userMilestonesSavedInDb[0]?._id || null,
-        frequency: userMilestonesSavedInDb[0]?.completedOn || null,
+        frequency: milestones[0]?.frequency || null,
         tag: milestones[0]?.tag,
         title: milestones[0]?.title,
         description: milestones[0]?.description,
@@ -330,7 +330,7 @@ async function addUserDetails(req, res, next) {
       },
       nextMilestone: {
         _id: userMilestonesSavedInDb[1]?._id || null,
-        frequency: userMilestonesSavedInDb[1]?.completedOn || null,
+        frequency: milestones[1]?.frequency || null,
         tag: milestones[1]?.tag,
         title: milestones[1]?.title,
         description: milestones[1]?.description,
@@ -422,7 +422,7 @@ async function login(req, res, next) {
       frequency: user?.goal?.frequency,
     })
       .sort({ createdAt: 1 })
-      .select("tag description title _id dayCount")
+      .select("tag description title _id dayCount frequency")
       .limit(2)
       .lean();
     const isUserHasMilestones = await UsersMilestones.find({
@@ -450,7 +450,7 @@ async function login(req, res, next) {
     const respMilestones = {
       currentMilestone: {
         _id: userMilestonesSavedInDb[0]?._id || null,
-        frequency: userMilestonesSavedInDb[0]?.completedOn || null,
+        frequency: milestones[0]?.frequency || null,
         tag: milestones[0]?.tag,
         title: milestones[0]?.title,
         description: milestones[0]?.description,
@@ -462,7 +462,7 @@ async function login(req, res, next) {
       },
       nextMilestone: {
         _id: userMilestonesSavedInDb[1]?._id || null,
-        frequency: userMilestonesSavedInDb[1]?.completedOn || null,
+        frequency: milestones[1]?.frequency || null,
         tag: milestones[1]?.tag,
         title: milestones[1]?.title,
         description: milestones[1]?.description,
@@ -474,7 +474,7 @@ async function login(req, res, next) {
       },
     };
 
-    console.log("respMilestones----", respMilestones);
+    console.log("milestones----", milestones);
 
     return res.status(200).json({
       status: true,
