@@ -407,22 +407,41 @@ async function login(req, res, next) {
       .select("tag description title _id dayCount")
       .limit(2)
       .lean();
-    const userMilestoneUpdatedAtTime = await UsersMilestones.find({
+    const userMilestones = await UsersMilestones.find({
       userId: user._id,
-    });
-    const hasUserMilestone = await UsersMilestones.countDocuments({
-      userId: user._id,
-    });
-    const respMilestones = {
+    })
+      .sort({ createdAt: 1 })
+      .select("completedOn soberDays moneySaved updatedAt")
+      .limit(2)
+      .lean();
+    let respMilestones = {
       currentMilestone: {
-        ...milestones[0],
-        soberDays: 0,
-        updatedAt:
-          userMilestoneUpdatedAtTime?.[userMilestoneUpdatedAtTime?.length - 1]
-            ?.updatedAt,
+        _id: userMilestones[0]?._id || null,
+        frequency: userMilestones[0]?.completedOn || null,
+        tag: milestones[0]?.tag,
+        title: milestones[0]?.title,
+        description: milestones[0]?.description,
+        dayCount: milestones[0]?.dayCount,
+        completedOn: userMilestones[0]?.completedOn || null,
+        moneySaved: userMilestones[0]?.moneySaved || 0,
+        updatedAt: userMilestones[0]?.updatedAt || null,
+        soberDays: userMilestones[0]?.soberDays || 0,
       },
-      nextMilestone: { ...milestones[1], soberDays: 0 },
+      nextMilestone: {
+        _id: userMilestones[1]?._id || null,
+        frequency: userMilestones[1]?.completedOn || null,
+        tag: milestones[1]?.tag,
+        title: milestones[1]?.title,
+        description: milestones[1]?.description,
+        dayCount: milestones[1]?.dayCount,
+        completedOn: userMilestones[1]?.completedOn || null,
+        moneySaved: userMilestones[1]?.moneySaved || 0,
+        updatedAt: userMilestones[1]?.updatedAt || null,
+        soberDays: userMilestones[1]?.soberDays || 0,
+      },
     };
+
+    console.log("respMilestones----", respMilestones);
 
     return res.status(200).json({
       status: true,
@@ -442,8 +461,8 @@ async function login(req, res, next) {
           createdAt: user.createdAt,
           location: user.location,
           bio: user.bio,
-          milestones: respMilestones,
-          isActiveMilestone: hasUserMilestone > 0 ? true : false,
+          milestones: userMilestones?.length > 0 ? respMilestones : null,
+          isActiveMilestone: userMilestones?.length > 0 ? true : false,
         },
         token: accessToken,
       },
