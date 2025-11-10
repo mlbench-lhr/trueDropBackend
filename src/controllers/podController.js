@@ -58,9 +58,10 @@ async function editPod(req, res, next) {
     const { id } = req.params;
     const { name, description, members, privacyLevel } = req.body;
 
-    const pod = await Pod.findById(id)
-      .populate("members", "firstName lastName userName profilePicture")
-      .populate("createdBy", "firstName lastName userName profilePicture");
+    const pod = await Pod.findById(id).populate(
+      "createdBy",
+      "firstName lastName userName profilePicture"
+    );
     if (!pod) {
       return res.status(404).json({ status: false, message: "Pod not found" });
     }
