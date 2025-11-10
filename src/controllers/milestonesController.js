@@ -22,11 +22,14 @@ async function updateMilestones(req, res, next) {
         data: null,
       });
     }
+
     const userFromDb = await User.findById(userId);
     const frequencyInNumber = { daily: 1, weekly: 7, monthly: 30 };
     const moneySaved =
       (soberDays / frequencyInNumber[userFromDb?.goal?.frequency]) *
       userFromDb?.goal?.amount;
+
+    // Find or create user milestone
     let userMilestone = await UsersMilestones.findOne({
       userId,
       milestoneId,
@@ -34,54 +37,244 @@ async function updateMilestones(req, res, next) {
       "milestoneId",
       "frequency tag title description dayCount nextMilestone _id"
     );
+
     let milestoneForResponse = {};
+
     if (userMilestone) {
+      // Update existing milestone
       milestoneForResponse = userMilestone.milestoneId;
       userMilestone.soberDays = soberDays;
-      userMilestone.completedOn = completedOn;
       userMilestone.moneySaved = moneySaved;
-      if (soberDays >= milestoneForResponse.dayCount || completedOn) {
+
+      // Mark as completed if soberDays threshold is met
+      if (soberDays >= milestoneForResponse.dayCount) {
         userMilestone.completedOn = new Date();
       }
+
+      // Update completedOn if provided in payload
+      if (completedOn) {
+        userMilestone.completedOn = completedOn;
+      }
+
       await userMilestone.save();
     } else {
+      // Create new milestone entry
       const milestoneFromDb = await Milestones.findById(milestoneId).select(
         "frequency tag title description dayCount nextMilestone _id"
       );
       milestoneForResponse = milestoneFromDb;
+
+      let completedOnValue = null;
+      if (soberDays >= milestoneFromDb.dayCount) {
+        completedOnValue = new Date();
+      } else if (completedOn) {
+        completedOnValue = completedOn;
+      }
+
       userMilestone = new UsersMilestones({
         userId,
         milestoneId,
-        completedOn,
+        completedOn: completedOnValue,
         soberDays,
         moneySaved,
       });
       await userMilestone.save();
     }
-    let currentMilestone = milestoneForResponse;
-    let nextMilestone = await Milestones.findById(
-      currentMilestone.nextMilestone
-    ).select("_id frequency tag title description dayCount nextMilestone");
-    if (soberDays >= currentMilestone.dayCount || completedOn) {
-      userMilestone.completedOn = new Date();
-      currentMilestone = nextMilestone;
-      if (nextMilestone?.nextMilestone) {
+
+    let currentMilestone = null;
+    let nextMilestone = null;
+    let completedMilestoneRef = null;
+
+    // Handle completedMilestoneId logic (Case 3)
+    if (completedMilestoneId && completedDate) {
+      await UsersMilestones.findOneAndUpdate(
+        {
+          userId: userId,
+          milestoneId: completedMilestoneId,
+        },
+        {
+          completedOn: new Date(completedDate),
+        },
+        { upsert: true, new: true }
+      );
+
+      // Fetch the completed milestone
+      completedMilestoneRef = await Milestones.findById(
+        completedMilestoneId
+      ).select("_id frequency tag title description dayCount nextMilestone");
+
+      // Get the 2 milestones after the completed milestone
+      if (completedMilestoneRef) {
+        // First milestone after completed
+        if (completedMilestoneRef.nextMilestone) {
+          currentMilestone = await Milestones.findById(
+            completedMilestoneRef.nextMilestone
+          ).select(
+            "_id frequency tag title description dayCount nextMilestone"
+          );
+        } else {
+          // Create first milestone if it doesn't exist
+          currentMilestone = await createNextMilestone(completedMilestoneRef);
+        }
+
+        // Create or get UserMilestone for currentMilestone
+        let currentUserMilestone = await UsersMilestones.findOne({
+          userId,
+          milestoneId: currentMilestone._id,
+        });
+
+        if (!currentUserMilestone) {
+          currentUserMilestone = new UsersMilestones({
+            userId,
+            milestoneId: currentMilestone._id,
+            completedOn: null,
+            soberDays: 0,
+            moneySaved: 0,
+          });
+          await currentUserMilestone.save();
+        }
+
+        // Second milestone after completed
+        if (currentMilestone) {
+          if (currentMilestone.nextMilestone) {
+            nextMilestone = await Milestones.findById(
+              currentMilestone.nextMilestone
+            ).select(
+              "_id frequency tag title description dayCount nextMilestone"
+            );
+          } else {
+            // Create second milestone if it doesn't exist
+            nextMilestone = await createNextMilestone(currentMilestone);
+          }
+
+          // Create or get UserMilestone for nextMilestone
+          if (nextMilestone) {
+            let nextUserMilestone = await UsersMilestones.findOne({
+              userId,
+              milestoneId: nextMilestone._id,
+            });
+
+            if (!nextUserMilestone) {
+              nextUserMilestone = new UsersMilestones({
+                userId,
+                milestoneId: nextMilestone._id,
+                completedOn: null,
+                soberDays: 0,
+                moneySaved: 0,
+              });
+              await nextUserMilestone.save();
+            }
+          }
+        }
+      }
+    } else {
+      // Regular flow (Case 1 & 2)
+      currentMilestone = milestoneForResponse;
+
+      // If current milestone is completed, advance to next
+      if (userMilestone.completedOn && currentMilestone.nextMilestone) {
+        const tempNext = await Milestones.findById(
+          currentMilestone.nextMilestone
+        ).select("_id frequency tag title description dayCount nextMilestone");
+
+        if (tempNext) {
+          currentMilestone = tempNext;
+
+          // Create or get UserMilestone for currentMilestone
+          let currentUserMilestone = await UsersMilestones.findOne({
+            userId,
+            milestoneId: currentMilestone._id,
+          });
+
+          if (!currentUserMilestone) {
+            currentUserMilestone = new UsersMilestones({
+              userId,
+              milestoneId: currentMilestone._id,
+              completedOn: null,
+              soberDays: 0,
+              moneySaved: 0,
+            });
+            await currentUserMilestone.save();
+          }
+
+          // Get next milestone
+          if (tempNext.nextMilestone) {
+            nextMilestone = await Milestones.findById(
+              tempNext.nextMilestone
+            ).select(
+              "_id frequency tag title description dayCount nextMilestone"
+            );
+          } else {
+            // Create next milestone if it doesn't exist
+            nextMilestone = await createNextMilestone(tempNext);
+          }
+
+          // Create or get UserMilestone for nextMilestone
+          if (nextMilestone) {
+            let nextUserMilestone = await UsersMilestones.findOne({
+              userId,
+              milestoneId: nextMilestone._id,
+            });
+
+            if (!nextUserMilestone) {
+              nextUserMilestone = new UsersMilestones({
+                userId,
+                milestoneId: nextMilestone._id,
+                completedOn: null,
+                soberDays: 0,
+                moneySaved: 0,
+              });
+              await nextUserMilestone.save();
+            }
+          }
+        }
+      } else if (currentMilestone.nextMilestone) {
+        // Current milestone not completed, just get next milestone
         nextMilestone = await Milestones.findById(
-          nextMilestone.nextMilestone
-        ).select("_id frequency tag title description dayCount");
+          currentMilestone.nextMilestone
+        ).select("_id frequency tag title description dayCount nextMilestone");
+
+        if (!nextMilestone) {
+          // Create next milestone if it doesn't exist
+          nextMilestone = await createNextMilestone(currentMilestone);
+        }
+
+        // Create or get UserMilestone for nextMilestone
+        if (nextMilestone) {
+          let nextUserMilestone = await UsersMilestones.findOne({
+            userId,
+            milestoneId: nextMilestone._id,
+          });
+
+          if (!nextUserMilestone) {
+            nextUserMilestone = new UsersMilestones({
+              userId,
+              milestoneId: nextMilestone._id,
+              completedOn: null,
+              soberDays: 0,
+              moneySaved: 0,
+            });
+            await nextUserMilestone.save();
+          }
+        }
       } else {
-        nextMilestone = null;
+        // Create next milestone if current doesn't have one
+        nextMilestone = await createNextMilestone(currentMilestone);
+
+        // Create UserMilestone for the newly created nextMilestone
+        if (nextMilestone) {
+          let nextUserMilestone = new UsersMilestones({
+            userId,
+            milestoneId: nextMilestone._id,
+            completedOn: null,
+            soberDays: 0,
+            moneySaved: 0,
+          });
+          await nextUserMilestone.save();
+        }
       }
     }
-    console.log("currentMilestone", currentMilestone);
-    console.log("nextMilestone", nextMilestone);
-    if (completedMilestoneId && completedDate) {
-      let updateCompleted = await UsersMilestones.updateOne({
-        userId: userId,
-        milestoneId: completedMilestoneId,
-        completedOn: completedDate,
-      });
-    }
+
     return res.status(201).json({
       status: true,
       message: "Milestone updated successfully",
@@ -114,6 +307,74 @@ async function updateMilestones(req, res, next) {
     logger.error("Add/Update milestones error", err);
     next(err);
   }
+}
+
+// Helper function to create next milestone
+async function createNextMilestone(previousMilestone) {
+  const newDayCount =
+    previousMilestone.dayCount + getDayIncrement(previousMilestone.frequency);
+
+  const newMilestone = new Milestones({
+    frequency: previousMilestone.frequency,
+    title: `${newDayCount} Days Milestone`,
+    tag: `${newDayCount}-days`,
+    description: `Completed ${newDayCount} days of sobriety`,
+    dayCount: newDayCount,
+    nextMilestone: null,
+  });
+
+  await newMilestone.save();
+
+  // Update previous milestone's nextMilestone reference
+  await Milestones.findByIdAndUpdate(previousMilestone._id, {
+    nextMilestone: newMilestone._id,
+  });
+
+  return newMilestone;
+}
+
+// Helper function to get day increment based on frequency
+function getDayIncrement(frequency) {
+  const increments = {
+    daily: 1,
+    weekly: 7,
+    monthly: 30,
+  };
+  return increments[frequency] || 1;
+}
+
+// Helper function to create next milestone
+async function createNextMilestone(previousMilestone) {
+  const newDayCount =
+    previousMilestone.dayCount + getDayIncrement(previousMilestone.frequency);
+
+  const newMilestone = new Milestones({
+    frequency: previousMilestone.frequency,
+    title: `${newDayCount} Days Milestone`,
+    tag: `${newDayCount}-days`,
+    description: `Completed ${newDayCount} days of sobriety`,
+    dayCount: newDayCount,
+    nextMilestone: null,
+  });
+
+  await newMilestone.save();
+
+  // Update previous milestone's nextMilestone reference
+  await Milestones.findByIdAndUpdate(previousMilestone._id, {
+    nextMilestone: newMilestone._id,
+  });
+
+  return newMilestone;
+}
+
+// Helper function to get day increment based on frequency
+function getDayIncrement(frequency) {
+  const increments = {
+    daily: 1,
+    weekly: 7,
+    monthly: 30,
+  };
+  return increments[frequency] || 1;
 }
 
 // Get all milestones entries for the authenticated user
