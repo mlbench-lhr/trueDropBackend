@@ -7,6 +7,14 @@ async function createPod(req, res, next) {
   try {
     const { name, description, members, privacyLevel } = req.body;
     const userId = req.user.userId;
+    const usersCreatedPods = await Pod.countDocuments({ createdBy: userId });
+    if (usersCreatedPods >= 3) {
+      return res.status(201).json({
+        status: false,
+        message: "You already have created 3 pods",
+        data: null,
+      });
+    }
     const dataToSave = new Pod({
       name,
       description,
@@ -75,6 +83,16 @@ async function joinPod(req, res, next) {
   try {
     const { id } = req.params;
     const userId = req.user.userId;
+    const usersCreatedPods = await Pod.countDocuments({
+      members: { $in: [userId] },
+    });
+    if (usersCreatedPods >= 5) {
+      return res.status(201).json({
+        status: false,
+        message: "You already have joined 5 pods",
+        data: null,
+      });
+    }
     const pod = await Pod.findById(id)
       .populate(
         "createdBy",
@@ -151,10 +169,10 @@ async function getPods(req, res, next) {
       .populate("members", "firstName lastName userName profilePicture")
       .populate("createdBy", "firstName lastName userName profilePicture")
       .sort({ lastActiveTime: -1, createdAt: -1 });
-    const userPodIds = yourPods.map((pod) => pod._id);
+    const PodIds = yourPods.map((pod) => pod._id);
     const availablePodsQuery = {
       privacyLevel: "public",
-      _id: { $nin: userPodIds },
+      _id: { $nin: PodIds },
     };
     if (searchQuery) {
       availablePodsQuery.name = { $regex: searchQuery, $options: "i" };
@@ -259,8 +277,14 @@ async function searchUsers(req, res, next) {
       "_id firstName lastName userName profilePicture"
     );
 
-    const usersWithSoberDays = await Promise.all(
+    const usersWithStats = await Promise.all(
       users.map(async (user) => {
+        const joinedPodsCount = await Pod.countDocuments({
+          members: user._id,
+        });
+        const createdPodsCount = await Pod.countDocuments({
+          createdBy: user._id,
+        });
         const milestones = await UsersMilestones.find({
           userId: user._id,
           completedOn: { $exists: true },
@@ -278,14 +302,22 @@ async function searchUsers(req, res, next) {
           userName: user.userName,
           profilePicture: user.profilePicture || null,
           soberDays: totalSoberDays,
+          joinedPodsCount,
+          createdPodsCount,
         };
       })
+    );
+    const filteredUsers = usersWithStats.filter(
+      (user) => user.joinedPodsCount < 5 && user.createdPodsCount < 3
+    );
+    const finalUsers = filteredUsers.map(
+      ({ joinedPodsCount, createdPodsCount, ...user }) => user
     );
 
     return res.status(200).json({
       status: true,
       message: "Users fetched successfully",
-      data: usersWithSoberDays,
+      data: finalUsers,
     });
   } catch (err) {
     logger.error("Search users error:", err);
