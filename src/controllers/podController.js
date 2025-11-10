@@ -143,6 +143,44 @@ async function deletePod(req, res, next) {
   }
 }
 
+async function leavePod(req, res, next) {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+    const pod = await Pod.findById(id);
+    if (!pod) {
+      return res.status(404).json({ status: false, message: "Pod not found" });
+    }
+    const isMember = pod.members.some(
+      (memberId) => memberId.toString() === userId.toString()
+    );
+    if (!isMember) {
+      return res.status(400).json({
+        status: false,
+        message: "You are not a member of this pod",
+      });
+    }
+    if (pod.createdBy && pod.createdBy.toString() === userId.toString()) {
+      return res.status(400).json({
+        status: false,
+        message:
+          "Pod creator cannot leave the pod. Please delete the pod instead or transfer ownership.",
+      });
+    }
+    await Pod.findByIdAndUpdate(
+      id,
+      { $pull: { members: userId } },
+      { new: true }
+    );
+    return res.status(200).json({
+      status: true,
+      message: "Successfully left the pod",
+    });
+  } catch (err) {
+    logger.error("Leave pod error", err);
+    next(err);
+  }
+}
 async function getPods(req, res, next) {
   try {
     const userId = req.user.userId;
@@ -332,4 +370,5 @@ module.exports = {
   editPod,
   deletePod,
   joinPod,
+  leavePod,
 };
