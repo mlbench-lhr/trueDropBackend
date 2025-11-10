@@ -276,10 +276,54 @@ async function addUserDetails(req, res, next) {
       .select("tag description title _id dayCount")
       .limit(2)
       .lean();
-    const respMilestones = {
+    const isUserHasMilestones = await UsersMilestones.find({ userId: userId });
+
+    const userMilestonesToStore = [
+      {
+        userId: userId,
+        milestoneId: milestones?.[0]?._id,
+      },
+      {
+        userId: userId,
+        milestoneId: milestones?.[1]?._id,
+      },
+    ];
+    let userMilestonesSavedInDb = {
       currentMilestone: { ...milestones[0], soberDays: 0 },
       nextMilestone: { ...milestones[1], soberDays: 0 },
     };
+    if (isUserHasMilestones.length < 1) {
+      userMilestonesSavedInDb = await UsersMilestones.insertMany(
+        userMilestonesToStore
+      );
+    }
+    const respMilestones = {
+      currentMilestone: {
+        _id: userMilestonesSavedInDb[0]?._id || null,
+        frequency: userMilestonesSavedInDb[0]?.completedOn || null,
+        tag: milestones[0]?.tag,
+        title: milestones[0]?.title,
+        description: milestones[0]?.description,
+        dayCount: milestones[0]?.dayCount,
+        completedOn: userMilestonesSavedInDb[0]?.completedOn || null,
+        moneySaved: userMilestonesSavedInDb[0]?.moneySaved || 0,
+        updatedAt: userMilestonesSavedInDb[0]?.updatedAt || null,
+        soberDays: userMilestonesSavedInDb[0]?.soberDays || 0,
+      },
+      nextMilestone: {
+        _id: userMilestonesSavedInDb[1]?._id || null,
+        frequency: userMilestonesSavedInDb[1]?.completedOn || null,
+        tag: milestones[1]?.tag,
+        title: milestones[1]?.title,
+        description: milestones[1]?.description,
+        dayCount: milestones[1]?.dayCount,
+        completedOn: userMilestonesSavedInDb[1]?.completedOn || null,
+        moneySaved: userMilestonesSavedInDb[1]?.moneySaved || 0,
+        updatedAt: userMilestonesSavedInDb[1]?.updatedAt || null,
+        soberDays: userMilestonesSavedInDb[1]?.soberDays || 0,
+      },
+    };
+    console.log("respMilestones----------------------", respMilestones);
 
     return res.status(200).json({
       status: true,
@@ -409,7 +453,6 @@ async function login(req, res, next) {
     next(err);
   }
 }
-
 
 // Send verification code
 async function forgotPassword(req, res, next) {
