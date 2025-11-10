@@ -182,7 +182,7 @@ async function socialAuth(req, res, next) {
         soberDays: userMilestones[0]?.soberDays || 0,
       },
       nextMilestone: {
-        _id: userMilestones[1]?._id || null,
+        _id: milestones[1]?._id || null,
         frequency: milestones[1]?.completedOn || null,
         tag: milestones[1]?.tag,
         title: milestones[1]?.title,
@@ -317,7 +317,7 @@ async function addUserDetails(req, res, next) {
     }
     const respMilestones = {
       currentMilestone: {
-        _id: userMilestonesSavedInDb[0]?._id || null,
+        _id: milestones[0]?._id || null,
         frequency: milestones[0]?.frequency || null,
         tag: milestones[0]?.tag,
         title: milestones[0]?.title,
@@ -329,7 +329,7 @@ async function addUserDetails(req, res, next) {
         soberDays: userMilestonesSavedInDb[0]?.soberDays || 0,
       },
       nextMilestone: {
-        _id: userMilestonesSavedInDb[1]?._id || null,
+        _id: milestones[1]?._id || null,
         frequency: milestones[1]?.frequency || null,
         tag: milestones[1]?.tag,
         title: milestones[1]?.title,
@@ -449,7 +449,7 @@ async function login(req, res, next) {
     }
     const respMilestones = {
       currentMilestone: {
-        _id: userMilestonesSavedInDb[0]?._id || null,
+        _id: milestones[0]?._id || null,
         frequency: milestones[0]?.frequency || null,
         tag: milestones[0]?.tag,
         title: milestones[0]?.title,
@@ -461,7 +461,7 @@ async function login(req, res, next) {
         soberDays: userMilestonesSavedInDb[0]?.soberDays || 0,
       },
       nextMilestone: {
-        _id: userMilestonesSavedInDb[1]?._id || null,
+        _id: milestones[1]?._id || null,
         frequency: milestones[1]?.frequency || null,
         tag: milestones[1]?.tag,
         title: milestones[1]?.title,
