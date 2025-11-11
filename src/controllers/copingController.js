@@ -4,52 +4,68 @@ const logger = require("../utils/logger");
 // Create a new coping entry
 async function addCoping(req, res, next) {
   try {
-    const { tag, title, strategy, description } = req.body;
+    const { copings } = req.body;
     const userId = req.user.userId;
 
-    if (!tag || !title || !strategy || !description) {
+    if (!copings || !Array.isArray(copings) || copings.length === 0) {
       return res.status(400).json({
         status: false,
-        message: "Tag, title, strategy, and description are required",
+        message:
+          "Copings array is required and must contain at least one entry",
         data: null,
       });
     }
 
     // Validate tag enum
     const validTags = ["Quick Relief", "Get Moving", "Inner Peace"];
-    if (!validTags.includes(tag)) {
-      return res.status(400).json({
-        status: false,
-        message:
-          "Invalid tag. Must be one of: Quick Relief, Get Moving, Inner Peace",
-        data: null,
-      });
+    for (const coping of copings) {
+      if (
+        !coping.tag ||
+        !coping.title ||
+        !coping.strategy ||
+        !coping.description
+      ) {
+        return res.status(400).json({
+          status: false,
+          message:
+            "Each coping entry must include tag, title, strategy, and description",
+          data: null,
+        });
+      }
+      if (!validTags.includes(coping.tag)) {
+        return res.status(400).json({
+          status: false,
+          message:
+            "Invalid tag. Must be one of: Quick Relief, Get Moving, Inner Peace",
+          data: null,
+        });
+      }
     }
 
-    const coping = new Coping({
+    const copingEntries = copings.map((c) => ({
       userId,
-      tag,
-      title,
-      strategy,
-      description,
-    });
+      tag: c.tag,
+      title: c.title,
+      strategy: c.strategy,
+      description: c.description,
+    }));
 
-    await coping.save();
+    const createdCopings = await Coping.insertMany(copingEntries);
 
     return res.status(201).json({
       status: true,
-      message: "Coping entry created successfully",
-      data: {
-        coping: {
-          _id: coping._id,
-          tag: coping.tag,
-          title: coping.title,
-          strategy: coping.strategy,
-          description: coping.description,
-          createdAt: coping.createdAt,
-          updatedAt: coping.updatedAt,
-        },
-      },
+      message: `${createdCopings.length} coping ${
+        createdCopings.length === 1 ? "entry" : "entries"
+      } created successfully`,
+      data: createdCopings.map((c) => ({
+        _id: c._id,
+        tag: c.tag,
+        title: c.title,
+        strategy: c.strategy,
+        description: c.description,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+      })),
     });
   } catch (err) {
     logger.error("Add coping error", err);

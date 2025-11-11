@@ -114,10 +114,19 @@ exports.updateJournal = () =>
 
 exports.addCoping = () =>
   Joi.object({
-    tag: Joi.string().required(),
-    title: Joi.string().required(),
-    strategy: Joi.string().required(),
-    description: Joi.string().required(),
+    copings: Joi.array()
+      .items(
+        Joi.object({
+          tag: Joi.string()
+            .valid("Quick Relief", "Get Moving", "Inner Peace")
+            .required(),
+          title: Joi.string().required(),
+          strategy: Joi.string().required(),
+          description: Joi.string().required(),
+        })
+      )
+      .min(1)
+      .required(),
   });
 
 exports.updateCoping = () =>
