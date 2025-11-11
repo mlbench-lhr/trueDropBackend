@@ -16,27 +16,22 @@ async function addCoping(req, res, next) {
       });
     }
 
-    // Validate tag enum
+    // Validate feeling enum
     const validTags = ["Quick Relief", "Get Moving", "Inner Peace"];
     for (const coping of copings) {
-      if (
-        !coping.tag ||
-        !coping.title ||
-        !coping.strategy ||
-        !coping.description
-      ) {
+      if (!coping.feeling || !coping.strategy || !coping.description) {
         return res.status(400).json({
           status: false,
           message:
-            "Each coping entry must include tag, title, strategy, and description",
+            "Each coping entry must include feeling, strategy, and description",
           data: null,
         });
       }
-      if (!validTags.includes(coping.tag)) {
+      if (!validTags.includes(coping.feeling)) {
         return res.status(400).json({
           status: false,
           message:
-            "Invalid tag. Must be one of: Quick Relief, Get Moving, Inner Peace",
+            "Invalid feeling. Must be one of: Quick Relief, Get Moving, Inner Peace",
           data: null,
         });
       }
@@ -44,8 +39,7 @@ async function addCoping(req, res, next) {
 
     const copingEntries = copings.map((c) => ({
       userId,
-      tag: c.tag,
-      title: c.title,
+      feeling: c.feeling,
       strategy: c.strategy,
       description: c.description,
     }));
@@ -59,8 +53,7 @@ async function addCoping(req, res, next) {
       } created successfully`,
       data: createdCopings.map((c) => ({
         _id: c._id,
-        tag: c.tag,
-        title: c.title,
+        feeling: c.feeling,
         strategy: c.strategy,
         description: c.description,
         createdAt: c.createdAt,
@@ -82,7 +75,7 @@ async function getAllCopings(req, res, next) {
       limit = 10,
       sortBy = "createdAt",
       order = "desc",
-      tag,
+      feeling,
     } = req.query;
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -90,8 +83,8 @@ async function getAllCopings(req, res, next) {
 
     // Build query filter
     const filter = { userId };
-    if (tag) {
-      filter.tag = tag;
+    if (feeling) {
+      filter.feeling = feeling;
     }
 
     const copings = await Coping.find(filter)
@@ -125,26 +118,26 @@ async function getAllCopings(req, res, next) {
 async function updateCoping(req, res, next) {
   try {
     const { copingId } = req.params;
-    const { tag, title, strategy, description } = req.body;
+    const { feeling, strategy, description } = req.body;
     const userId = req.user.userId;
 
-    if (!tag && !title && !strategy && !description) {
+    if (!feeling && !strategy && !description) {
       return res.status(400).json({
         status: false,
         message:
-          "At least one field (tag, title, strategy, or description) is required",
+          "At least one field (feeling, strategy, or description) is required",
         data: null,
       });
     }
 
-    // Validate tag enum if provided
-    if (tag) {
+    // Validate feeling enum if provided
+    if (feeling) {
       const validTags = ["Quick Relief", "Get Moving", "Inner Peace"];
-      if (!validTags.includes(tag)) {
+      if (!validTags.includes(feeling)) {
         return res.status(400).json({
           status: false,
           message:
-            "Invalid tag. Must be one of: Quick Relief, Get Moving, Inner Peace",
+            "Invalid feeling. Must be one of: Quick Relief, Get Moving, Inner Peace",
           data: null,
         });
       }
@@ -160,8 +153,7 @@ async function updateCoping(req, res, next) {
       });
     }
 
-    if (tag) coping.tag = tag;
-    if (title) coping.title = title;
+    if (feeling) coping.feeling = feeling;
     if (strategy) coping.strategy = strategy;
     if (description) coping.description = description;
 
@@ -173,8 +165,7 @@ async function updateCoping(req, res, next) {
       data: {
         coping: {
           _id: coping._id,
-          tag: coping.tag,
-          title: coping.title,
+          feeling: coping.feeling,
           strategy: coping.strategy,
           description: coping.description,
           createdAt: coping.createdAt,

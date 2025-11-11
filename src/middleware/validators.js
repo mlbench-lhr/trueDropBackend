@@ -117,10 +117,9 @@ exports.addCoping = () =>
     copings: Joi.array()
       .items(
         Joi.object({
-          tag: Joi.string()
+          feeling: Joi.string()
             .valid("Quick Relief", "Get Moving", "Inner Peace")
             .required(),
-          title: Joi.string().required(),
           strategy: Joi.string().required(),
           description: Joi.string().required(),
         })
@@ -131,8 +130,7 @@ exports.addCoping = () =>
 
 exports.updateCoping = () =>
   Joi.object({
-    tag: Joi.string().required(),
-    title: Joi.string().required(),
+    feeling: Joi.string().required(),
     strategy: Joi.string().required(),
     description: Joi.string().required(),
   }).min(1); // At least one field must be present
