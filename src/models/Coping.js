@@ -4,11 +4,11 @@ const { Schema } = mongoose;
 const CopingSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    tag: {
+    feeling: {
       type: String,
       required: true,
     },
-    title: { type: String, required: true },
+    title: { type: String, required: false },
     strategy: { type: String, required: true },
     description: { type: String, required: true },
   },
