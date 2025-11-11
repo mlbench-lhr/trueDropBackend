@@ -117,9 +117,7 @@ exports.addCoping = () =>
     copings: Joi.array()
       .items(
         Joi.object({
-          feeling: Joi.string()
-            .valid("Quick Relief", "Get Moving", "Inner Peace")
-            .required(),
+          feeling: Joi.string().required(),
           strategy: Joi.string().required(),
           description: Joi.string().required(),
         })

@@ -17,21 +17,12 @@ async function addCoping(req, res, next) {
     }
 
     // Validate feeling enum
-    const validTags = ["Quick Relief", "Get Moving", "Inner Peace"];
     for (const coping of copings) {
       if (!coping.feeling || !coping.strategy || !coping.description) {
         return res.status(400).json({
           status: false,
           message:
             "Each coping entry must include feeling, strategy, and description",
-          data: null,
-        });
-      }
-      if (!validTags.includes(coping.feeling)) {
-        return res.status(400).json({
-          status: false,
-          message:
-            "Invalid feeling. Must be one of: Quick Relief, Get Moving, Inner Peace",
           data: null,
         });
       }
@@ -128,19 +119,6 @@ async function updateCoping(req, res, next) {
           "At least one field (feeling, strategy, or description) is required",
         data: null,
       });
-    }
-
-    // Validate feeling enum if provided
-    if (feeling) {
-      const validTags = ["Quick Relief", "Get Moving", "Inner Peace"];
-      if (!validTags.includes(feeling)) {
-        return res.status(400).json({
-          status: false,
-          message:
-            "Invalid feeling. Must be one of: Quick Relief, Get Moving, Inner Peace",
-          data: null,
-        });
-      }
     }
 
     const coping = await Coping.findOne({ _id: copingId, userId });
