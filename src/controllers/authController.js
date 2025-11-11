@@ -442,7 +442,7 @@ async function login(req, res, next) {
       currentMilestone: { ...milestones[0], soberDays: 0 },
       nextMilestone: { ...milestones[1], soberDays: 0 },
     };
-    if (isUserHasMilestones.length < 1) {
+    if (isUserHasMilestones.length < 1 && user?.goal?.frequency) {
       userMilestonesSavedInDb = await UsersMilestones.insertMany(
         userMilestonesToStore
       );
@@ -494,7 +494,7 @@ async function login(req, res, next) {
           createdAt: user.createdAt,
           location: user.location,
           bio: user.bio,
-          milestones: respMilestones,
+          milestones: user?.goal?.frequency ? respMilestones : null,
           isActiveMilestone: isUserHasMilestones.length > 0 ? true : false,
         },
         token: accessToken,
