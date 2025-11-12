@@ -256,12 +256,58 @@ async function getPods(req, res, next) {
       skip,
       skip + limit
     );
+    const getSoberDays = async (userId) => {
+      const milestones = await UsersMilestones.find({
+        userId: userId,
+        completedOn: { $exists: true },
+      }).lean();
+      return milestones.reduce((sum, m) => sum + (m.soberDays || 0), 0);
+    };
+    const enrichedYourPods = await Promise.all(
+      yourPods.map(async (pod) => {
+        const podObj = pod.toObject();
+        if (podObj.members && podObj.members.length > 0) {
+          podObj.members = await Promise.all(
+            podObj.members.map(async (member) => ({
+              ...member,
+              totalSoberDays: await getSoberDays(member._id),
+            }))
+          );
+        }
+        if (podObj.createdBy) {
+          podObj.createdBy = {
+            ...podObj.createdBy,
+            totalSoberDays: await getSoberDays(podObj.createdBy._id),
+          };
+        }
+        return podObj;
+      })
+    );
+    const enrichedAvailablePods = await Promise.all(
+      paginatedAvailablePods.map(async (pod) => {
+        if (pod.members && pod.members.length > 0) {
+          pod.members = await Promise.all(
+            pod.members.map(async (member) => ({
+              ...member,
+              totalSoberDays: await getSoberDays(member._id),
+            }))
+          );
+        }
+        if (pod.createdBy) {
+          pod.createdBy = {
+            ...pod.createdBy,
+            totalSoberDays: await getSoberDays(pod.createdBy._id),
+          };
+        }
+        return pod;
+      })
+    );
     return res.status(200).json({
       status: true,
       message: "Pods retrieved successfully",
       data: {
-        yourPods: yourPods,
-        availablePods: paginatedAvailablePods,
+        yourPods: enrichedYourPods,
+        availablePods: enrichedAvailablePods,
         pagination: {
           currentPage: page,
           totalPages: totalPages,
