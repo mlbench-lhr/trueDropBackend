@@ -160,7 +160,10 @@ async function socialAuth(req, res, next) {
 
     const isUserHasMilestones = await UsersMilestones.find({
       userId: user._id,
-    });
+      completedOn: null,
+    })
+      .populate("milestoneId")
+      .sort({ createdAt: 1 });
     const userMilestonesToStore = [
       {
         userId: user._id,
@@ -182,24 +185,46 @@ async function socialAuth(req, res, next) {
     }
     const respMilestones = {
       currentMilestone: {
-        _id: milestones[0]?._id || null,
-        frequency: milestones[0]?.frequency || null,
-        tag: milestones[0]?.tag,
-        title: milestones[0]?.title,
-        description: milestones[0]?.description,
-        dayCount: milestones[0]?.dayCount,
+        _id:
+          isUserHasMilestones[0]?.milestoneId?._id ||
+          milestones[0]?._id ||
+          null,
+        frequency:
+          isUserHasMilestones[0]?.milestoneId?.frequency ||
+          milestones[0]?.frequency ||
+          null,
+        tag: isUserHasMilestones[0]?.milestoneId?.tag || milestones[0]?.tag,
+        title:
+          isUserHasMilestones[0]?.milestoneId?.title || milestones[0]?.title,
+        description:
+          isUserHasMilestones[0]?.milestoneId?.description ||
+          milestones[0]?.description,
+        dayCount:
+          isUserHasMilestones[0]?.milestoneId?.dayCount ||
+          milestones[0]?.dayCount,
         completedOn: userMilestonesSavedInDb[0]?.completedOn || null,
         moneySaved: userMilestonesSavedInDb[0]?.moneySaved || 0,
         updatedAt: userMilestonesSavedInDb[0]?.updatedAt || null,
         soberDays: userMilestonesSavedInDb[0]?.soberDays || 0,
       },
       nextMilestone: {
-        _id: milestones[1]?._id || null,
-        frequency: milestones[1]?.frequency || null,
-        tag: milestones[1]?.tag,
-        title: milestones[1]?.title,
-        description: milestones[1]?.description,
-        dayCount: milestones[1]?.dayCount,
+        _id:
+          isUserHasMilestones[1]?.milestoneId?._id ||
+          milestones[1]?._id ||
+          null,
+        frequency:
+          isUserHasMilestones[1]?.milestoneId?.frequency ||
+          milestones[1]?.frequency ||
+          null,
+        tag: isUserHasMilestones[1]?.milestoneId?.tag || milestones[1]?.tag,
+        title:
+          isUserHasMilestones[1]?.milestoneId?.title || milestones[1]?.title,
+        description:
+          isUserHasMilestones[1]?.milestoneId?.description ||
+          milestones[1]?.description,
+        dayCount:
+          isUserHasMilestones[1]?.milestoneId?.dayCount ||
+          milestones[1]?.dayCount,
         completedOn: userMilestonesSavedInDb[1]?.completedOn || null,
         moneySaved: userMilestonesSavedInDb[1]?.moneySaved || 0,
         updatedAt: userMilestonesSavedInDb[1]?.updatedAt || null,
@@ -306,7 +331,12 @@ async function addUserDetails(req, res, next) {
       .select("tag description title _id dayCount")
       .limit(2)
       .lean();
-    const isUserHasMilestones = await UsersMilestones.find({ userId: userId });
+    const isUserHasMilestones = await UsersMilestones.find({
+      userId: userId,
+      completedOn: null,
+    })
+      .populate("milestoneId")
+      .sort({ createdAt: 1 });
 
     const userMilestonesToStore = [
       {
@@ -329,24 +359,46 @@ async function addUserDetails(req, res, next) {
     }
     const respMilestones = {
       currentMilestone: {
-        _id: milestones[0]?._id || null,
-        frequency: milestones[0]?.frequency || null,
-        tag: milestones[0]?.tag,
-        title: milestones[0]?.title,
-        description: milestones[0]?.description,
-        dayCount: milestones[0]?.dayCount,
+        _id:
+          isUserHasMilestones[0]?.milestoneId?._id ||
+          milestones[0]?._id ||
+          null,
+        frequency:
+          isUserHasMilestones[0]?.milestoneId?.frequency ||
+          milestones[0]?.frequency ||
+          null,
+        tag: isUserHasMilestones[0]?.milestoneId?.tag || milestones[0]?.tag,
+        title:
+          isUserHasMilestones[0]?.milestoneId?.title || milestones[0]?.title,
+        description:
+          isUserHasMilestones[0]?.milestoneId?.description ||
+          milestones[0]?.description,
+        dayCount:
+          isUserHasMilestones[0]?.milestoneId?.dayCount ||
+          milestones[0]?.dayCount,
         completedOn: userMilestonesSavedInDb[0]?.completedOn || null,
         moneySaved: userMilestonesSavedInDb[0]?.moneySaved || 0,
         updatedAt: userMilestonesSavedInDb[0]?.updatedAt || null,
         soberDays: userMilestonesSavedInDb[0]?.soberDays || 0,
       },
       nextMilestone: {
-        _id: milestones[1]?._id || null,
-        frequency: milestones[1]?.frequency || null,
-        tag: milestones[1]?.tag,
-        title: milestones[1]?.title,
-        description: milestones[1]?.description,
-        dayCount: milestones[1]?.dayCount,
+        _id:
+          isUserHasMilestones[1]?.milestoneId?._id ||
+          milestones[1]?._id ||
+          null,
+        frequency:
+          isUserHasMilestones[1]?.milestoneId?.frequency ||
+          milestones[1]?.frequency ||
+          null,
+        tag: isUserHasMilestones[1]?.milestoneId?.tag || milestones[1]?.tag,
+        title:
+          isUserHasMilestones[1]?.milestoneId?.title || milestones[1]?.title,
+        description:
+          isUserHasMilestones[1]?.milestoneId?.description ||
+          milestones[1]?.description,
+        dayCount:
+          isUserHasMilestones[1]?.milestoneId?.dayCount ||
+          milestones[1]?.dayCount,
         completedOn: userMilestonesSavedInDb[1]?.completedOn || null,
         moneySaved: userMilestonesSavedInDb[1]?.moneySaved || 0,
         updatedAt: userMilestonesSavedInDb[1]?.updatedAt || null,
@@ -402,7 +454,7 @@ async function login(req, res, next) {
     if (!user) {
       return res.status(401).json({
         status: false,
-        message: "Invalid credentials",
+        message: "This email does not exists",
         data: null,
       });
     }
@@ -415,7 +467,7 @@ async function login(req, res, next) {
     if (!match) {
       return res.status(401).json({
         status: false,
-        message: "Invalid credentials",
+        message: "Wrong Password",
         data: null,
       });
     }
@@ -439,7 +491,10 @@ async function login(req, res, next) {
       .lean();
     const isUserHasMilestones = await UsersMilestones.find({
       userId: user._id,
-    });
+      completedOn: null,
+    })
+      .populate("milestoneId")
+      .sort({ createdAt: 1 });
     const userMilestonesToStore = [
       {
         userId: user._id,
@@ -459,26 +514,48 @@ async function login(req, res, next) {
         userMilestonesToStore
       );
     }
-    const respMilestones = {
+    let respMilestones = {
       currentMilestone: {
-        _id: milestones[0]?._id || null,
-        frequency: milestones[0]?.frequency || null,
-        tag: milestones[0]?.tag,
-        title: milestones[0]?.title,
-        description: milestones[0]?.description,
-        dayCount: milestones[0]?.dayCount,
+        _id:
+          isUserHasMilestones[0]?.milestoneId?._id ||
+          milestones[0]?._id ||
+          null,
+        frequency:
+          isUserHasMilestones[0]?.milestoneId?.frequency ||
+          milestones[0]?.frequency ||
+          null,
+        tag: isUserHasMilestones[0]?.milestoneId?.tag || milestones[0]?.tag,
+        title:
+          isUserHasMilestones[0]?.milestoneId?.title || milestones[0]?.title,
+        description:
+          isUserHasMilestones[0]?.milestoneId?.description ||
+          milestones[0]?.description,
+        dayCount:
+          isUserHasMilestones[0]?.milestoneId?.dayCount ||
+          milestones[0]?.dayCount,
         completedOn: userMilestonesSavedInDb[0]?.completedOn || null,
         moneySaved: userMilestonesSavedInDb[0]?.moneySaved || 0,
         updatedAt: userMilestonesSavedInDb[0]?.updatedAt || null,
         soberDays: userMilestonesSavedInDb[0]?.soberDays || 0,
       },
       nextMilestone: {
-        _id: milestones[1]?._id || null,
-        frequency: milestones[1]?.frequency || null,
-        tag: milestones[1]?.tag,
-        title: milestones[1]?.title,
-        description: milestones[1]?.description,
-        dayCount: milestones[1]?.dayCount,
+        _id:
+          isUserHasMilestones[1]?.milestoneId?._id ||
+          milestones[1]?._id ||
+          null,
+        frequency:
+          isUserHasMilestones[1]?.milestoneId?.frequency ||
+          milestones[1]?.frequency ||
+          null,
+        tag: isUserHasMilestones[1]?.milestoneId?.tag || milestones[1]?.tag,
+        title:
+          isUserHasMilestones[1]?.milestoneId?.title || milestones[1]?.title,
+        description:
+          isUserHasMilestones[1]?.milestoneId?.description ||
+          milestones[1]?.description,
+        dayCount:
+          isUserHasMilestones[1]?.milestoneId?.dayCount ||
+          milestones[1]?.dayCount,
         completedOn: userMilestonesSavedInDb[1]?.completedOn || null,
         moneySaved: userMilestonesSavedInDb[1]?.moneySaved || 0,
         updatedAt: userMilestonesSavedInDb[1]?.updatedAt || null,
@@ -486,7 +563,7 @@ async function login(req, res, next) {
       },
     };
 
-    console.log("milestones----", milestones);
+    console.log("isUserHasMilestones----", isUserHasMilestones);
 
     return res.status(200).json({
       status: true,
