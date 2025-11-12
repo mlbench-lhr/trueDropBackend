@@ -581,7 +581,12 @@ async function login(req, res, next) {
           provider: user.provider,
           profilePicture: user.profilePicture,
           createdAt: user.createdAt,
-          location: user.location,
+          location: user.location?.lat
+            ? user.location
+            : {
+                lat: 0,
+                long: 0,
+              },
           bio: user.bio,
           milestones: user?.goal?.frequency ? respMilestones : null,
           isActiveMilestone: isUserHasMilestones.length > 0 ? true : false,
