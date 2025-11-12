@@ -65,7 +65,12 @@ async function register(req, res, next) {
           provider: user.provider,
           profilePicture: user.profilePicture,
           createdAt: user.createdAt,
-          location: user.location,
+          location: user.location?.lat
+            ? user.location
+            : {
+                lat: 0,
+                long: 0,
+              },
           bio: user.bio,
         },
         token: accessToken,
@@ -247,7 +252,12 @@ async function socialAuth(req, res, next) {
           provider: user.provider,
           profilePicture: user.profilePicture,
           createdAt: user.createdAt,
-          location: user.location,
+          location: user.location?.lat
+            ? user.location
+            : {
+                lat: 0,
+                long: 0,
+              },
           bio: user.bio,
           milestones: user?.goal?.frequency ? respMilestones : null,
           isActiveMilestone: isUserHasMilestones.length > 0 ? true : false,
@@ -424,7 +434,12 @@ async function addUserDetails(req, res, next) {
           profilePicture: user.profilePicture,
           createdAt: user.createdAt,
           bio: user.bio,
-          location: user.location,
+          location: user.location?.lat
+            ? user.location
+            : {
+                lat: 0,
+                long: 0,
+              },
           milestones: respMilestones,
         },
         token: accessToken,
