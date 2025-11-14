@@ -207,8 +207,8 @@ async function getPods(req, res, next) {
     const userLat = currentUser.location.lat;
     const userLong = currentUser.location.long;
     const yourPods = await Pod.find({ members: { $in: [userId] } })
-      .populate("members", "firstName lastName userName profilePicture")
-      .populate("createdBy", "firstName lastName userName profilePicture")
+      .populate("members", "firstName lastName userName profilePicture email")
+      .populate("createdBy", "firstName lastName userName profilePicture email")
       .sort({ lastActiveTime: -1, createdAt: -1 });
     const PodIds = yourPods.map((pod) => pod._id);
     const availablePodsQuery = {
@@ -221,9 +221,9 @@ async function getPods(req, res, next) {
     const publicPodsWithCreators = await Pod.find(availablePodsQuery)
       .populate({
         path: "createdBy",
-        select: "firstName lastName userName profilePicture location",
+        select: "firstName lastName userName profilePicture location email",
       })
-      .populate("members", "firstName lastName userName profilePicture")
+      .populate("members", "firstName lastName userName profilePicture email")
       .lean();
     const availablePodsWithDistance = publicPodsWithCreators
       .map((pod) => {
