@@ -401,7 +401,10 @@ async function getAllMilestones(req, res, next) {
 async function getMilestonesHistory(req, res, next) {
   try {
     const userId = req.user.userId;
-    const milestones = await UsersMilestones.find({ userId: userId })
+    const milestones = await UsersMilestones.find({
+      userId: userId,
+      completedOn: { $exists: true, $ne: null },
+    })
       .select("milestoneId completedOn -_id")
       .populate("milestoneId", "tag description title _id dayCount")
       .lean();
