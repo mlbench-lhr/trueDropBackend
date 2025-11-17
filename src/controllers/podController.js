@@ -210,10 +210,8 @@ async function getPods(req, res, next) {
       .populate("members", "firstName lastName userName profilePicture email")
       .populate("createdBy", "firstName lastName userName profilePicture email")
       .sort({ lastActiveTime: -1, createdAt: -1 });
-    const PodIds = yourPods.map((pod) => pod._id);
     const availablePodsQuery = {
       privacyLevel: "public",
-      _id: { $nin: PodIds },
     };
     if (searchQuery) {
       availablePodsQuery.name = { $regex: searchQuery, $options: "i" };
