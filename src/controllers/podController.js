@@ -206,12 +206,18 @@ async function getPods(req, res, next) {
     }
     const userLat = currentUser.location.lat;
     const userLong = currentUser.location.long;
-    const yourPods = await Pod.find({ members: { $in: [userId] } })
+    const yourPodsQuery = { members: { $in: [userId] } };
+    if (searchQuery) {
+      yourPodsQuery.name = { $regex: searchQuery, $options: "i" };
+    }
+    const yourPods = await Pod.find(yourPodsQuery)
       .populate("members", "firstName lastName userName profilePicture email")
       .populate("createdBy", "firstName lastName userName profilePicture email")
       .sort({ lastActiveTime: -1, createdAt: -1 });
+    const PodIds = yourPods.map((pod) => pod._id);
     const availablePodsQuery = {
       privacyLevel: "public",
+      _id: { $nin: PodIds },
     };
     if (searchQuery) {
       availablePodsQuery.name = { $regex: searchQuery, $options: "i" };
