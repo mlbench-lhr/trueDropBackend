@@ -2,9 +2,8 @@ const { GoogleAuth } = require("google-auth-library");
 const logger = require("../utils/logger");
 const Notifications = require("../models/Notifications");
 
-const PROJECT_ID = process.env.PROJECT_ID;
+const PROJECT_ID = process.env.PROJECT_ID || process.env.FIREBASE_PROJECT_ID;
 const FCM_URL = `https://fcm.googleapis.com/v1/projects/${PROJECT_ID}/messages:send`;
-const SERVICE_ACCOUNT_KEY_PATH = "./serviceAccountKey.json"; // your downloaded key
 
 async function sendAlert(deviceToken, title, body) {
   const payload = {
@@ -18,7 +17,19 @@ async function sendAlert(deviceToken, title, body) {
   };
 
   const auth = new GoogleAuth({
-    keyFile: SERVICE_ACCOUNT_KEY_PATH,
+    credentials: {
+      type: process.env.FIREBASE_TYPE,
+      project_id: process.env.FIREBASE_PROJECT_ID,
+      private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+      private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      client_email: process.env.FIREBASE_CLIENT_EMAIL,
+      client_id: process.env.FIREBASE_CLIENT_ID,
+      auth_uri: process.env.FIREBASE_AUTH_URI,
+      token_uri: process.env.FIREBASE_TOKEN_URI,
+      auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_CERT_URL,
+      client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
+      universe_domain: process.env.FIREBASE_UNIVERSE_DOMAIN,
+    },
     scopes: ["https://www.googleapis.com/auth/firebase.messaging"],
   });
 
