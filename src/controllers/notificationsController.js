@@ -43,7 +43,6 @@ async function sendNotification(req, res, next) {
   try {
     const userId = req.user.userId;
     const body = req.body;
-    console.log("body---------", body);
     const sendAlertRes = await sendAlert(body.to, body.title, body.body);
     if (sendAlertRes?.error) {
       return res.status(400).json({
