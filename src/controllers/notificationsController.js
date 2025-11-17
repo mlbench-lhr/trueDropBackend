@@ -2,7 +2,7 @@ const { GoogleAuth } = require("google-auth-library");
 const logger = require("../utils/logger");
 const Notifications = require("../models/Notifications");
 
-const PROJECT_ID = "truedrop-861e4";
+const PROJECT_ID = process.env.PROJECT_ID;
 const FCM_URL = `https://fcm.googleapis.com/v1/projects/${PROJECT_ID}/messages:send`;
 const SERVICE_ACCOUNT_KEY_PATH = "./serviceAccountKey.json"; // your downloaded key
 
