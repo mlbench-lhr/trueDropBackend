@@ -52,7 +52,7 @@ async function sendAlert(deviceToken, title, body) {
 
 async function sendNotification(req, res, next) {
   try {
-    const userId = req.user.userId;
+    const userId = req.body.userId;
     const body = req.body;
     const sendAlertRes = await sendAlert(body.to, body.title, body.body);
     if (sendAlertRes?.error) {
@@ -69,17 +69,17 @@ async function sendNotification(req, res, next) {
         title: body.title,
         body: body.body,
       },
+      type: body.type,
       userId: userId,
     });
     await notificationSavedInDb.save();
-    console.log("notificationSavedInDb-------", notificationSavedInDb);
-
     return res.status(200).json({
       status: true,
       message: `notification sent successfully`,
       data: {
         to: notificationSavedInDb.to,
         notification: notificationSavedInDb.notification,
+        data: notificationSavedInDb.notification,
       },
     });
   } catch (err) {

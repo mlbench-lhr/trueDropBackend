@@ -5,6 +5,19 @@ const NotificationSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     to: { type: String, required: true },
+    type: {
+      type: String,
+      required: true,
+      enum: [
+        "chat",
+        "milestone",
+        "pod",
+        "coping",
+        "wallet",
+        "profile",
+        "journal",
+      ],
+    },
     notification: {
       title: { type: String, required: true },
       body: { type: String, required: true },
