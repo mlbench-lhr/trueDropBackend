@@ -399,7 +399,6 @@ async function getAllMilestones(req, res, next) {
 }
 
 async function getMilestonesHistory(req, res, next) {
-  console.log("test");
   try {
     const userId = req.user.userId;
     const milestones = await UsersMilestones.find({
