@@ -45,7 +45,7 @@ async function createPod(req, res, next) {
 
     return res.status(201).json({
       status: true,
-      message: "Pod added successfully",
+      message: "Pod created successfully",
       data: populatedPod,
     });
   } catch (err) {

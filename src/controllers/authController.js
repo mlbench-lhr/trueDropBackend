@@ -8,10 +8,33 @@ const Fields = require("../models/Fields");
 const Milestones = require("../models/Milestones");
 const UsersMilestones = require("../models/UsersMilestones");
 
+async function updateFcmDeviceToken(user, fcmDeviceToken) {
+  try {
+    if (!fcmDeviceToken) return user; // ignore empty tokens
+
+    // If field is missing, initialize as empty array
+    if (!Array.isArray(user.fcmDeviceTokens)) {
+      user.fcmDeviceTokens = [];
+    }
+
+    // Add only if not already stored
+    if (!user.fcmDeviceTokens.includes(fcmDeviceToken)) {
+      user.fcmDeviceTokens.push(fcmDeviceToken);
+      await user.save();
+    }
+
+    return user;
+  } catch (err) {
+    console.error("Error updating FCM token:", err);
+    return user;
+  }
+}
+
 // Traditional Email/Password Registration
 async function register(req, res, next) {
   try {
-    const { email, password, userName, firstName, lastName } = req.body;
+    const { email, password, userName, firstName, lastName, fcmDeviceToken } =
+      req.body;
 
     // Validate required fields
     if (!email || !password || !userName || !firstName || !lastName) {
@@ -45,7 +68,8 @@ async function register(req, res, next) {
       isEmailVerified: false,
     });
 
-    // Generate token
+    // ⬇️ Update FCM token here
+    await updateFcmDeviceToken(user, fcmDeviceToken);
     const payload = { userId: user._id.toString(), email: user.email };
     const accessToken = jwtService.signAccess(payload);
 
@@ -93,6 +117,7 @@ async function socialAuth(req, res, next) {
       firstName,
       lastName,
       profilePicture,
+      fcmDeviceToken,
     } = req.body;
 
     // Check if user exists with this provider and providerId
@@ -138,6 +163,7 @@ async function socialAuth(req, res, next) {
       message = "Login successful";
       statusCode = 200;
     }
+    await updateFcmDeviceToken(user, fcmDeviceToken);
 
     // Fetch fields
     const alcoholField = user.alcoholType
@@ -454,7 +480,7 @@ async function addUserDetails(req, res, next) {
 // Traditional Email/Password Login
 async function login(req, res, next) {
   try {
-    const { email, password } = req.body;
+    const { email, password, fcmDeviceToken } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({
@@ -486,6 +512,7 @@ async function login(req, res, next) {
         data: null,
       });
     }
+    await updateFcmDeviceToken(user, fcmDeviceToken);
 
     // Generate tokens
     const alcoholField = await Fields.findById(user.alcoholType).lean();
@@ -577,8 +604,6 @@ async function login(req, res, next) {
         soberDays: userMilestonesSavedInDb[1]?.soberDays || 0,
       },
     };
-
-    console.log("isUserHasMilestones----", isUserHasMilestones);
 
     return res.status(200).json({
       status: true,

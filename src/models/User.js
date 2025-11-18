@@ -15,6 +15,7 @@ const goalSchema = new Schema({
 });
 
 const UserSchema = new Schema({
+  fcmDeviceTokens: [{ type: String, required: false }],
   email: {
     type: String,
     required: true,
