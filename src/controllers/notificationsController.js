@@ -53,43 +53,28 @@ async function sendAlert(deviceToken, title, body) {
 
 async function sendNotification(req, res, next) {
   try {
-    const userId = req.body.userId;
-    const body = req.body;
-    const toArray = [];
-    for (let i = 0; i < userId?.length; i++) {
-      const userFcmDeviceToken = await User.findById(userId[i])
-        .select("fcmDeviceTokens")
-        .lean();
-      for (let j = 0; j < userFcmDeviceToken.fcmDeviceTokens?.length; j++) {
-        toArray.push(userFcmDeviceToken.fcmDeviceTokens[j]);
-        await sendAlert(
-          userFcmDeviceToken.fcmDeviceTokens[j],
-          body.title,
-          body.body
-        );
-      }
-    }
-    const notificationSavedInDb = new Notifications({
-      to: toArray,
-      notification: {
-        title: body.title,
-        body: body.body,
-      },
-      type: body.type,
-      userId: userId,
+    const { userId, title, body, type } = req.body;
+    const users = await User.find({ _id: { $in: userId } })
+      .select("fcmDeviceTokens")
+      .lean();
+
+    const tokens = users.flatMap((u) => u.fcmDeviceTokens || []);
+
+    await Promise.all(tokens.map((token) => sendAlert(token, title, body)));
+
+    const saved = await Notifications.create({
+      to: tokens,
+      notification: { title, body },
+      type,
+      userId,
     });
-    await notificationSavedInDb.save();
     return res.status(200).json({
       status: true,
-      message: `notification sent successfully`,
-      data: {
-        to: notificationSavedInDb.to,
-        notification: notificationSavedInDb.notification,
-        data: notificationSavedInDb.notification,
-      },
+      message: "notification sent successfully",
+      data: saved,
     });
   } catch (err) {
-    logger.error("Add pod error", err);
+    logger.error("Send notification error", err);
     next(err);
   }
 }
