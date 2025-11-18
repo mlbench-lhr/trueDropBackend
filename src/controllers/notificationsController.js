@@ -1,6 +1,7 @@
 const { GoogleAuth } = require("google-auth-library");
 const logger = require("../utils/logger");
 const Notifications = require("../models/Notifications");
+const User = require("../models/User");
 
 const PROJECT_ID = process.env.PROJECT_ID || process.env.FIREBASE_PROJECT_ID;
 const FCM_URL = `https://fcm.googleapis.com/v1/projects/${PROJECT_ID}/messages:send`;
@@ -54,17 +55,22 @@ async function sendNotification(req, res, next) {
   try {
     const userId = req.body.userId;
     const body = req.body;
-    const sendAlertRes = await sendAlert(body.to, body.title, body.body);
-    if (sendAlertRes?.error) {
-      return res.status(400).json({
-        status: true,
-        message: `failed to send notification`,
-        data: body,
-      });
+    const toArray = [];
+    for (let i = 0; i < userId?.length; i++) {
+      const userFcmDeviceToken = await User.findById(userId[i])
+        .select("fcmDeviceTokens")
+        .lean();
+      for (let j = 0; j < userFcmDeviceToken.fcmDeviceTokens?.length; j++) {
+        toArray.push(userFcmDeviceToken.fcmDeviceTokens[j]);
+        await sendAlert(
+          userFcmDeviceToken.fcmDeviceTokens[j],
+          body.title,
+          body.body
+        );
+      }
     }
-
     const notificationSavedInDb = new Notifications({
-      to: body.to,
+      to: toArray,
       notification: {
         title: body.title,
         body: body.body,

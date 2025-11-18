@@ -6,6 +6,7 @@ exports.register = () =>
     firstName: Joi.string().required(),
     lastName: Joi.string().required(),
     userName: Joi.string().required(),
+    fcmDeviceToken: Joi.string().optional().allow(""),
     password: Joi.string().min(8).required(),
   });
 
@@ -13,6 +14,7 @@ exports.login = () =>
   Joi.object({
     email: Joi.string().email().required(),
     password: Joi.string().min(8).required(),
+    fcmDeviceToken: Joi.string().optional().allow(""),
   });
 
 exports.socialRegister = () =>
@@ -22,6 +24,7 @@ exports.socialRegister = () =>
     email: Joi.string().email().required(),
     name: Joi.string().required(),
     profilePicture: Joi.string().uri().optional().allow("", null),
+    fcmDeviceToken: Joi.string().optional().allow(""),
     alcoholType: Joi.string().required(),
     improvement: Joi.array().items(Joi.string()).min(1).required(),
     goal: Joi.object({
