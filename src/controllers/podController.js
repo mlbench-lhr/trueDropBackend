@@ -114,7 +114,7 @@ async function joinPod(req, res, next) {
     const updatedPod = await pod.save();
     return res.status(200).json({
       status: true,
-      message: "Pod updated successfully",
+      message: "You have successfully joined the pod.",
       data: updatedPod,
     });
   } catch (err) {
