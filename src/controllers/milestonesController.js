@@ -401,30 +401,49 @@ async function getAllMilestones(req, res, next) {
 async function getMilestonesHistory(req, res, next) {
   try {
     const userId = req.user.userId;
-    const milestones = await UsersMilestones.find({
-      userId: userId,
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = "dayCount",
+      order = "desc",
+    } = req.query;
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const sortOrder = order === "asc" ? 1 : -1;
+
+    const filter = {
+      userId,
       completedOn: { $exists: true, $ne: null },
-    })
+    };
+    const total = await UsersMilestones.countDocuments(filter);
+    const milestones = await UsersMilestones.find(filter)
       .select("milestoneId completedOn -_id")
       .populate("milestoneId", "tag description title _id dayCount")
+      .sort({ [sortBy]: sortOrder })
+      .skip(skip)
+      .limit(parseInt(limit))
       .lean();
 
-    const milestoneForResponse = milestones
-      .map((item) => {
-        return {
-          _id: item?.milestoneId?._id,
-          title: item?.milestoneId?.title,
-          tag: item?.milestoneId?.tag,
-          description: item?.milestoneId?.description,
-          dayCount: item?.milestoneId?.dayCount,
-          completedOn: item?.completedOn || null,
-        };
-      })
-      .sort((a, b) => b.dayCount - a.dayCount);
+    const milestoneForResponse = milestones.map((item) => ({
+      _id: item?.milestoneId?._id,
+      title: item?.milestoneId?.title,
+      tag: item?.milestoneId?.tag,
+      description: item?.milestoneId?.description,
+      dayCount: item?.milestoneId?.dayCount,
+      completedOn: item?.completedOn || null,
+    }));
     return res.status(200).json({
       status: true,
       message: "Milestones retrieved successfully",
-      data: milestoneForResponse,
+      data: {
+        milestones: milestoneForResponse,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(total / parseInt(limit)),
+          totalItems: total,
+          itemsPerPage: parseInt(limit),
+        },
+      },
     });
   } catch (err) {
     logger.error("Get milestones error", err);
