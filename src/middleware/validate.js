@@ -8,7 +8,7 @@ module.exports = function validate(schemaFn) {
       });
 
       if (error) {
-        return res.status(400).json({
+        return res.status(200).json({
           error: "Validation failed",
           details: error.details.map((d) => d.message),
         });

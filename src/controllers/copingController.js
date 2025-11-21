@@ -8,7 +8,7 @@ async function addCoping(req, res, next) {
     const userId = req.user.userId;
 
     if (!copings || !Array.isArray(copings) || copings.length === 0) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message:
           "Copings array is required and must contain at least one entry",
@@ -19,7 +19,7 @@ async function addCoping(req, res, next) {
     // Validate feeling enum
     for (const coping of copings) {
       if (!coping.feeling || !coping.strategy || !coping.description) {
-        return res.status(400).json({
+        return res.status(200).json({
           status: false,
           message:
             "Each coping entry must include feeling, strategy, and description",
@@ -37,7 +37,7 @@ async function addCoping(req, res, next) {
 
     const createdCopings = await Coping.insertMany(copingEntries);
 
-    return res.status(201).json({
+    return res.status(200).json({
       status: true,
       message: `${createdCopings.length} coping ${
         createdCopings.length === 1 ? "entry" : "entries"
@@ -113,7 +113,7 @@ async function updateCoping(req, res, next) {
     const userId = req.user.userId;
 
     if (!feeling && !strategy && !description) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message:
           "At least one field (feeling, strategy, or description) is required",
@@ -124,7 +124,7 @@ async function updateCoping(req, res, next) {
     const coping = await Coping.findOne({ _id: copingId, userId });
 
     if (!coping) {
-      return res.status(404).json({
+      return res.status(200).json({
         status: false,
         message: "Coping entry not found",
         data: null,
@@ -166,7 +166,7 @@ async function deleteCoping(req, res, next) {
     const coping = await Coping.findOneAndDelete({ _id: copingId, userId });
 
     if (!coping) {
-      return res.status(404).json({
+      return res.status(200).json({
         status: false,
         message: "Coping entry not found",
         data: null,

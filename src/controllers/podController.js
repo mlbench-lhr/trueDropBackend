@@ -9,7 +9,7 @@ async function createPod(req, res, next) {
     const userId = req.user.userId;
     const usersCreatedPods = await Pod.countDocuments({ createdBy: userId });
     if (usersCreatedPods >= 3) {
-      return res.status(201).json({
+      return res.status(200).json({
         status: false,
         message: "You already have created 3 pods",
         data: null,
@@ -43,7 +43,7 @@ async function createPod(req, res, next) {
     );
     populatedPod.createdBy = await getSoberDays(populatedPod.createdBy);
 
-    return res.status(201).json({
+    return res.status(200).json({
       status: true,
       message: "Pod created successfully",
       data: populatedPod,
@@ -60,7 +60,7 @@ async function editPod(req, res, next) {
 
     const pod = await Pod.findById(id);
     if (!pod) {
-      return res.status(404).json({ status: false, message: "Pod not found" });
+      return res.status(200).json({ status: false, message: "Pod not found" });
     }
     if (name) pod.name = name;
     if (description) pod.description = description;
@@ -90,7 +90,7 @@ async function joinPod(req, res, next) {
       members: { $in: [userId] },
     });
     if (usersCreatedPods >= 5) {
-      return res.status(201).json({
+      return res.status(200).json({
         status: false,
         message: "You already have joined 5 pods",
         data: null,
@@ -106,7 +106,7 @@ async function joinPod(req, res, next) {
         "firstName lastName userName profilePicture location"
       );
     if (!pod) {
-      return res.status(404).json({ status: false, message: "Pod not found" });
+      return res.status(200).json({ status: false, message: "Pod not found" });
     }
     if (!pod.members.includes(userId)) {
       pod.members.push(userId);
@@ -131,7 +131,7 @@ async function deletePod(req, res, next) {
 
     const pod = await Pod.findById(id);
     if (!pod) {
-      return res.status(404).json({ status: false, message: "Pod not found" });
+      return res.status(200).json({ status: false, message: "Pod not found" });
     }
 
     await Pod.findByIdAndDelete(id);
@@ -152,19 +152,19 @@ async function leavePod(req, res, next) {
     const userId = req.user.userId;
     const pod = await Pod.findById(id);
     if (!pod) {
-      return res.status(404).json({ status: false, message: "Pod not found" });
+      return res.status(200).json({ status: false, message: "Pod not found" });
     }
     const isMember = pod.members.some(
       (memberId) => memberId.toString() === userId.toString()
     );
     if (!isMember) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "You are not a member of this pod",
       });
     }
     if (pod.createdBy && pod.createdBy.toString() === userId.toString()) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message:
           "Pod creator cannot leave the pod. Please delete the pod instead or transfer ownership.",
@@ -199,7 +199,7 @@ async function getPods(req, res, next) {
       !currentUser.location.lat ||
       !currentUser.location.long
     ) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "User location not found. Please update your location.",
       });

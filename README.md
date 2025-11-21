@@ -3,6 +3,7 @@
 Minimal authentication API using Express, MongoDB (Mongoose), bcrypt, and JWTs (access and refresh tokens). Refresh tokens are JWTs and not persisted.
 
 Features:
+
 - Register and login with email/password
 - JWT access & refresh tokens (refresh tokens are rotated)
 - Input validation with Joi
@@ -10,6 +11,7 @@ Features:
 - Simple error handling and logging
 
 Prerequisites:
+
 - Node.js >= 14
 - npm (comes with Node.js)
 - MongoDB running (local or remote)
@@ -28,6 +30,7 @@ Setup:
    npm run dev
 
 Configuration (environment variables):
+
 - NODE_ENV: development/production
 - PORT: port to listen on (default 3000)
 - MONGO_URI: MongoDB connection URI
@@ -40,29 +43,29 @@ API Endpoints:
 
 - POST /api/auth/register
   Request JSON body:
-    { "email": "user@example.com", "password": "Password123!" }
-  Response 201:
-    {
-      "user": { "id": "...", "email": "...", "createdAt": "..." },
-      "tokens": { "accessToken": "...", "refreshToken": "...", "expiresIn": "7d" }
-    }
+  { "email": "user@example.com", "password": "Password123!" }
+  Response 200:
+  {
+  "user": { "id": "...", "email": "...", "createdAt": "..." },
+  "tokens": { "accessToken": "...", "refreshToken": "...", "expiresIn": "7d" }
+  }
 
 - POST /api/auth/login
   Request JSON body:
-    { "email": "user@example.com", "password": "Password123!" }
+  { "email": "user@example.com", "password": "Password123!" }
   Response 200: same as register
 
 - POST /api/auth/refresh
   Request JSON body:
-    { "refreshToken": "..." }
+  { "refreshToken": "..." }
   Response 200:
-    { "tokens": { "accessToken": "...", "refreshToken": "...", "expiresIn": "7d" } }
+  { "tokens": { "accessToken": "...", "refreshToken": "...", "expiresIn": "7d" } }
 
 - POST /api/auth/logout
   Request JSON body:
-    { "refreshToken": "..." }
+  { "refreshToken": "..." }
   Response 200:
-    { "message": "Logged out" }
+  { "message": "Logged out" }
 
 Usage example (curl):
 
@@ -79,16 +82,19 @@ Logout:
 curl -X POST http://localhost:3000/api/auth/logout -H "Content-Type: application/json" -d '{"refreshToken":"<token>"}'
 
 Notes:
+
 - Refresh tokens are JWTs and are not stored server-side. Logging out does not revoke tokens on the server.
 - Replace JWT secrets with strong random values in production.
 - For production, run behind a reverse proxy and enable HTTPS.
 
 Troubleshooting:
+
 - MongoDB connection error: ensure MongoDB is running and MONGO_URI is correct.
 - Missing env vars: Copy .env.example to .env and populate values.
 - Port in use: change PORT in .env.
 
 Project structure:
+
 - package.json - dependencies and scripts
 - .env.example - example environment variables
 - src/

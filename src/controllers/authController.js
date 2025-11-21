@@ -38,7 +38,7 @@ async function register(req, res, next) {
 
     // Validate required fields
     if (!email || !password || !userName || !firstName || !lastName) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message:
           "Email, password, userName, firstName, and lastName are required",
@@ -73,7 +73,7 @@ async function register(req, res, next) {
     const payload = { userId: user._id.toString(), email: user.email };
     const accessToken = jwtService.signAccess(payload);
 
-    return res.status(201).json({
+    return res.status(200).json({
       status: true,
       message: "User registered successfully",
       data: {
@@ -136,7 +136,7 @@ async function socialAuth(req, res, next) {
       } else {
         // Completely new user - create account without additional details
         if (!userName) {
-          return res.status(400).json({
+          return res.status(200).json({
             status: false,
             message: "userName is required for new users",
             data: null,
@@ -156,7 +156,7 @@ async function socialAuth(req, res, next) {
         });
 
         message = "User registered successfully";
-        statusCode = 201;
+        statusCode = 200;
       }
     } else {
       // User exists with same provider and providerId
@@ -305,7 +305,7 @@ async function addUserDetails(req, res, next) {
 
     // Validate required fields
     if (!goal) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "goal is required",
         data: null,
@@ -314,7 +314,7 @@ async function addUserDetails(req, res, next) {
 
     // Validate goal structure
     if (!goal.amount || !goal.frequency) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message:
           "goal must include amount, frequency, goalType, onAverage, and actualGoal",
@@ -328,14 +328,14 @@ async function addUserDetails(req, res, next) {
       (!alcoholType || !improvement) &&
       (!user.alcoholType || !user?.improvement || user?.improvement?.length < 1)
     ) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "alcoholType and improvement are required",
         data: null,
       });
     }
     if (!user) {
-      return res.status(404).json({
+      return res.status(200).json({
         status: false,
         message: "User not found",
         data: null,
@@ -483,7 +483,7 @@ async function login(req, res, next) {
     const { email, password, fcmDeviceToken } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "Email and password required",
         data: null,
@@ -493,7 +493,7 @@ async function login(req, res, next) {
     // Find user and verify it's a local account
     const user = await User.findOne({ email, provider: "local" });
     if (!user) {
-      return res.status(401).json({
+      return res.status(200).json({
         status: false,
         message: "This email does not exists",
         data: null,
@@ -506,7 +506,7 @@ async function login(req, res, next) {
       user.passwordHash
     );
     if (!match) {
-      return res.status(401).json({
+      return res.status(200).json({
         status: false,
         message: "Wrong Password",
         data: null,
@@ -647,7 +647,7 @@ async function forgotPassword(req, res, next) {
     logger.info("Forgot password request for:", email);
 
     if (!email) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "Email is required",
         data: null,
@@ -712,7 +712,7 @@ async function verifyResetCode(req, res, next) {
     const { email, code } = req.body;
 
     if (!email || !code) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "Email and verification code are required",
         data: null,
@@ -726,7 +726,7 @@ async function verifyResetCode(req, res, next) {
     });
 
     if (!user) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "Invalid or expired verification code",
         data: null,
@@ -737,7 +737,7 @@ async function verifyResetCode(req, res, next) {
     const hashedCode = crypto.createHash("sha256").update(code).digest("hex");
 
     if (hashedCode !== user.resetPasswordToken) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "Invalid verification code",
         data: null,
@@ -761,7 +761,7 @@ async function resetPassword(req, res, next) {
     const { email, code, newPassword } = req.body;
 
     if (!email || !code || !newPassword) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "Email, verification code, and new password are required",
         data: null,
@@ -775,7 +775,7 @@ async function resetPassword(req, res, next) {
     });
 
     if (!user) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "Invalid or expired verification code",
         data: null,
@@ -786,7 +786,7 @@ async function resetPassword(req, res, next) {
     const hashedCode = crypto.createHash("sha256").update(code).digest("hex");
 
     if (hashedCode !== user.resetPasswordToken) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "Invalid verification code",
         data: null,
