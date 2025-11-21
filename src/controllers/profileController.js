@@ -14,7 +14,7 @@ async function editProfile(req, res, next) {
 
     // Validate required fields
     if (!userName || !firstName || !lastName) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "userName, firstName, lastName are required",
         data: null,
@@ -24,7 +24,7 @@ async function editProfile(req, res, next) {
     // Check if user exists
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({
+      return res.status(200).json({
         status: false,
         message: "User not found",
         data: null,
@@ -161,7 +161,7 @@ async function changePassword(req, res, next) {
 
     // Validate required fields
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "Current password and new password are required",
         data: null,
@@ -171,7 +171,7 @@ async function changePassword(req, res, next) {
     // Check if user exists
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({
+      return res.status(200).json({
         status: false,
         message: "User not found",
         data: null,
@@ -180,7 +180,7 @@ async function changePassword(req, res, next) {
 
     // Check if user is a local provider (has password)
     if (user.provider !== "local") {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "Password change is only available for local accounts",
         data: null,
@@ -194,7 +194,7 @@ async function changePassword(req, res, next) {
     );
 
     if (!isPasswordValid) {
-      return res.status(401).json({
+      return res.status(200).json({
         status: false,
         message: "Current password is incorrect",
         data: null,
@@ -208,7 +208,7 @@ async function changePassword(req, res, next) {
     );
 
     if (isSamePassword) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "New password must be different from current password",
         data: null,
@@ -235,7 +235,7 @@ async function updateLocation(req, res, next) {
     const userId = req.user.userId;
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({
+      return res.status(200).json({
         status: false,
         message: "User not found",
         data: null,
@@ -261,7 +261,7 @@ async function deleteAccount(req, res, next) {
     // Check if user exists
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({
+      return res.status(200).json({
         status: false,
         message: "User not found",
         data: null,

@@ -16,7 +16,7 @@ async function updateMilestones(req, res, next) {
     const userId = req.user.userId;
 
     if (!milestoneId || !userId) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "milestoneId and userId is required",
         data: null,
@@ -275,7 +275,7 @@ async function updateMilestones(req, res, next) {
       }
     }
 
-    return res.status(201).json({
+    return res.status(200).json({
       status: true,
       message: "Milestone updated successfully",
       data: {
@@ -463,7 +463,7 @@ async function deleteMilestones(req, res, next) {
     });
 
     if (!milestones) {
-      return res.status(404).json({
+      return res.status(200).json({
         status: false,
         message: "Milestones entry not found",
         data: null,

@@ -8,7 +8,7 @@ async function addJournal(req, res, next) {
     const userId = req.user.userId;
 
     if (!journals || !Array.isArray(journals) || journals.length === 0) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message:
           "Journals array is required and must contain at least one entry",
@@ -19,7 +19,7 @@ async function addJournal(req, res, next) {
     // Validate each journal entry
     for (const journal of journals) {
       if (!journal.feeling || !journal.description) {
-        return res.status(400).json({
+        return res.status(200).json({
           status: false,
           message: "Each journal entry must have feeling and description",
           data: null,
@@ -37,7 +37,7 @@ async function addJournal(req, res, next) {
     // Insert all journals at once
     const createdJournals = await Journal.insertMany(journalEntries);
 
-    return res.status(201).json({
+    return res.status(200).json({
       status: true,
       message: `${createdJournals.length} journal ${
         createdJournals.length === 1 ? "entry" : "entries"
@@ -106,7 +106,7 @@ async function updateJournal(req, res, next) {
     const userId = req.user.userId;
 
     if (!feeling && !description) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "At least one field (feeling or description) is required",
         data: null,
@@ -116,7 +116,7 @@ async function updateJournal(req, res, next) {
     const journal = await Journal.findOne({ _id: journalId, userId });
 
     if (!journal) {
-      return res.status(404).json({
+      return res.status(200).json({
         status: false,
         message: "Journal entry not found",
         data: null,
@@ -157,7 +157,7 @@ async function deleteJournal(req, res, next) {
     const journal = await Journal.findOneAndDelete({ _id: journalId, userId });
 
     if (!journal) {
-      return res.status(404).json({
+      return res.status(200).json({
         status: false,
         message: "Journal entry not found",
         data: null,

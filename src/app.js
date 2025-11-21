@@ -33,7 +33,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use(cors());
 
 app.use((req, res, next) => {
-  res.status(404).json({ error: "404 Not Found" });
+  res.status(200).json({ error: "200 Not Found" });
 });
 
 app.use(errorHandler);
