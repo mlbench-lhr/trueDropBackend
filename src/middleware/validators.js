@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const objectId = Joi.string().pattern(/^[0-9a-fA-F]{24}$/);
 
 exports.register = () =>
   Joi.object({
@@ -52,10 +53,11 @@ exports.socialAuth = () =>
     userName: Joi.string().optional(),
     profilePicture: Joi.string().uri().optional().allow("", null),
   });
+
 exports.addUserDetails = () =>
   Joi.object({
-    alcoholType: Joi.string().optional().allow("", null),
-    improvement: Joi.array().optional(),
+    alcoholType: objectId.optional().allow(null),
+    improvement: Joi.array().items(objectId).optional(),
     goal: Joi.object({
       amount: Joi.number().required(),
       frequency: Joi.string().required(),
