@@ -60,7 +60,9 @@ async function editPod(req, res, next) {
 
     const pod = await Pod.findById(id);
     if (!pod) {
-      return res.status(200).json({ status: false, message: "Pod not found" });
+      return res
+        .status(200)
+        .json({ status: false, message: "Pod not found", data: null });
     }
     if (name) pod.name = name;
     if (description) pod.description = description;
@@ -106,7 +108,9 @@ async function joinPod(req, res, next) {
         "firstName lastName userName profilePicture location"
       );
     if (!pod) {
-      return res.status(200).json({ status: false, message: "Pod not found" });
+      return res
+        .status(200)
+        .json({ status: false, message: "Pod not found", data: null });
     }
     if (!pod.members.includes(userId)) {
       pod.members.push(userId);
@@ -131,7 +135,9 @@ async function deletePod(req, res, next) {
 
     const pod = await Pod.findById(id);
     if (!pod) {
-      return res.status(200).json({ status: false, message: "Pod not found" });
+      return res
+        .status(200)
+        .json({ status: false, message: "Pod not found", data: null });
     }
 
     await Pod.findByIdAndDelete(id);
@@ -152,7 +158,9 @@ async function leavePod(req, res, next) {
     const userId = req.user.userId;
     const pod = await Pod.findById(id);
     if (!pod) {
-      return res.status(200).json({ status: false, message: "Pod not found" });
+      return res
+        .status(200)
+        .json({ status: false, message: "Pod not found", data: null });
     }
     const isMember = pod.members.some(
       (memberId) => memberId.toString() === userId.toString()
