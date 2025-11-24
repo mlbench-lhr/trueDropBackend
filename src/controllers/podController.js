@@ -112,6 +112,13 @@ async function joinPod(req, res, next) {
         .status(200)
         .json({ status: false, message: "Pod not found", data: null });
     }
+    if (pod.members.length >= 5) {
+      return res.status(200).json({
+        status: false,
+        message: "This pod already have 5 members",
+        data: null,
+      });
+    }
     if (!pod.members.includes(userId)) {
       pod.members.push(userId);
     }
