@@ -112,14 +112,18 @@ async function editProfile(req, res, next) {
 
     if (user.alcoholType) {
       const alcoholField = await Fields.findById(user.alcoholType).lean();
-      alcoholTypeName = alcoholField ? alcoholField.name : null;
+      alcoholTypeName = alcoholField
+        ? { name: alcoholField.name, _id: alcoholField._id }
+        : null;
     }
 
     if (user.improvement && user.improvement.length > 0) {
       const improvementFields = await Fields.find({
         _id: { $in: user.improvement },
       }).lean();
-      improvementNames = improvementFields.map((f) => f.name);
+      improvementNames = improvementFields.map((f) => {
+        return { name: f.name, _id: f._id };
+      });
     }
 
     // Generate new access token with updated info
