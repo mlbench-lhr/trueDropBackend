@@ -109,21 +109,21 @@ async function editProfile(req, res, next) {
     // Fetch related fields if they exist
     let alcoholTypeName = null;
     let improvementNames = [];
+    let alcoholTypeIds = null;
+    let improvementNamesIds = [];
 
     if (user.alcoholType) {
       const alcoholField = await Fields.findById(user.alcoholType).lean();
-      alcoholTypeName = alcoholField
-        ? { name: alcoholField.name, _id: alcoholField._id }
-        : null;
+      alcoholTypeName = alcoholField ? alcoholField.name : null;
+      alcoholTypeIds = alcoholField ? alcoholField._id : null;
     }
 
     if (user.improvement && user.improvement.length > 0) {
       const improvementFields = await Fields.find({
         _id: { $in: user.improvement },
       }).lean();
-      improvementNames = improvementFields.map((f) => {
-        return { name: f.name, _id: f._id };
-      });
+      improvementNames = improvementFields.map((f) => f.name);
+      improvementNamesIds = improvementFields.map((f) => f._id);
     }
 
     // Generate new access token with updated info
@@ -143,6 +143,8 @@ async function editProfile(req, res, next) {
           bio: user.bio,
           alcoholType: alcoholTypeName,
           improvement: improvementNames,
+          alcoholIds: alcoholTypeIds || null,
+          improvementIds: improvementNamesIds || null,
           goal: user.goal,
           provider: user.provider,
           profilePicture: user.profilePicture,
