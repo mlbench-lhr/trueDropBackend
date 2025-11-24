@@ -145,4 +145,5 @@ exports.updateMilestones = () =>
     completedOn: Joi.string().optional().allow(""),
     completedMilestoneId: Joi.string().optional().allow(""),
     completedDate: Joi.string().optional().allow(""),
+    currentDate: Joi.string().optional().allow(""),
   }).min(1);
