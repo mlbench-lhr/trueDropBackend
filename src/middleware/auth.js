@@ -2,7 +2,12 @@ const jwtService = require("../services/jwtService");
 
 module.exports = function auth(req, res, next) {
   const header = req.headers.authorization;
-  if (!header) return res.status(200).json({ error: "No token provided" });
+  if (!header)
+    return res.status(200).json({
+      status: false,
+      message: "Your session has been expired, please login again",
+      data: null,
+    });
   const token = header;
   try {
     const decoded = jwtService.verifyAccess(token);
