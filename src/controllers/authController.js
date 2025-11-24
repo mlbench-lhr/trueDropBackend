@@ -174,13 +174,10 @@ async function socialAuth(req, res, next) {
         ? await Fields.find({ _id: { $in: user.improvement } }).lean()
         : [];
 
-    const alcoholTypeName = alcoholField
-      ? { name: alcoholField.name, _id: alcoholField._id }
-      : null;
-    const improvementNames = improvementFields.map((f) => {
-      return { name: f.name, _id: f._id };
-    });
-
+    const alcoholTypeName = alcoholField ? alcoholField.name : null;
+    const improvementNames = improvementFields.map((f) => f.name);
+    const alcoholTypeIds = alcoholField ? alcoholField._id : null;
+    const improvementIds = improvementFields.map((f) => f._id);
     // Tokens
     const payload = { userId: user._id.toString(), email: user.email };
     const accessToken = jwtService.signAccess(payload);
@@ -278,6 +275,8 @@ async function socialAuth(req, res, next) {
           userName: user.userName,
           alcoholType: alcoholTypeName || null,
           improvement: improvementNames || null,
+          alcoholIds: alcoholTypeIds || null,
+          improvementIds: improvementIds || null,
           goal: user.goal || null,
           provider: user.provider,
           profilePicture: user.profilePicture,
@@ -358,12 +357,10 @@ async function addUserDetails(req, res, next) {
       _id: { $in: user.improvement },
     }).lean();
 
-    const alcoholTypeName = alcoholField
-      ? { name: alcoholField.name, _id: alcoholField._id }
-      : null;
-    const improvementNames = improvementFields.map((f) => {
-      return { name: f.name, _id: f._id };
-    });
+    const alcoholTypeName = alcoholField ? alcoholField.name : null;
+    const improvementNames = improvementFields.map((f) => f.name);
+    const alcoholTypeIds = alcoholField ? alcoholField._id : null;
+    const improvementIds = improvementFields.map((f) => f._id);
 
     // Generate new token
     const payload = { userId: user._id.toString(), email: user.email };
@@ -463,6 +460,8 @@ async function addUserDetails(req, res, next) {
           userName: user.userName,
           alcoholType: alcoholTypeName || null,
           improvement: improvementNames || null,
+          alcoholIds: alcoholTypeIds || null,
+          improvementIds: improvementIds || null,
           goal: user.goal || null,
           provider: user.provider,
           profilePicture: user.profilePicture,
@@ -528,12 +527,10 @@ async function login(req, res, next) {
       _id: { $in: user.improvement },
     }).lean();
 
-    const alcoholTypeName = alcoholField
-      ? { name: alcoholField.name, _id: alcoholField._id }
-      : null;
-    const improvementNames = improvementFields.map((f) => {
-      return { name: f.name, _id: f._id };
-    });
+    const alcoholTypeName = alcoholField ? alcoholField.name : null;
+    const improvementNames = improvementFields.map((f) => f.name);
+    const alcoholTypeIds = alcoholField ? alcoholField._id : null;
+    const improvementIds = improvementFields.map((f) => f._id);
     const payload = { userId: user._id.toString(), email: user.email };
     const accessToken = jwtService.signAccess(payload);
     const milestones = await Milestones.find({
@@ -629,6 +626,8 @@ async function login(req, res, next) {
           userName: user.userName,
           alcoholType: alcoholTypeName || null,
           improvement: improvementNames || null,
+          alcoholIds: alcoholTypeIds || null,
+          improvementIds: improvementIds || null,
           goal: user.goal || null,
           provider: user.provider,
           profilePicture: user.profilePicture,
