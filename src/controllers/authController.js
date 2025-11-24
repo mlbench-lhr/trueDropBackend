@@ -234,10 +234,22 @@ async function socialAuth(req, res, next) {
         dayCount:
           isUserHasMilestones[0]?.milestoneId?.dayCount ||
           milestones[0]?.dayCount,
-        completedOn: userMilestonesSavedInDb[0]?.completedOn || null,
-        moneySaved: userMilestonesSavedInDb[0]?.moneySaved || 0,
-        updatedAt: userMilestonesSavedInDb[0]?.updatedAt || null,
-        soberDays: userMilestonesSavedInDb[0]?.soberDays || 0,
+        completedOn:
+          isUserHasMilestones?.[0]?.completedOn ||
+          userMilestonesSavedInDb[0]?.completedOn ||
+          null,
+        moneySaved:
+          isUserHasMilestones?.[0]?.moneySaved ||
+          userMilestonesSavedInDb[0]?.moneySaved ||
+          0,
+        updatedAt:
+          isUserHasMilestones?.[0]?.updatedAt ||
+          userMilestonesSavedInDb[0]?.updatedAt ||
+          null,
+        soberDays:
+          isUserHasMilestones?.[0]?.soberDays ||
+          userMilestonesSavedInDb[0]?.soberDays ||
+          0,
       },
       nextMilestone: {
         _id:
@@ -257,10 +269,22 @@ async function socialAuth(req, res, next) {
         dayCount:
           isUserHasMilestones[1]?.milestoneId?.dayCount ||
           milestones[1]?.dayCount,
-        completedOn: userMilestonesSavedInDb[1]?.completedOn || null,
-        moneySaved: userMilestonesSavedInDb[1]?.moneySaved || 0,
-        updatedAt: userMilestonesSavedInDb[1]?.updatedAt || null,
-        soberDays: userMilestonesSavedInDb[1]?.soberDays || 0,
+        completedOn:
+          isUserHasMilestones?.[1]?.completedOn ||
+          userMilestonesSavedInDb[1]?.completedOn ||
+          null,
+        moneySaved:
+          isUserHasMilestones?.[1]?.moneySaved ||
+          userMilestonesSavedInDb[1]?.moneySaved ||
+          0,
+        updatedAt:
+          isUserHasMilestones?.[1]?.updatedAt ||
+          userMilestonesSavedInDb[1]?.updatedAt ||
+          null,
+        soberDays:
+          isUserHasMilestones?.[1]?.soberDays ||
+          userMilestonesSavedInDb[1]?.soberDays ||
+          0,
       },
     };
     return res.status(statusCode).json({
@@ -417,10 +441,22 @@ async function addUserDetails(req, res, next) {
         dayCount:
           isUserHasMilestones[0]?.milestoneId?.dayCount ||
           milestones[0]?.dayCount,
-        completedOn: userMilestonesSavedInDb[0]?.completedOn || null,
-        moneySaved: userMilestonesSavedInDb[0]?.moneySaved || 0,
-        updatedAt: userMilestonesSavedInDb[0]?.updatedAt || null,
-        soberDays: userMilestonesSavedInDb[0]?.soberDays || 0,
+        completedOn:
+          isUserHasMilestones?.[0]?.completedOn ||
+          userMilestonesSavedInDb[0]?.completedOn ||
+          null,
+        moneySaved:
+          isUserHasMilestones?.[0]?.moneySaved ||
+          userMilestonesSavedInDb[0]?.moneySaved ||
+          0,
+        updatedAt:
+          isUserHasMilestones?.[0]?.updatedAt ||
+          userMilestonesSavedInDb[0]?.updatedAt ||
+          null,
+        soberDays:
+          isUserHasMilestones?.[0]?.soberDays ||
+          userMilestonesSavedInDb[0]?.soberDays ||
+          0,
       },
       nextMilestone: {
         _id:
@@ -440,10 +476,22 @@ async function addUserDetails(req, res, next) {
         dayCount:
           isUserHasMilestones[1]?.milestoneId?.dayCount ||
           milestones[1]?.dayCount,
-        completedOn: userMilestonesSavedInDb[1]?.completedOn || null,
-        moneySaved: userMilestonesSavedInDb[1]?.moneySaved || 0,
-        updatedAt: userMilestonesSavedInDb[1]?.updatedAt || null,
-        soberDays: userMilestonesSavedInDb[1]?.soberDays || 0,
+        completedOn:
+          isUserHasMilestones?.[1]?.completedOn ||
+          userMilestonesSavedInDb[1]?.completedOn ||
+          null,
+        moneySaved:
+          isUserHasMilestones?.[1]?.moneySaved ||
+          userMilestonesSavedInDb[1]?.moneySaved ||
+          0,
+        updatedAt:
+          isUserHasMilestones?.[1]?.updatedAt ||
+          userMilestonesSavedInDb[1]?.updatedAt ||
+          null,
+        soberDays:
+          isUserHasMilestones?.[1]?.soberDays ||
+          userMilestonesSavedInDb[1]?.soberDays ||
+          0,
       },
     };
     console.log("respMilestones----------------------", respMilestones);
@@ -584,10 +632,22 @@ async function login(req, res, next) {
         dayCount:
           isUserHasMilestones[0]?.milestoneId?.dayCount ||
           milestones[0]?.dayCount,
-        completedOn: userMilestonesSavedInDb[0]?.completedOn || null,
-        moneySaved: userMilestonesSavedInDb[0]?.moneySaved || 0,
-        updatedAt: userMilestonesSavedInDb[0]?.updatedAt || null,
-        soberDays: userMilestonesSavedInDb[0]?.soberDays || 0,
+        completedOn:
+          isUserHasMilestones?.[0]?.completedOn ||
+          userMilestonesSavedInDb[0]?.completedOn ||
+          null,
+        moneySaved:
+          isUserHasMilestones?.[0]?.moneySaved ||
+          userMilestonesSavedInDb[0]?.moneySaved ||
+          0,
+        updatedAt:
+          isUserHasMilestones?.[0]?.updatedAt ||
+          userMilestonesSavedInDb[0]?.updatedAt ||
+          null,
+        soberDays:
+          isUserHasMilestones?.[0]?.soberDays ||
+          userMilestonesSavedInDb[0]?.soberDays ||
+          0,
       },
       nextMilestone: {
         _id:
@@ -607,10 +667,22 @@ async function login(req, res, next) {
         dayCount:
           isUserHasMilestones[1]?.milestoneId?.dayCount ||
           milestones[1]?.dayCount,
-        completedOn: userMilestonesSavedInDb[1]?.completedOn || null,
-        moneySaved: userMilestonesSavedInDb[1]?.moneySaved || 0,
-        updatedAt: userMilestonesSavedInDb[1]?.updatedAt || null,
-        soberDays: userMilestonesSavedInDb[1]?.soberDays || 0,
+        completedOn:
+          isUserHasMilestones?.[1]?.completedOn ||
+          userMilestonesSavedInDb[1]?.completedOn ||
+          null,
+        moneySaved:
+          isUserHasMilestones?.[1]?.moneySaved ||
+          userMilestonesSavedInDb[1]?.moneySaved ||
+          0,
+        updatedAt:
+          isUserHasMilestones?.[1]?.updatedAt ||
+          userMilestonesSavedInDb[1]?.updatedAt ||
+          null,
+        soberDays:
+          isUserHasMilestones?.[1]?.soberDays ||
+          userMilestonesSavedInDb[1]?.soberDays ||
+          0,
       },
     };
 
