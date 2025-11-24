@@ -8,11 +8,12 @@ async function updateMilestones(req, res, next) {
   try {
     const {
       milestoneId,
-      soberDays,
       completedOn,
       completedMilestoneId,
       completedDate,
+      currentDate,
     } = req.body;
+    let { soberDays } = req.body;
     const userId = req.user.userId;
 
     if (!milestoneId || !userId) {
@@ -37,8 +38,27 @@ async function updateMilestones(req, res, next) {
       "milestoneId",
       "frequency tag title description dayCount nextMilestone _id"
     );
+    console.log("currentDate-------", currentDate);
 
     let milestoneForResponse = {};
+    if (currentDate && userMilestone) {
+      const last = new Date(userMilestone.updatedAt);
+      const today = new Date(currentDate);
+      const lastDay = new Date(
+        last.getFullYear(),
+        last.getMonth(),
+        last.getDate()
+      );
+      const todayDay = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+      );
+      const diffDays = Math.round((todayDay - lastDay) / (1000 * 60 * 60 * 24));
+      if (diffDays > 1) {
+        soberDays = 1;
+      }
+    }
 
     if (userMilestone) {
       // Update existing milestone
