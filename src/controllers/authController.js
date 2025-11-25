@@ -243,9 +243,12 @@ async function socialAuth(req, res, next) {
           userMilestonesSavedInDb[0]?.moneySaved ||
           0,
         updatedAt:
-          isUserHasMilestones?.[0]?.updatedAt ||
-          userMilestonesSavedInDb[0]?.updatedAt ||
-          null,
+          isUserHasMilestones?.[0]?.soberDays > 0 ||
+          userMilestonesSavedInDb[0]?.soberDays > 0
+            ? isUserHasMilestones?.[0]?.updatedAt ||
+              userMilestonesSavedInDb[0]?.updatedAt ||
+              null
+            : null,
         soberDays:
           isUserHasMilestones?.[0]?.soberDays ||
           userMilestonesSavedInDb[0]?.soberDays ||
@@ -278,9 +281,12 @@ async function socialAuth(req, res, next) {
           userMilestonesSavedInDb[1]?.moneySaved ||
           0,
         updatedAt:
-          isUserHasMilestones?.[1]?.updatedAt ||
-          userMilestonesSavedInDb[1]?.updatedAt ||
-          null,
+          isUserHasMilestones?.[1]?.soberDays > 0 ||
+          userMilestonesSavedInDb[1]?.soberDays > 0
+            ? isUserHasMilestones?.[1]?.updatedAt ||
+              userMilestonesSavedInDb[1]?.updatedAt ||
+              null
+            : null,
         soberDays:
           isUserHasMilestones?.[1]?.soberDays ||
           userMilestonesSavedInDb[1]?.soberDays ||
@@ -450,9 +456,12 @@ async function addUserDetails(req, res, next) {
           userMilestonesSavedInDb[0]?.moneySaved ||
           0,
         updatedAt:
-          isUserHasMilestones?.[0]?.updatedAt ||
-          userMilestonesSavedInDb[0]?.updatedAt ||
-          null,
+          isUserHasMilestones?.[0]?.soberDays > 0 ||
+          userMilestonesSavedInDb[0]?.soberDays > 0
+            ? isUserHasMilestones?.[0]?.updatedAt ||
+              userMilestonesSavedInDb[0]?.updatedAt ||
+              null
+            : null,
         soberDays:
           isUserHasMilestones?.[0]?.soberDays ||
           userMilestonesSavedInDb[0]?.soberDays ||
@@ -485,9 +494,12 @@ async function addUserDetails(req, res, next) {
           userMilestonesSavedInDb[1]?.moneySaved ||
           0,
         updatedAt:
-          isUserHasMilestones?.[1]?.updatedAt ||
-          userMilestonesSavedInDb[1]?.updatedAt ||
-          null,
+          isUserHasMilestones?.[1]?.soberDays > 0 ||
+          userMilestonesSavedInDb[1]?.soberDays > 0
+            ? isUserHasMilestones?.[1]?.updatedAt ||
+              userMilestonesSavedInDb[1]?.updatedAt ||
+              null
+            : null,
         soberDays:
           isUserHasMilestones?.[1]?.soberDays ||
           userMilestonesSavedInDb[1]?.soberDays ||
@@ -641,9 +653,12 @@ async function login(req, res, next) {
           userMilestonesSavedInDb[0]?.moneySaved ||
           0,
         updatedAt:
-          isUserHasMilestones?.[0]?.updatedAt ||
-          userMilestonesSavedInDb[0]?.updatedAt ||
-          null,
+          isUserHasMilestones?.[0]?.soberDays > 0 ||
+          userMilestonesSavedInDb[0]?.soberDays > 0
+            ? isUserHasMilestones?.[0]?.updatedAt ||
+              userMilestonesSavedInDb[0]?.updatedAt ||
+              null
+            : null,
         soberDays:
           isUserHasMilestones?.[0]?.soberDays ||
           userMilestonesSavedInDb[0]?.soberDays ||
@@ -676,9 +691,12 @@ async function login(req, res, next) {
           userMilestonesSavedInDb[1]?.moneySaved ||
           0,
         updatedAt:
-          isUserHasMilestones?.[1]?.updatedAt ||
-          userMilestonesSavedInDb[1]?.updatedAt ||
-          null,
+          isUserHasMilestones?.[1]?.soberDays > 0 ||
+          userMilestonesSavedInDb[1]?.soberDays > 0
+            ? isUserHasMilestones?.[1]?.updatedAt ||
+              userMilestonesSavedInDb[1]?.updatedAt ||
+              null
+            : null,
         soberDays:
           isUserHasMilestones?.[1]?.soberDays ||
           userMilestonesSavedInDb[1]?.soberDays ||
