@@ -431,6 +431,67 @@ async function searchUsers(req, res, next) {
     next(err);
   }
 }
+async function getPodDetail(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    const pod = await Pod.findById(id)
+      .populate(
+        "members",
+        "firstName lastName userName profilePicture email location"
+      )
+      .populate(
+        "createdBy",
+        "firstName lastName userName profilePicture email location"
+      )
+      .lean();
+
+    if (!pod) {
+      return res.status(200).json({
+        status: false,
+        message: "Pod not found",
+        data: null,
+      });
+    }
+
+    // Fetch sober days
+    const getSoberDays = async (userId) => {
+      const milestones = await UsersMilestones.find({
+        userId,
+        completedOn: { $exists: true },
+      }).lean();
+
+      return milestones.reduce((sum, m) => sum + (m.soberDays || 0), 0);
+    };
+
+    // Enrich members
+    if (pod.members && pod.members.length > 0) {
+      pod.members = await Promise.all(
+        pod.members.map(async (member) => ({
+          ...member,
+          totalSoberDays: await getSoberDays(member._id),
+        }))
+      );
+    }
+
+    // Enrich creator
+    if (pod.createdBy) {
+      pod.createdBy = {
+        ...pod.createdBy,
+        totalSoberDays: await getSoberDays(pod.createdBy._id),
+      };
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "Pod details retrieved successfully",
+      data: pod,
+    });
+  } catch (err) {
+    logger.error("Get pod detail error", err);
+    next(err);
+  }
+}
 
 module.exports = {
   createPod,
@@ -440,4 +501,5 @@ module.exports = {
   deletePod,
   joinPod,
   leavePod,
+  getPodDetail,
 };

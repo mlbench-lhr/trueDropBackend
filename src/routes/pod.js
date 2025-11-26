@@ -7,6 +7,7 @@ router.post("/createPod", auth, podController.createPod);
 router.get("/getPods", auth, podController.getPods);
 router.put("/editPod/:id", auth, podController.editPod);
 router.put("/joinPod/:id", auth, podController.joinPod);
+router.get("/getPodDetail/:id", podController.getPodDetail);
 router.delete("/deletePod/:id", auth, podController.deletePod);
 router.put("/leavePod/:id", auth, podController.leavePod);
 router.get("/searchUsers", auth, podController.searchUsers);
