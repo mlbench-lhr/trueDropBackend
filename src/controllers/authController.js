@@ -7,6 +7,7 @@ const crypto = require("crypto");
 const Fields = require("../models/Fields");
 const Milestones = require("../models/Milestones");
 const UsersMilestones = require("../models/UsersMilestones");
+const connectDB = require("../db/mongo");
 
 async function updateFcmDeviceToken(user, fcmDeviceToken) {
   try {
@@ -547,6 +548,7 @@ async function addUserDetails(req, res, next) {
 // Traditional Email/Password Login
 async function login(req, res, next) {
   try {
+    await connectDB();
     const { email, password, fcmDeviceToken } = req.body;
 
     if (!email || !password) {
