@@ -2,9 +2,11 @@ const Milestones = require("../models/Milestones");
 const User = require("../models/User");
 const UsersMilestones = require("../models/UsersMilestones");
 const logger = require("../utils/logger");
+const connectDB = require("../db/mongo");
 
 async function getSaveAndSober(req, res, next) {
   try {
+    await connectDB();
     const frequencyInNumber = { daily: 1, weekly: 7, monthly: 30 };
     const userId = req.user.userId;
     const userFromDb = await User.findById(userId);

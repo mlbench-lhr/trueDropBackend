@@ -4,11 +4,13 @@ const logger = require("../utils/logger");
 const Fields = require("../models/Fields");
 const cloudinary = require("../config/cloudinary"); // You'll need to configure this
 const streamifier = require("streamifier"); // npm install streamifier
+const connectDB = require("../db/mongo");
 
 async function editProfile(req, res, next) {
   console.log("req---------", req.file);
 
   try {
+    await connectDB();
     const { userName, firstName, lastName, bio } = req.body;
     const userId = req.user.userId; // Assuming you have auth middleware that sets req.user
 
@@ -52,6 +54,7 @@ async function editProfile(req, res, next) {
     if (req.file) {
       try {
         // Upload to Cloudinary using stream
+        await connectDB();
         const uploadResult = await new Promise((resolve, reject) => {
           const uploadStream = cloudinary.uploader.upload_stream(
             {
@@ -162,6 +165,7 @@ const passwordService = require("../services/passwordService");
 
 async function changePassword(req, res, next) {
   try {
+    await connectDB();
     const { currentPassword, newPassword } = req.body;
     const userId = req.user.userId;
 
@@ -237,6 +241,7 @@ async function changePassword(req, res, next) {
 }
 async function updateLocation(req, res, next) {
   try {
+    await connectDB();
     const { location } = req.body;
     const userId = req.user.userId;
     const user = await User.findById(userId);
@@ -262,6 +267,7 @@ async function updateLocation(req, res, next) {
 
 async function deleteAccount(req, res, next) {
   try {
+    await connectDB();
     const userId = req.user.userId;
 
     // Check if user exists
@@ -277,6 +283,7 @@ async function deleteAccount(req, res, next) {
     // Delete profile picture from Cloudinary if exists
     if (user.profilePicture && user.profilePicture.includes("cloudinary")) {
       try {
+        await connectDB();
         const publicId = user.profilePicture
           .split("/")
           .slice(-2)

@@ -1,9 +1,11 @@
 const Coping = require("../models/Coping");
 const logger = require("../utils/logger");
+const connectDB = require("../db/mongo");
 
 // Create a new coping entry
 async function addCoping(req, res, next) {
   try {
+    await connectDB();
     const { copings } = req.body;
     const userId = req.user.userId;
 
@@ -60,6 +62,7 @@ async function addCoping(req, res, next) {
 // Get all coping entries for the authenticated user
 async function getAllCopings(req, res, next) {
   try {
+    await connectDB();
     const userId = req.user.userId;
     const {
       page = 1,
@@ -108,6 +111,7 @@ async function getAllCopings(req, res, next) {
 // Update a coping entry
 async function updateCoping(req, res, next) {
   try {
+    await connectDB();
     const { copingId } = req.params;
     const { feeling, strategy, description } = req.body;
     const userId = req.user.userId;
@@ -160,6 +164,7 @@ async function updateCoping(req, res, next) {
 // Delete a coping entry
 async function deleteCoping(req, res, next) {
   try {
+    await connectDB();
     const { copingId } = req.params;
     const userId = req.user.userId;
 

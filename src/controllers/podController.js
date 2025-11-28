@@ -2,9 +2,11 @@ const Pod = require("../models/Pod");
 const User = require("../models/User");
 const UsersMilestones = require("../models/UsersMilestones");
 const logger = require("../utils/logger");
+const connectDB = require("../db/mongo");
 
 async function createPod(req, res, next) {
   try {
+    await connectDB();
     const { name, description, members, privacyLevel } = req.body;
     const userId = req.user.userId;
     const usersCreatedPods = await Pod.countDocuments({ createdBy: userId });
@@ -55,6 +57,7 @@ async function createPod(req, res, next) {
 }
 async function editPod(req, res, next) {
   try {
+    await connectDB();
     const { id } = req.params;
     const { name, description, members, privacyLevel } = req.body;
 
@@ -86,6 +89,7 @@ async function editPod(req, res, next) {
 }
 async function joinPod(req, res, next) {
   try {
+    await connectDB();
     const { id } = req.params;
     const userId = req.user.userId;
     const usersCreatedPods = await Pod.countDocuments({
@@ -137,6 +141,7 @@ async function joinPod(req, res, next) {
 // DELETE POD
 async function deletePod(req, res, next) {
   try {
+    await connectDB();
     const { id } = req.params;
     const userId = req.user.userId;
 
@@ -161,6 +166,7 @@ async function deletePod(req, res, next) {
 
 async function leavePod(req, res, next) {
   try {
+    await connectDB();
     const { id } = req.params;
     const userId = req.user.userId;
     const pod = await Pod.findById(id);
@@ -201,6 +207,7 @@ async function leavePod(req, res, next) {
 }
 async function getPods(req, res, next) {
   try {
+    await connectDB();
     const userId = req.user.userId;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -360,6 +367,7 @@ function toRadians(degrees) {
 
 async function searchUsers(req, res, next) {
   try {
+    await connectDB();
     const userId = req.user.userId;
     const { search } = req.query;
 
@@ -433,6 +441,7 @@ async function searchUsers(req, res, next) {
 }
 async function getPodDetail(req, res, next) {
   try {
+    await connectDB();
     const { id } = req.params;
 
     const pod = await Pod.findById(id)

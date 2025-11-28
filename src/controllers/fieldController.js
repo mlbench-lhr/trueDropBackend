@@ -1,8 +1,10 @@
 const Fields = require("../models/Fields");
+const connectDB = require("../db/mongo");
 
 // Get all fields grouped by type
 async function getAllFields(req, res, next) {
   try {
+    await connectDB();
     const fields = await Fields.find().lean();
 
     const grouped = fields.reduce((acc, field) => {
