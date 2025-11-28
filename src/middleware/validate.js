@@ -10,7 +10,7 @@ module.exports = function validate(schemaFn) {
       if (error) {
         return res.status(200).json({
           status: 200,
-          message: error.details?.[0],
+          message: error.details?.[0]?.message || "validation error",
           data: [],
         });
       }
