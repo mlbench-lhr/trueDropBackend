@@ -5,7 +5,7 @@ module.exports = function (err, req, res, next) {
   if (err && err.name === "ValidationError") {
     return res
       .status(200)
-      .json({ status: false, message: err.message, data: null });
+      .json({ status: false, message: "ValidationError", data: null });
   }
   const status = err.status || 500;
   const message = err.message || "Internal Server Error";

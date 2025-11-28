@@ -8,9 +8,11 @@ module.exports = function validate(schemaFn) {
       });
 
       if (error) {
+        const rawMsg = error.details?.[0]?.message || "validation error";
+        const message = rawMsg.replace(/"/g, "");
         return res.status(200).json({
-          status: 200,
-          message: error.details?.[0]?.message || "validation error",
+          status: false,
+          message,
           data: null,
         });
       }
