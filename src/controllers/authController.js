@@ -69,11 +69,16 @@ async function register(req, res, next) {
       lastName,
       provider: "local",
       isEmailVerified: false,
+      tokenVersion: 0,
     });
 
     // ⬇️ Update FCM token here
     await updateFcmDeviceToken(user, fcmDeviceToken);
-    const payload = { userId: user._id.toString(), email: user.email };
+    const payload = {
+      userId: user._id.toString(),
+      email: user.email,
+      tokenVersion: user.tokenVersion,
+    };
     const accessToken = jwtService.signAccess(payload);
 
     return res.status(200).json({
@@ -157,6 +162,7 @@ async function socialAuth(req, res, next) {
           providerId,
           profilePicture,
           isEmailVerified: true,
+          tokenVersion: 0,
         });
 
         message = "User registered successfully";
@@ -169,21 +175,23 @@ async function socialAuth(req, res, next) {
     }
     await updateFcmDeviceToken(user, fcmDeviceToken);
 
-    // Fetch fields
+    user.tokenVersion += 1;
+    await user.save();
     const alcoholField = user.alcoholType
       ? await Fields.findById(user.alcoholType).lean()
       : null;
     const improvementFields =
-      user.improvement && user.improvement.length > 0
+      user.improvement?.length > 0
         ? await Fields.find({ _id: { $in: user.improvement } }).lean()
         : [];
 
     const alcoholTypeName = alcoholField ? alcoholField.name : null;
     const improvementNames = improvementFields.map((f) => f.name);
-    const alcoholTypeIds = alcoholField ? alcoholField._id : null;
-    const improvementIds = improvementFields.map((f) => f._id);
-    // Tokens
-    const payload = { userId: user._id.toString(), email: user.email };
+    const payload = {
+      userId: user._id.toString(),
+      email: user.email,
+      tokenVersion: user.tokenVersion,
+    };
     const accessToken = jwtService.signAccess(payload);
 
     const milestones = await Milestones.find({
@@ -587,7 +595,9 @@ async function login(req, res, next) {
     }
     await updateFcmDeviceToken(user, fcmDeviceToken);
 
-    // Generate tokens
+    console.log("user.tokenVersion-----", user.tokenVersion);
+    user.tokenVersion += 1;
+    await user.save();
     const alcoholField = await Fields.findById(user.alcoholType).lean();
     const improvementFields = await Fields.find({
       _id: { $in: user.improvement },
@@ -597,7 +607,11 @@ async function login(req, res, next) {
     const improvementNames = improvementFields.map((f) => f.name);
     const alcoholTypeIds = alcoholField ? alcoholField._id : null;
     const improvementIds = improvementFields.map((f) => f._id);
-    const payload = { userId: user._id.toString(), email: user.email };
+    const payload = {
+      userId: user._id.toString(),
+      email: user.email,
+      tokenVersion: user.tokenVersion,
+    };
     const accessToken = jwtService.signAccess(payload);
     const milestones = await Milestones.find({
       frequency: user?.goal?.frequency,

@@ -7,14 +7,13 @@ function getEnv(name) {
 }
 
 const ACCESS_SECRET = () => getEnv("JWT_ACCESS_SECRET");
-const ACCESS_EXPIRES = () => process.env.ACCESS_TOKEN_EXPIRES_IN || "7d";
+const ACCESS_EXPIRES = () => process.env.ACCESS_TOKEN_EXPIRES_IN || "30d";
 
 function signAccess(payload) {
   if (!payload || !payload.userId)
     throw new Error("Invalid payload for access token");
   return jwt.sign(payload, ACCESS_SECRET(), { expiresIn: ACCESS_EXPIRES() });
 }
-
 
 function verifyAccess(token) {
   if (!token) throw new Error("Token required");
