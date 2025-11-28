@@ -11,6 +11,7 @@ const connectDB = require("../db/mongo");
 
 async function updateFcmDeviceToken(user, fcmDeviceToken) {
   try {
+    await connectDB();
     if (!fcmDeviceToken) return user; // ignore empty tokens
 
     // If field is missing, initialize as empty array
@@ -34,6 +35,7 @@ async function updateFcmDeviceToken(user, fcmDeviceToken) {
 // Traditional Email/Password Registration
 async function register(req, res, next) {
   try {
+    await connectDB();
     const { email, password, userName, firstName, lastName, fcmDeviceToken } =
       req.body;
 
@@ -110,6 +112,7 @@ async function register(req, res, next) {
 // SOCIAL AUTH
 async function socialAuth(req, res, next) {
   try {
+    await connectDB();
     const {
       provider,
       providerId,
@@ -334,6 +337,7 @@ async function socialAuth(req, res, next) {
 // Add User Details (alcoholType, improvement, goal)
 async function addUserDetails(req, res, next) {
   try {
+    await connectDB();
     const { alcoholType, improvement, goal } = req.body;
     const userId = req.user.userId;
 
@@ -746,6 +750,7 @@ async function login(req, res, next) {
 // Send verification code
 async function forgotPassword(req, res, next) {
   try {
+    await connectDB();
     const { email } = req.body;
     logger.info("Forgot password request for:", email);
 
@@ -812,6 +817,7 @@ async function forgotPassword(req, res, next) {
 // Verify code
 async function verifyResetCode(req, res, next) {
   try {
+    await connectDB();
     const { email, code } = req.body;
 
     if (!email || !code) {
@@ -861,6 +867,7 @@ async function verifyResetCode(req, res, next) {
 // Reset password
 async function resetPassword(req, res, next) {
   try {
+    await connectDB();
     const { email, code, newPassword } = req.body;
 
     if (!email || !code || !newPassword) {

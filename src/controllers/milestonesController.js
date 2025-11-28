@@ -2,10 +2,12 @@ const Milestones = require("../models/Milestones");
 const User = require("../models/User");
 const UsersMilestones = require("../models/UsersMilestones");
 const logger = require("../utils/logger");
+const connectDB = require("../db/mongo");
 
 // Create a new milestones entry
 async function updateMilestones(req, res, next) {
   try {
+    await connectDB();
     const {
       milestoneId,
       completedOn,
@@ -331,6 +333,7 @@ async function updateMilestones(req, res, next) {
 
 // Helper function to create next milestone
 async function createNextMilestone(previousMilestone) {
+  await connectDB();
   const newDayCount =
     previousMilestone.dayCount + getDayIncrement(previousMilestone.frequency);
 
@@ -365,6 +368,7 @@ function getDayIncrement(frequency) {
 
 // Helper function to create next milestone
 async function createNextMilestone(previousMilestone) {
+  await connectDB();
   const newDayCount =
     previousMilestone.dayCount + getDayIncrement(previousMilestone.frequency);
 
@@ -400,6 +404,7 @@ function getDayIncrement(frequency) {
 // Get all milestones entries for the authenticated user
 async function getAllMilestones(req, res, next) {
   try {
+    await connectDB();
     const { frequency } = req.query;
     console.log("frequency-------", frequency);
     const filter = { frequency: frequency };
@@ -420,6 +425,7 @@ async function getAllMilestones(req, res, next) {
 
 async function getMilestonesHistory(req, res, next) {
   try {
+    await connectDB();
     const userId = req.user.userId;
     const {
       page = 1,
@@ -474,6 +480,7 @@ async function getMilestonesHistory(req, res, next) {
 // Delete a milestones entry
 async function deleteMilestones(req, res, next) {
   try {
+    await connectDB();
     const { milestonesId } = req.params;
     const userId = req.user.userId;
 

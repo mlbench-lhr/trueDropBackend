@@ -1,9 +1,11 @@
 const Journal = require("../models/Journal");
 const logger = require("../utils/logger");
+const connectDB = require("../db/mongo");
 
 // Create a new journal entry
 async function addJournal(req, res, next) {
   try {
+    await connectDB();
     const { journals } = req.body;
     const userId = req.user.userId;
 
@@ -60,6 +62,7 @@ async function addJournal(req, res, next) {
 // Get all journal entries for the authenticated user
 async function getAllJournals(req, res, next) {
   try {
+    await connectDB();
     const userId = req.user.userId;
     const {
       page = 1,
@@ -101,6 +104,7 @@ async function getAllJournals(req, res, next) {
 // Update a journal entry
 async function updateJournal(req, res, next) {
   try {
+    await connectDB();
     const { journalId } = req.params;
     const { feeling, description } = req.body;
     const userId = req.user.userId;
@@ -151,6 +155,7 @@ async function updateJournal(req, res, next) {
 // Delete a journal entry
 async function deleteJournal(req, res, next) {
   try {
+    await connectDB();
     const { journalId } = req.params;
     const userId = req.user.userId;
 

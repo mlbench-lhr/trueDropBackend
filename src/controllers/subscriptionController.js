@@ -1,6 +1,7 @@
 // controllers/payfastController.js
 import { generateSignature, validateIPNSignature } from "../../lib/payfast.js";
 import { Subscription } from "../models/Subscription.js";
+import connectDB from "../db/mongo.js";
 
 const {
   PAYFAST_MERCHANT_ID,
@@ -16,6 +17,7 @@ const {
    ========================================================= */
 export const createSubscription = async (req, res) => {
   try {
+    await connectDB();
     const { userId, planId, amount } = req.body;
 
     const subscription = await Subscription.create({
@@ -62,6 +64,7 @@ export const createSubscription = async (req, res) => {
    ========================================================= */
 export const handleIPN = async (req, res) => {
   try {
+    await connectDB();
     const ipnData = req.body;
 
     const isValid = validateIPNSignature(ipnData, PAYFAST_PASSPHRASE);
@@ -95,6 +98,7 @@ export const handleIPN = async (req, res) => {
    ========================================================= */
 export const getSubscriptionStatus = async (req, res) => {
   try {
+    await connectDB();
     const { userId } = req.query;
 
     const subscription = await Subscription.findOne({ userId }).sort({
