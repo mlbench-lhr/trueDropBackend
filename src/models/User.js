@@ -46,6 +46,10 @@ const UserSchema = new Schema({
     lat: { type: Number },
     long: { type: Number },
   },
+  tokenVersion: {
+    type: Number,
+    default: 0,
+  },
 });
 UserSchema.index(
   { provider: 1, providerId: 1 },
