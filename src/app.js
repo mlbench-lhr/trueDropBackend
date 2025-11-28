@@ -35,7 +35,7 @@ app.use("/api/subscription", subscriptionRoutes);
 app.use(cors());
 
 app.use((req, res, next) => {
-  res.status(200).json({ status: false, message: "200 Not Found", data: [] });
+  res.status(200).json({ status: false, message: "200 Not Found", data: null });
 });
 
 app.use(errorHandler);

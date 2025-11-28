@@ -11,7 +11,7 @@ module.exports = function validate(schemaFn) {
         return res.status(200).json({
           status: 200,
           message: error.details?.[0]?.message || "validation error",
-          data: [],
+          data: null,
         });
       }
       req.body = value;
