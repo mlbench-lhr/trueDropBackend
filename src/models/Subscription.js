@@ -1,16 +1,23 @@
-// models/Subscription.js
-import mongoose from "mongoose";
+// models/Subscription.js (MongoDB Schema Example)
+const mongoose = require("mongoose");
 
-const subscriptionSchema = new mongoose.Schema(
-  {
-    userId: { type: mongoose.Schema.Types.ObjectId, required: true },
-    planId: { type: String, required: true },
-    amount: Number,
-    status: { type: String, default: "PENDING" }, // PENDING / ACTIVE / CANCELLED / FAILED
-    payfastId: String,
-    paymentHistory: Array,
+const subscriptionSchema = new mongoose.Schema({
+  userId: { type: String, required: true, index: true },
+  deviceType: { type: String, enum: ["android", "apple"], required: true },
+  paymentId: { type: String }, // PayFast token
+  plan: { type: String, enum: ["3-day", "monthly", "yearly"], required: true },
+  price: { type: Number, required: true },
+  currency: { type: String, default: "ZAR" },
+  status: {
+    type: String,
+    enum: ["pending", "active", "cancelled", "expired", "failed"],
+    default: "pending",
   },
-  { timestamps: true }
-);
+  nextBillingDate: { type: Date },
+  lastPaymentDate: { type: Date },
+  cancelledAt: { type: Date },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+});
 
-export const Subscription = mongoose.model("Subscription", subscriptionSchema);
+module.exports = mongoose.model("Subscription", subscriptionSchema);
