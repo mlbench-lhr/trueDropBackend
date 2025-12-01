@@ -45,7 +45,7 @@ const PLANS = {
   // Monthly Plan
   monthly: {
     amount: 5.0, // your monthly amount
-    frequency: 30, // every 30 days
+    frequency: 3, // every 30 days
     cycles: 0, // unlimited recurring
     name: "Monthly Plan",
   },
@@ -53,7 +53,7 @@ const PLANS = {
   // Yearly Plan
   yearly: {
     amount: 49.99, // your yearly amount
-    frequency: 365, // every 365 days
+    frequency: 6, // every 365 days
     cycles: 0, // unlimited recurring
     name: "Yearly Plan",
   },
