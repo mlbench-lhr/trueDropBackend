@@ -9,6 +9,18 @@ const Milestones = require("../models/Milestones");
 const UsersMilestones = require("../models/UsersMilestones");
 const connectDB = require("../db/mongo");
 
+function calculateAllowCheckIn(previousMilestoneCompletedOn) {
+  if (!previousMilestoneCompletedOn) {
+    return true; // If there's no previous milestone completion, allow check-in
+  }
+  const now = new Date();
+  const completedDate = new Date(previousMilestoneCompletedOn);
+  const timeDiff = now - completedDate;
+  const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
+
+  return daysDiff >= 1; // true if at least 1 day has passed
+}
+
 async function updateFcmDeviceToken(user, fcmDeviceToken) {
   try {
     await connectDB();
@@ -211,6 +223,12 @@ async function socialAuth(req, res, next) {
     })
       .populate("milestoneId")
       .sort({ createdAt: 1 });
+    const lastCompletedMilestone = await UsersMilestones.findOne({
+      userId: user._id,
+      completedOn: { $ne: null },
+    })
+      .sort({ completedOn: -1 })
+      .lean();
     const userMilestonesToStore = [
       {
         userId: user._id,
@@ -268,6 +286,10 @@ async function socialAuth(req, res, next) {
           isUserHasMilestones?.[0]?.soberDays ||
           userMilestonesSavedInDb[0]?.soberDays ||
           0,
+        allowCheckIn:
+          isUserHasMilestones?.[0]?.soberDays > 0 ||
+          userMilestonesSavedInDb[0]?.soberDays > 0 ||
+          calculateAllowCheckIn(lastCompletedMilestone?.completedOn),
       },
       nextMilestone: {
         _id:
@@ -424,7 +446,12 @@ async function addUserDetails(req, res, next) {
     })
       .populate("milestoneId")
       .sort({ createdAt: 1 });
-
+    const lastCompletedMilestone = await UsersMilestones.findOne({
+      userId: user._id,
+      completedOn: { $ne: null },
+    })
+      .sort({ completedOn: -1 })
+      .lean();
     const userMilestonesToStore = [
       {
         userId: userId,
@@ -482,6 +509,10 @@ async function addUserDetails(req, res, next) {
           isUserHasMilestones?.[0]?.soberDays ||
           userMilestonesSavedInDb[0]?.soberDays ||
           0,
+        allowCheckIn:
+          isUserHasMilestones?.[0]?.soberDays > 0 ||
+          userMilestonesSavedInDb[0]?.soberDays > 0 ||
+          calculateAllowCheckIn(lastCompletedMilestone?.completedOn),
       },
       nextMilestone: {
         _id:
@@ -629,6 +660,12 @@ async function login(req, res, next) {
     })
       .populate("milestoneId")
       .sort({ createdAt: 1 });
+    const lastCompletedMilestone = await UsersMilestones.findOne({
+      userId: user._id,
+      completedOn: { $ne: null },
+    })
+      .sort({ completedOn: -1 })
+      .lean();
     const userMilestonesToStore = [
       {
         userId: user._id,
@@ -686,6 +723,10 @@ async function login(req, res, next) {
           isUserHasMilestones?.[0]?.soberDays ||
           userMilestonesSavedInDb[0]?.soberDays ||
           0,
+        allowCheckIn:
+          isUserHasMilestones?.[0]?.soberDays > 0 ||
+          userMilestonesSavedInDb[0]?.soberDays > 0 ||
+          calculateAllowCheckIn(lastCompletedMilestone?.completedOn),
       },
       nextMilestone: {
         _id:

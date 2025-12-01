@@ -4,6 +4,18 @@ const UsersMilestones = require("../models/UsersMilestones");
 const logger = require("../utils/logger");
 const connectDB = require("../db/mongo");
 
+function calculateAllowCheckIn(previousMilestoneCompletedOn) {
+  if (!previousMilestoneCompletedOn) {
+    return true; // If there's no previous milestone completion, allow check-in
+  }
+  const now = new Date();
+  const completedDate = new Date(previousMilestoneCompletedOn);
+  const timeDiff = now - completedDate;
+  const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
+
+  return daysDiff >= 1; // true if at least 1 day has passed
+}
+
 // Create a new milestones entry
 async function updateMilestones(req, res, next) {
   try {
@@ -107,6 +119,12 @@ async function updateMilestones(req, res, next) {
     let nextMilestone = null;
     let completedMilestoneRef = null;
 
+    const lastCompletedMilestone = await UsersMilestones.findOne({
+      userId: userId,
+      completedOn: { $ne: null },
+    })
+      .sort({ completedOn: -1 })
+      .lean();
     // Handle completedMilestoneId logic (Case 3)
     if (completedMilestoneId && completedDate) {
       await UsersMilestones.findOneAndUpdate(
@@ -312,6 +330,9 @@ async function updateMilestones(req, res, next) {
           soberDays: userMilestone.soberDays,
           moneySaved: userMilestone.moneySaved,
           updatedAt: userMilestone.updatedAt,
+          allowCheckIn:
+            userMilestone.soberDays > 0 ||
+            calculateAllowCheckIn(lastCompletedMilestone?.completedOn),
         },
         nextMilestone: nextMilestone
           ? {
