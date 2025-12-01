@@ -32,6 +32,10 @@ app.use("/api/wallet", walletRoutes);
 app.use("/api/pod", podRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/subscription", subscriptionRoutes);
+
+app.use("/api/subscription/webhook", express.urlencoded({ extended: false }));
+app.use("/api/subscription", subscriptionRoutes);
+
 app.use(cors());
 
 app.use((req, res, next) => {

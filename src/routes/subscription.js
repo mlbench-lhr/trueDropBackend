@@ -1,14 +1,12 @@
-// routes/payfastRoutes.js
+// routes/subscription.js
 const express = require("express");
 const router = express.Router();
-const {
-  createSubscription,
-  handleIPN,
-  getSubscriptionStatus,
-} = require("../controllers/subscriptionController");
+const subscriptionController = require("../controllers/subscriptionController");
 
-router.post("/subscription/create", createSubscription);
-router.post("/payfast/ipn", handleIPN);
-router.get("/subscription/status", getSubscriptionStatus);
+router.post("/getSubscriptionURL", subscriptionController.getSubscriptionURL);
+router.post("/webhook", subscriptionController.webhook);
+router.post("/cancelSubscription", subscriptionController.cancelSubscription);
+router.post("/renewSubscription", subscriptionController.renewSubscription);
+router.get("/getSubscription", subscriptionController.getSubscription);
 
 module.exports = router;
