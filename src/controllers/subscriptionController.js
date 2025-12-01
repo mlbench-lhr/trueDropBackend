@@ -2,6 +2,7 @@
 const crypto = require("crypto");
 const axios = require("axios");
 const Subscription = require("../models/Subscription");
+const User = require("../models/User"); // ✅ Import User model
 
 // PayFast Configuration
 const PAYFAST_CONFIG = {
@@ -106,7 +107,25 @@ exports.getSubscriptionURL = async (req, res) => {
       });
     }
 
+    // ✅ Fetch real user data from database
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // ✅ Validate user has required data for paid subscriptions
     const plan = PLANS[planType];
+
+    if (!plan.isFree && !user.email) {
+      return res.status(400).json({
+        success: false,
+        message: "User email is required for paid subscriptions",
+      });
+    }
 
     // **HANDLE FREE PLAN** - No PayFast needed
     if (plan.isFree) {
@@ -133,12 +152,6 @@ exports.getSubscriptionURL = async (req, res) => {
     }
 
     // **PAID PLANS** - Continue with PayFast
-    const user = {
-      email: "user@example.com", // Replace with actual user lookup
-      firstName: "John",
-      lastName: "Doe",
-    };
-
     const subscription = await Subscription.create({
       userId,
       plan: planType,
@@ -150,14 +163,15 @@ exports.getSubscriptionURL = async (req, res) => {
 
     const subscriptionId = subscription._id || "SUB_" + Date.now();
 
+    // ✅ Use real user data with fallbacks
     const paymentData = {
       merchant_id: PAYFAST_CONFIG.merchantId,
       merchant_key: PAYFAST_CONFIG.merchantKey,
       return_url: `${process.env.FRONTEND_URL}/subscription/success?subscriptionId=${subscriptionId}`,
       cancel_url: `${process.env.FRONTEND_URL}/subscription/cancel?subscriptionId=${subscriptionId}`,
       notify_url: `${process.env.BACKEND_URL}/api/subscription/webhook`,
-      name_first: user.firstName,
-      name_last: user.lastName,
+      name_first: user.firstName || user.userName || "User",
+      name_last: user.lastName || "",
       email_address: user.email,
       m_payment_id: subscriptionId,
       amount: plan.amount.toFixed(2),
