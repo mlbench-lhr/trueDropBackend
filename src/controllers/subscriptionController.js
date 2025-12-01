@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const axios = require("axios");
 const Subscription = require("../models/Subscription");
 const User = require("../models/User");
+const connectDB = require("../db/mongo");
 
 // PayFast Configuration
 const PAYFAST_CONFIG = {
@@ -104,6 +105,7 @@ const verifyPayFastData = (pfData, signature, passphrase = "") => {
 // 1. GET SUBSCRIPTION URL
 exports.getSubscriptionURL = async (req, res) => {
   try {
+    await connectDB();
     const { userId, planType, deviceType } = req.body;
 
     if (!userId || !planType) {
@@ -227,6 +229,7 @@ exports.getSubscriptionURL = async (req, res) => {
 // 2. PAYFAST WEBHOOK (ITN)
 exports.webhook = async (req, res) => {
   try {
+    await connectDB();
     const pfData = req.body;
     const signature = pfData.signature;
 
@@ -373,6 +376,7 @@ exports.webhook = async (req, res) => {
 // 3. CANCEL SUBSCRIPTION
 exports.cancelSubscription = async (req, res) => {
   try {
+    await connectDB();
     const { userId } = req.body;
 
     if (!userId) {
@@ -449,6 +453,7 @@ exports.cancelSubscription = async (req, res) => {
 // Refund a PayFast payment
 exports.refundPayment = async (req, res) => {
   try {
+    await connectDB();
     const { paymentId, amount } = req.body;
 
     if (!paymentId || !amount) {
@@ -499,6 +504,7 @@ exports.refundPayment = async (req, res) => {
 // 4. RENEW SUBSCRIPTION
 exports.renewSubscription = async (req, res) => {
   try {
+    await connectDB();
     const { userId } = req.body;
 
     if (!userId) {
@@ -538,6 +544,7 @@ exports.renewSubscription = async (req, res) => {
 // 5. GET SUBSCRIPTION
 exports.getSubscription = async (req, res) => {
   try {
+    await connectDB();
     const { userId } = req.query;
 
     if (!userId) {
@@ -584,6 +591,7 @@ exports.getSubscription = async (req, res) => {
 // 6. ✅ NEW: Manual status check endpoint (for debugging)
 exports.checkSubscriptionStatus = async (req, res) => {
   try {
+    await connectDB();
     const { subscriptionId } = req.params;
 
     const subscription = await Subscription.findById(subscriptionId);
