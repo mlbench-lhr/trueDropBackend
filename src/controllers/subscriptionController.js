@@ -5,7 +5,6 @@ const Subscription = require("../models/Subscription");
 const User = require("../models/User");
 const connectDB = require("../db/mongo");
 
-// PayFast Configuration
 const PAYFAST_CONFIG = {
   merchantId: "30891881",
   merchantKey: "tkfsxuucbmqeu",
@@ -14,7 +13,6 @@ const PAYFAST_CONFIG = {
   apiUrl: "https://api.payfast.co.za/subscriptions",
 };
 
-// Valid PayFast IP addresses for webhook verification (Production)
 const PAYFAST_IPS = [
   "197.97.145.144",
   "197.97.145.145",
@@ -23,8 +21,6 @@ const PAYFAST_IPS = [
   "197.97.145.148",
 ];
 
-// Subscription Plans Configuration
-// Subscription Plans Configuration
 const PLANS = {
   free: {
     amount: 0,
@@ -59,10 +55,8 @@ const PLANS = {
   },
 };
 
-// Helper: Generate PayFast Signature
 const generateSignature = (data, passphrase = "") => {
   let pfOutput = "";
-
   for (let key in data) {
     if (
       data.hasOwnProperty(key) &&
@@ -75,24 +69,17 @@ const generateSignature = (data, passphrase = "") => {
       ).replace(/%20/g, "+")}&`;
     }
   }
-
   pfOutput = pfOutput.slice(0, -1);
-
-  if (passphrase) {
+  if (passphrase)
     pfOutput += `&passphrase=${encodeURIComponent(passphrase.trim())}`;
-  }
-
   return crypto.createHash("md5").update(pfOutput).digest("hex");
 };
 
-// Helper: Verify PayFast IP
 const verifyPayFastIP = (ip) => {
-  // Extract IP if it's in X-Forwarded-For format
   const cleanIp = ip ? ip.split(",")[0].trim() : "";
   return PAYFAST_IPS.includes(cleanIp);
 };
 
-// Helper: Verify PayFast Data
 const verifyPayFastData = (pfData, signature, passphrase = "") => {
   const tempData = { ...pfData };
   delete tempData.signature;
@@ -108,39 +95,33 @@ exports.getSubscriptionURL = async (req, res) => {
     await connectDB();
     const { userId, planType, deviceType } = req.body;
 
-    if (!userId || !planType) {
-      return res.status(400).json({
-        success: false,
+    if (!userId || !planType)
+      return res.status(200).json({
+        status: false,
         message: "userId and planType are required",
+        data: null,
       });
-    }
-
-    if (!PLANS[planType]) {
-      return res.status(400).json({
-        success: false,
+    if (!PLANS[planType])
+      return res.status(200).json({
+        status: false,
         message: "Invalid plan type. Choose: free, monthly, or premium",
+        data: null,
       });
-    }
 
     const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
+    if (!user)
+      return res
+        .status(200)
+        .json({ status: false, message: "User not found", data: null });
 
     const plan = PLANS[planType];
-
-    if (!plan.isFree && !user.email) {
-      return res.status(400).json({
-        success: false,
+    if (!plan.isFree && !user.email)
+      return res.status(200).json({
+        status: false,
         message: "User email is required for paid subscriptions",
+        data: null,
       });
-    }
 
-    // Handle FREE PLAN
     if (plan.isFree) {
       const subscription = await Subscription.create({
         userId,
@@ -153,18 +134,18 @@ exports.getSubscriptionURL = async (req, res) => {
         lastPaymentDate: new Date(),
         nextBillingDate: null,
       });
-
-      return res.json({
-        success: true,
+      return res.status(200).json({
+        status: true,
         message: "Free plan activated",
-        subscriptionId: subscription._id,
-        plan: planType,
-        amount: 0,
-        paymentUrl: null,
+        data: {
+          subscriptionId: subscription._id,
+          plan: planType,
+          amount: 0,
+          paymentUrl: null,
+        },
       });
     }
 
-    // PAID PLANS
     const subscription = await Subscription.create({
       userId,
       plan: planType,
@@ -173,10 +154,8 @@ exports.getSubscriptionURL = async (req, res) => {
       status: "pending",
       deviceType: deviceType || "android",
     });
-
     const subscriptionId = subscription._id.toString();
 
-    // ✅ FIXED: Build payment data in the EXACT order PayFast expects
     const paymentData = {
       merchant_id: PAYFAST_CONFIG.merchantId,
       merchant_key: PAYFAST_CONFIG.merchantKey,
@@ -202,26 +181,28 @@ exports.getSubscriptionURL = async (req, res) => {
       confirmation_address: user.email,
     };
 
-    // ✅ FIXED: Don't wrap signature in angle brackets
     const signature = generateSignature(paymentData, PAYFAST_CONFIG.passphrase);
     paymentData.signature = `<${signature}>`;
 
     const urlParams = new URLSearchParams(paymentData).toString();
     const paymentUrl = `${PAYFAST_CONFIG.baseUrl}?${urlParams}`;
 
-    res.json({
-      success: true,
-      paymentUrl,
-      subscriptionId,
-      plan: planType,
-      amount: plan.amount,
+    return res.status(200).json({
+      status: true,
+      message: "Subscription URL generated",
+      data: {
+        paymentUrl,
+        subscriptionId,
+        plan: planType,
+        amount: plan.amount,
+      },
     });
   } catch (error) {
     console.error("Error generating subscription URL:", error);
-    res.status(500).json({
-      success: false,
+    return res.status(200).json({
+      status: false,
       message: "Failed to generate payment URL",
-      error: error.message,
+      data: null,
     });
   }
 };
@@ -232,8 +213,6 @@ exports.webhook = async (req, res) => {
     await connectDB();
     const pfData = req.body;
     const signature = pfData.signature;
-
-    // Get client IP
     const clientIp = (
       req.headers["x-forwarded-for"] ||
       req.connection.remoteAddress ||
@@ -242,58 +221,9 @@ exports.webhook = async (req, res) => {
       .split(",")[0]
       .trim();
 
-    console.log("=== PayFast Webhook Received ===");
-    console.log("Client IP:", clientIp);
-    console.log("Webhook Data:", pfData);
+    if (!verifyPayFastData(pfData, signature, PAYFAST_CONFIG.passphrase))
+      return res.status(200).send("Invalid signature");
 
-    // ✅ OPTION 1: Skip IP verification during testing (REMOVE IN PRODUCTION)
-    // Comment out these lines in production
-    /*
-    if (!verifyPayFastIP(clientIp)) {
-      console.error("❌ Invalid PayFast IP:", clientIp);
-      return res.status(403).send("Invalid IP");
-    }
-    */
-
-    // ✅ OPTION 2: More lenient IP check for development
-    const isValidIP = verifyPayFastIP(clientIp);
-    if (!isValidIP) {
-      console.warn("⚠️ Warning: IP not in whitelist:", clientIp);
-      // Don't return error in testing, just log
-    }
-
-    // Verify Signature
-    if (!verifyPayFastData(pfData, signature, PAYFAST_CONFIG.passphrase)) {
-      console.error("❌ Invalid signature");
-      return res.status(403).send("Invalid signature");
-    }
-
-    console.log("✅ Signature verified");
-
-    // Verify with PayFast server
-    try {
-      const response = await axios.post(
-        "https://www.payfast.co.za/eng/query/validate",
-        new URLSearchParams(pfData).toString(),
-        {
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          timeout: 10000,
-        }
-      );
-
-      console.log("PayFast validation response:", response.data);
-
-      if (response.data !== "VALID") {
-        console.error("❌ PayFast validation failed");
-        return res.status(400).send("Invalid payment");
-      }
-    } catch (error) {
-      console.error("❌ PayFast validation error:", error.message);
-      // Continue processing even if validation fails (for testing)
-      console.log("⚠️ Continuing despite validation error...");
-    }
-
-    // Process the payment
     const {
       payment_status,
       custom_str1: userId,
@@ -303,17 +233,8 @@ exports.webhook = async (req, res) => {
       amount_gross,
       billing_date,
     } = pfData;
+    if (!subscriptionId) return res.status(200).send("No subscription ID");
 
-    console.log(
-      `Processing payment - Status: ${payment_status}, User: ${userId}, Subscription: ${subscriptionId}`
-    );
-
-    if (!subscriptionId) {
-      console.error("❌ No subscription ID found in webhook data");
-      return res.status(400).send("No subscription ID");
-    }
-
-    // ✅ FIXED: Map PayFast status to our status
     let newStatus = "pending";
     switch (payment_status.toUpperCase()) {
       case "COMPLETE":
@@ -327,7 +248,6 @@ exports.webhook = async (req, res) => {
         break;
     }
 
-    // Update subscription in database
     const updatedSubscription = await Subscription.findByIdAndUpdate(
       subscriptionId,
       {
@@ -339,37 +259,21 @@ exports.webhook = async (req, res) => {
       },
       { new: true }
     );
+    if (!updatedSubscription)
+      return res.status(200).send("Subscription not found");
 
-    if (!updatedSubscription) {
-      console.error("❌ Subscription not found:", subscriptionId);
-      return res.status(404).send("Subscription not found");
-    }
-
-    console.log(`✅ Subscription updated successfully:`, {
-      id: subscriptionId,
-      status: newStatus,
-      paymentId: token,
+    return res.status(200).json({
+      status: true,
+      message: "Webhook processed successfully",
+      data: { subscriptionId, status: newStatus },
     });
-
-    // Log different payment statuses
-    switch (payment_status.toUpperCase()) {
-      case "COMPLETE":
-        console.log(`✅ Subscription activated for user ${userId}`);
-        break;
-      case "CANCELLED":
-        console.log(`⚠️ Subscription cancelled for user ${userId}`);
-        break;
-      case "FAILED":
-        console.log(`❌ Payment failed for user ${userId}`);
-        break;
-      default:
-        console.log(`⚠️ Unknown status: ${payment_status}`);
-    }
-
-    res.status(200).send("OK");
   } catch (error) {
-    console.error("❌ Webhook error:", error);
-    res.status(500).send("Webhook processing failed");
+    console.error("Webhook error:", error);
+    return res.status(200).json({
+      status: false,
+      message: "Webhook processing failed",
+      data: null,
+    });
   }
 };
 
@@ -378,32 +282,27 @@ exports.cancelSubscription = async (req, res) => {
   try {
     await connectDB();
     const { userId } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({
-        success: false,
-        message: "userId is required",
-      });
-    }
+    if (!userId)
+      return res
+        .status(200)
+        .json({ status: false, message: "userId is required", data: null });
 
     const subscription = await Subscription.findOne({
       userId,
       status: "active",
     });
-
-    if (!subscription || !subscription.paymentId) {
-      return res.status(404).json({
-        success: false,
+    if (!subscription || !subscription.paymentId)
+      return res.status(200).json({
+        status: false,
         message: "No active subscription found",
+        data: null,
       });
-    }
 
     const cancelData = {
       merchant_id: PAYFAST_CONFIG.merchantId,
       version: "v1",
       timestamp: new Date().toISOString(),
     };
-
     const cancelSignature = generateSignature(
       cancelData,
       PAYFAST_CONFIG.passphrase
@@ -422,81 +321,29 @@ exports.cancelSubscription = async (req, res) => {
           },
         }
       );
-
       await Subscription.findByIdAndUpdate(subscription._id, {
         status: "cancelled",
         cancelledAt: new Date(),
       });
-
-      res.json({
-        success: true,
+      return res.status(200).json({
+        status: true,
         message: "Subscription cancelled successfully",
+        data: null,
       });
     } catch (apiError) {
       console.error("PayFast API error:", apiError.response?.data || apiError);
-      res.status(500).json({
-        success: false,
+      return res.status(200).json({
+        status: false,
         message: "Failed to cancel subscription with PayFast",
-        error: apiError.response?.data,
+        data: null,
       });
     }
   } catch (error) {
     console.error("Cancel subscription error:", error);
-    res.status(500).json({
-      success: false,
+    return res.status(200).json({
+      status: false,
       message: "Failed to cancel subscription",
-      error: error.message,
-    });
-  }
-};
-
-// Refund a PayFast payment
-exports.refundPayment = async (req, res) => {
-  try {
-    await connectDB();
-    const { paymentId, amount } = req.body;
-
-    if (!paymentId || !amount) {
-      return res.status(400).json({
-        success: false,
-        message: "paymentId and amount are required",
-      });
-    }
-
-    // PayFast API credentials - MUST COME FROM CLIENT
-    const apiUsername = process.env.PAYFAST_API_USERNAME;
-    const apiPassword = process.env.PAYFAST_API_PASSWORD;
-
-    const url = "https://api.payfast.co.za/refunds";
-
-    const payload = {
-      payment_id: paymentId,
-      amount: amount,
-    };
-
-    const auth = Buffer.from(`${apiUsername}:${apiPassword}`).toString(
-      "base64"
-    );
-
-    const response = await axios.post(url, payload, {
-      headers: {
-        Authorization: `Basic ${auth}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    return res.json({
-      success: true,
-      message: "Refund request submitted",
-      data: response.data,
-    });
-  } catch (err) {
-    console.error("Refund Error:", err?.response?.data || err.message);
-
-    return res.status(500).json({
-      success: false,
-      message: "Refund failed",
-      error: err?.response?.data || err.message,
+      data: null,
     });
   }
 };
@@ -506,37 +353,33 @@ exports.renewSubscription = async (req, res) => {
   try {
     await connectDB();
     const { userId } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({
-        success: false,
-        message: "userId is required",
-      });
-    }
+    if (!userId)
+      return res
+        .status(200)
+        .json({ status: false, message: "userId is required", data: null });
 
     const subscription = await Subscription.findOne({
       userId,
       status: { $in: ["expired", "cancelled"] },
     });
-
-    if (!subscription) {
-      return res.status(404).json({
-        success: false,
+    if (!subscription)
+      return res.status(200).json({
+        status: false,
         message: "No subscription found to renew",
+        data: null,
       });
-    }
 
-    res.json({
-      success: true,
+    return res.status(200).json({
+      status: true,
       message: "Please create a new subscription",
-      action: "create_new_subscription",
+      data: { action: "create_new_subscription" },
     });
   } catch (error) {
     console.error("Renew subscription error:", error);
-    res.status(500).json({
-      success: false,
+    return res.status(200).json({
+      status: false,
       message: "Failed to renew subscription",
-      error: error.message,
+      data: null,
     });
   }
 };
@@ -546,28 +389,23 @@ exports.getSubscription = async (req, res) => {
   try {
     await connectDB();
     const { userId } = req.query;
-
-    if (!userId) {
-      return res.status(400).json({
-        success: false,
-        message: "userId is required",
-      });
-    }
+    if (!userId)
+      return res
+        .status(200)
+        .json({ status: false, message: "userId is required", data: null });
 
     const subscription = await Subscription.findOne({ userId }).sort({
       createdAt: -1,
     });
+    if (!subscription)
+      return res
+        .status(200)
+        .json({ status: false, message: "No subscription found", data: null });
 
-    if (!subscription) {
-      return res.status(404).json({
-        success: false,
-        message: "No subscription found",
-      });
-    }
-
-    res.json({
-      success: true,
-      subscription: {
+    return res.status(200).json({
+      status: true,
+      message: "Subscription fetched",
+      data: {
         deviceType: subscription.deviceType,
         paymentId: subscription.paymentId,
         plan: subscription.plan,
@@ -580,32 +418,29 @@ exports.getSubscription = async (req, res) => {
     });
   } catch (error) {
     console.error("Get subscription error:", error);
-    res.status(500).json({
-      success: false,
+    return res.status(200).json({
+      status: false,
       message: "Failed to get subscription",
-      error: error.message,
+      data: null,
     });
   }
 };
 
-// 6. ✅ NEW: Manual status check endpoint (for debugging)
+// 6. CHECK SUBSCRIPTION STATUS
 exports.checkSubscriptionStatus = async (req, res) => {
   try {
     await connectDB();
     const { subscriptionId } = req.params;
-
     const subscription = await Subscription.findById(subscriptionId);
+    if (!subscription)
+      return res
+        .status(200)
+        .json({ status: false, message: "Subscription not found", data: null });
 
-    if (!subscription) {
-      return res.status(404).json({
-        success: false,
-        message: "Subscription not found",
-      });
-    }
-
-    res.json({
-      success: true,
-      subscription: {
+    return res.status(200).json({
+      status: true,
+      message: "Subscription status fetched",
+      data: {
         id: subscription._id,
         userId: subscription.userId,
         plan: subscription.plan,
@@ -618,10 +453,10 @@ exports.checkSubscriptionStatus = async (req, res) => {
     });
   } catch (error) {
     console.error("Check status error:", error);
-    res.status(500).json({
-      success: false,
+    return res.status(200).json({
+      status: false,
       message: "Failed to check subscription status",
-      error: error.message,
+      data: null,
     });
   }
 };
