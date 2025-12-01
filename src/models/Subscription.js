@@ -5,7 +5,7 @@ const subscriptionSchema = new mongoose.Schema({
   userId: { type: String, required: true, index: true },
   deviceType: { type: String, enum: ["android", "apple"], required: true },
   paymentId: { type: String }, // PayFast token
-  plan: { type: String, enum: ["free", "monthly", "premium"], required: true },
+  plan: { type: String, required: true },
   price: { type: Number, required: true },
   currency: { type: String, default: "ZAR" },
   status: {

@@ -187,6 +187,9 @@ async function socialAuth(req, res, next) {
 
     const alcoholTypeName = alcoholField ? alcoholField.name : null;
     const improvementNames = improvementFields.map((f) => f.name);
+    const alcoholTypeIds = alcoholField ? alcoholField._id : null;
+    const improvementIds = improvementFields.map((f) => f._id);
+
     const payload = {
       userId: user._id.toString(),
       email: user.email,
