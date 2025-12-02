@@ -213,10 +213,16 @@ exports.getSubscriptionURL = async (req, res) => {
 // 2. PAYFAST WEBHOOK (ITN)
 exports.webhook = async (req, res) => {
   try {
-    console.log("api/subscription/webhook called----------------");
+    console.log("Webhook hit");
     await connectDB();
+    console.log("DB connected");
+
     const pfData = req.body;
+    console.log("pfData:", pfData);
+
     const signature = pfData.signature;
+    console.log("signature:", signature);
+
     const clientIp = (
       req.headers["x-forwarded-for"] ||
       req.connection.remoteAddress ||
@@ -224,9 +230,14 @@ exports.webhook = async (req, res) => {
     )
       .split(",")[0]
       .trim();
+    console.log("clientIp:", clientIp);
 
-    if (!verifyPayFastData(pfData, signature, PAYFAST_CONFIG.passphrase))
+    console.log("Verifying signature...");
+    if (!verifyPayFastData(pfData, signature, PAYFAST_CONFIG.passphrase)) {
+      console.log("Invalid signature");
       return res.status(200).send("Invalid signature");
+    }
+    console.log("Signature valid");
 
     const {
       payment_status,
@@ -237,10 +248,26 @@ exports.webhook = async (req, res) => {
       amount_gross,
       billing_date,
     } = pfData;
-    if (!subscriptionId) return res.status(200).send("No subscription ID");
+
+    console.log("Extracted fields:", {
+      payment_status,
+      userId,
+      planType,
+      subscriptionId,
+      token,
+      amount_gross,
+      billing_date,
+    });
+
+    if (!subscriptionId) {
+      console.log("No subscriptionId");
+      return res.status(200).send("No subscription ID");
+    }
 
     let newStatus = "pending";
-    switch (payment_status.toUpperCase()) {
+    console.log("Determining new status...");
+
+    switch (payment_status?.toUpperCase()) {
       case "COMPLETE":
         newStatus = "active";
         break;
@@ -252,6 +279,9 @@ exports.webhook = async (req, res) => {
         break;
     }
 
+    console.log("New status:", newStatus);
+
+    console.log("Updating subscription...");
     const updatedSubscription = await Subscription.findByIdAndUpdate(
       subscriptionId,
       {
@@ -263,9 +293,15 @@ exports.webhook = async (req, res) => {
       },
       { new: true }
     );
-    if (!updatedSubscription)
-      return res.status(200).send("Subscription not found");
 
+    console.log("DB update result:", updatedSubscription);
+
+    if (!updatedSubscription) {
+      console.log("Subscription not found");
+      return res.status(200).send("Subscription not found");
+    }
+
+    console.log("Webhook complete");
     return res.status(200).json({
       status: true,
       message: "Webhook processed successfully",
@@ -273,7 +309,7 @@ exports.webhook = async (req, res) => {
     });
   } catch (error) {
     console.error("Webhook error:", error);
-    console.log("Webhook error--------------------------------:", error);
+    console.log("Webhook error block reached");
     return res.status(200).json({
       status: false,
       message: "Webhook processing failed",
