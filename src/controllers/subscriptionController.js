@@ -6,10 +6,13 @@ const User = require("../models/User");
 const connectDB = require("../db/mongo");
 
 const PAYFAST_CONFIG = {
-  merchantId: "30891881",
-  merchantKey: "tkfsxuucbmqeu",
+  // merchantId: "30891881",
+  // merchantKey: "tkfsxuucbmqeu",
+  merchantId: "10044126",
+  merchantKey: "qxq4ap5sm2jdq",
   passphrase: "Truedrop123456",
-  baseUrl: "https://www.payfast.co.za/eng/process",
+  // baseUrl: "https://www.payfast.co.za/eng/process",
+  baseUrl: "https://sandbox.payfast.co.za/eng/process",
   apiUrl: "https://api.payfast.co.za/subscriptions",
 };
 
