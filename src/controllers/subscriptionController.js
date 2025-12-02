@@ -213,6 +213,7 @@ exports.getSubscriptionURL = async (req, res) => {
 // 2. PAYFAST WEBHOOK (ITN)
 exports.webhook = async (req, res) => {
   try {
+    console.log("api/subscription/webhook called----------------");
     await connectDB();
     const pfData = req.body;
     const signature = pfData.signature;
