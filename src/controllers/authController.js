@@ -432,7 +432,6 @@ async function addUserDetails(req, res, next) {
 
     // Generate new token
     const payload = { userId: user._id.toString(), email: user.email };
-    const accessToken = jwtService.signAccess(payload);
     const milestones = await Milestones.find({
       frequency: user?.goal?.frequency,
     })
@@ -582,7 +581,6 @@ async function addUserDetails(req, res, next) {
               },
           milestones: respMilestones,
         },
-        token: accessToken,
       },
     });
   } catch (err) {

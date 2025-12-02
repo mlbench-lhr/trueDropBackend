@@ -131,7 +131,6 @@ async function editProfile(req, res, next) {
 
     // Generate new access token with updated info
     const payload = { userId: user._id.toString(), email: user.email };
-    const accessToken = jwtService.signAccess(payload);
 
     return res.status(200).json({
       status: true,
@@ -153,7 +152,6 @@ async function editProfile(req, res, next) {
           profilePicture: user.profilePicture,
           createdAt: user.createdAt,
         },
-        token: accessToken,
       },
     });
   } catch (err) {
