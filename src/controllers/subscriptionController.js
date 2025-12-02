@@ -273,6 +273,7 @@ exports.webhook = async (req, res) => {
     });
   } catch (error) {
     console.error("Webhook error:", error);
+    console.log("Webhook error--------------------------------:", error);
     return res.status(200).json({
       status: false,
       message: "Webhook processing failed",
