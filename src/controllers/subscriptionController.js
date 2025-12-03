@@ -35,21 +35,21 @@ const PLANS = {
 
   // Testing with smallest possible intervals
   three_day: {
-    amount: 0.5, // Minimal test amount
+    amount: 1.99, // Minimal test amount
     frequency: 3, // 3 days (minimum for this plan)
     cycles: 1, // One-time payment
     name: "3-Day Test",
   },
 
   monthly: {
-    amount: 0.5, // Minimal test amount
+    amount: 4.99, // Minimal test amount
     frequency: 1, // Daily - shortest frequency PayFast supports
     cycles: 2, // Only 2 cycles
     name: "Monthly Test (Daily Billing)",
   },
 
   yearly: {
-    amount: 0.5, // Minimal test amount
+    amount: 49.99, // Minimal test amount
     frequency: 1, // Daily billing
     cycles: 3, // 3 cycles only
     name: "Yearly Test (Daily Billing)",
