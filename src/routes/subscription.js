@@ -8,5 +8,6 @@ router.post("/webhook", subscriptionController.webhook);
 router.post("/cancelSubscription", subscriptionController.cancelSubscription);
 router.post("/renewSubscription", subscriptionController.renewSubscription);
 router.get("/getSubscription", subscriptionController.getSubscription);
+router.get("/getAllSubscriptions", subscriptionController.getAllSubscription);
 
 module.exports = router;
