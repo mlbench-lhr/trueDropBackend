@@ -452,14 +452,13 @@ exports.getSubscription = async (req, res) => {
       message: "Subscription fetched",
       data: {
         deviceType: subscription.deviceType,
-        paymentId: subscription.paymentId,
         plan: subscription.plan,
         price: subscription.price,
         currency: subscription.currency,
         status: subscription.status,
         created: subscription.createdAt,
         isFreeTrial: !hasThreeDaysPassed,
-        nextBillingDate: subscription.nextBillingDate,
+        nextBillingDate: subscription.nextBillingDate || null,
       },
     });
   } catch (error) {
@@ -496,14 +495,13 @@ exports.getAllSubscription = async (req, res) => {
     const formattedSubscriptions = subscriptions?.map((subscription) => {
       return {
         deviceType: subscription.deviceType,
-        paymentId: subscription.paymentId,
         plan: subscription.plan,
         price: subscription.price,
         currency: subscription.currency,
         status: subscription.status,
         created: subscription.createdAt,
         isFreeTrial: !hasThreeDaysPassed,
-        nextBillingDate: subscription.nextBillingDate,
+        nextBillingDate: subscription.nextBillingDate || null,
       };
     });
 
@@ -541,7 +539,6 @@ exports.checkSubscriptionStatus = async (req, res) => {
         userId: subscription.userId,
         plan: subscription.plan,
         status: subscription.status,
-        paymentId: subscription.paymentId,
         lastPaymentDate: subscription.lastPaymentDate,
         createdAt: subscription.createdAt,
         updatedAt: subscription.updatedAt,
