@@ -33,30 +33,64 @@ const PLANS = {
     isFree: true,
   },
 
-  // 3-Day Plan
+  // 3-Day Plan → make it renew every 1 minute for sandbox testing
   three_day: {
-    amount: 1.99, // your amount here
-    frequency: 3, // every 3 days
-    cycles: 1, // only 1 cycle (non-recurring)
-    name: "3-Day Access",
+    amount: 1.99,
+    frequency: 60, // 60 seconds
+    cycles: 0, // recurring while testing
+    name: "3-Day Access (TEST)",
   },
 
-  // Monthly Plan
+  // Monthly → make it renew every 2 minutes
   monthly: {
-    amount: 5.0, // your monthly amount
-    frequency: 3, // every 30 days
-    cycles: 0, // unlimited recurring
-    name: "Monthly Plan",
+    amount: 5.0,
+    frequency: 120, // 2 minutes
+    cycles: 0,
+    name: "Monthly Plan (TEST)",
   },
 
-  // Yearly Plan
+  // Yearly → make it renew every 3 minutes
   yearly: {
-    amount: 49.99, // your yearly amount
-    frequency: 6, // every 365 days
-    cycles: 0, // unlimited recurring
-    name: "Yearly Plan",
+    amount: 49.99,
+    frequency: 180, // 3 minutes
+    cycles: 0,
+    name: "Yearly Plan (TEST)",
   },
 };
+
+// const PLANS = {
+//   free: {
+//     amount: 0,
+//     frequency: 0,
+//     cycles: 0,
+//     name: "Free Plan",
+//     isFree: true,
+//   },
+
+//   // 3-Day Plan
+//   three_day: {
+//     amount: 1.99, // your amount here
+//     frequency: 3, // every 3 days
+//     cycles: 1, // only 1 cycle (non-recurring)
+//     name: "3-Day Access",
+//   },
+
+//   // Monthly Plan
+//   monthly: {
+//     amount: 5.0, // your monthly amount
+//     frequency: 3, // every 30 days
+//     cycles: 0, // unlimited recurring
+//     name: "Monthly Plan",
+//   },
+
+//   // Yearly Plan
+//   yearly: {
+//     amount: 49.99, // your yearly amount
+//     frequency: 6, // every 365 days
+//     cycles: 0, // unlimited recurring
+//     name: "Yearly Plan",
+//   },
+// };
 
 const generateSignature = (data, passphrase = "") => {
   let pfOutput = "";
@@ -176,7 +210,8 @@ exports.getSubscriptionURL = async (req, res) => {
       custom_str2: planType,
       custom_str3: subscriptionId,
       subscription_type: "1",
-      billing_date: new Date().toISOString().split("T")[0],
+      // billing_date: new Date().toISOString().split("T")[0],
+      billing_date: new Date().toISOString(),
       recurring_amount: plan.amount.toFixed(2),
       frequency: plan.frequency.toString(),
       cycles: plan.cycles.toString(),
