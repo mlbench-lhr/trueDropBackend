@@ -33,28 +33,26 @@ const PLANS = {
     isFree: true,
   },
 
-  // 3-Day Plan → make it renew every 1 minute for sandbox testing
+  // Testing with smallest possible intervals
   three_day: {
-    amount: 1.99,
-    frequency: 60, // 60 seconds
-    cycles: 0, // recurring while testing
-    name: "3-Day Access (TEST)",
+    amount: 0.5, // Minimal test amount
+    frequency: 3, // 3 days (minimum for this plan)
+    cycles: 1, // One-time payment
+    name: "3-Day Test",
   },
 
-  // Monthly → make it renew every 2 minutes
   monthly: {
-    amount: 5.0,
-    frequency: 120, // 2 minutes
-    cycles: 0,
-    name: "Monthly Plan (TEST)",
+    amount: 0.5, // Minimal test amount
+    frequency: 1, // Daily - shortest frequency PayFast supports
+    cycles: 2, // Only 2 cycles
+    name: "Monthly Test (Daily Billing)",
   },
 
-  // Yearly → make it renew every 3 minutes
   yearly: {
-    amount: 49.99,
-    frequency: 180, // 3 minutes
-    cycles: 0,
-    name: "Yearly Plan (TEST)",
+    amount: 0.5, // Minimal test amount
+    frequency: 1, // Daily billing
+    cycles: 3, // 3 cycles only
+    name: "Yearly Test (Daily Billing)",
   },
 };
 
@@ -211,7 +209,6 @@ exports.getSubscriptionURL = async (req, res) => {
       custom_str3: subscriptionId,
       subscription_type: "1",
       billing_date: new Date().toISOString().split("T")[0],
-      // billing_date: new Date().toISOString(),
       recurring_amount: plan.amount.toFixed(2),
       frequency: plan.frequency.toString(),
       cycles: plan.cycles.toString(),
