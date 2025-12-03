@@ -35,14 +35,14 @@ const PLANS = {
 
   monthly: {
     amount: 68.33, // Minimal test amount
-    frequency: 1, // Daily - shortest frequency PayFast supports
+    frequency: 3, // Daily - shortest frequency PayFast supports
     cycles: 0, // Only 2 cycles
     name: "Monthly Test (Daily Billing)",
   },
 
   yearly: {
     amount: 461.22, // Minimal test amount
-    frequency: 1, // Daily billing
+    frequency: 6, // Daily billing
     cycles: 0, // 3 cycles only
     name: "Yearly Test (Daily Billing)",
   },
