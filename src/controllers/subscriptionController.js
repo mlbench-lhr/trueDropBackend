@@ -474,41 +474,50 @@ exports.getSubscription = async (req, res) => {
 exports.getAllSubscription = async (req, res) => {
   try {
     await connectDB();
-    const { userId } = req.query;
+    const { userId, page = 1, limit = 10 } = req.query;
     if (!userId)
-      return res
-        .status(200)
-        .json({ status: false, message: "userId is required", data: null });
+      return res.status(200).json({
+        status: false,
+        message: "userId is required",
+        data: null,
+      });
     const user = await User.findById(userId);
     const hasThreeDaysPassed = () => {
-      const threeDaysInMs = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
-      return Date.now() - new Date(user.createdAt).getTime() > threeDaysInMs;
+      const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+      return Date.now() - new Date(user.createdAt).getTime() > threeDaysMs;
     };
-    const subscriptions = await Subscription.find({ userId }).sort({
-      createdAt: -1,
-    });
-    if (!subscriptions)
-      return res
-        .status(200)
-        .json({ status: false, message: "No subscriptions found", data: null });
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const filter = { userId };
+    const total = await Subscription.countDocuments(filter);
 
-    const formattedSubscriptions = subscriptions?.map((subscription) => {
-      return {
-        deviceType: subscription.deviceType,
-        plan: subscription.plan,
-        price: subscription.price,
-        currency: subscription.currency,
-        status: subscription.status,
-        created: subscription.createdAt,
-        isFreeTrial: !hasThreeDaysPassed,
-        nextBillingDate: subscription.nextBillingDate || null,
-      };
-    });
+    const subscriptions = await Subscription.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const formattedSubscriptions = subscriptions.map((subscription) => ({
+      deviceType: subscription.deviceType,
+      plan: subscription.plan,
+      price: subscription.price,
+      currency: subscription.currency,
+      status: subscription.status,
+      created: subscription.createdAt,
+      isFreeTrial: !hasThreeDaysPassed(),
+      nextBillingDate: subscription.nextBillingDate || null,
+    }));
 
     return res.status(200).json({
       status: true,
       message: "Subscriptions fetched",
-      data: formattedSubscriptions,
+      data: {
+        subscriptions: formattedSubscriptions,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(total / parseInt(limit)),
+          totalItems: total,
+          itemsPerPage: parseInt(limit),
+        },
+      },
     });
   } catch (error) {
     console.error("Get subscriptions error:", error);
