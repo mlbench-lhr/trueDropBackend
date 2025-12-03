@@ -44,6 +44,29 @@ async function updateFcmDeviceToken(user, fcmDeviceToken) {
   }
 }
 
+// Add this import at the top of your file
+const Subscription = require("../models/Subscription"); // Adjust path as needed
+
+// Helper function to create free subscription
+async function createFreeSubscription(userId) {
+  try {
+    const freeSubscription = await Subscription.create({
+      userId: userId.toString(),
+      deviceType: "android", // Default, can be updated later
+      plan: "free",
+      price: 0,
+      currency: "ZAR",
+      status: "active",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    return freeSubscription;
+  } catch (error) {
+    logger.error("Error creating free subscription:", error);
+    throw error;
+  }
+}
+
 // Traditional Email/Password Registration
 async function register(req, res, next) {
   try {
@@ -83,6 +106,9 @@ async function register(req, res, next) {
       isEmailVerified: false,
       tokenVersion: 0,
     });
+
+    // ⬇️ Create free subscription for new user
+    await createFreeSubscription(user._id);
 
     // ⬇️ Update FCM token here
     await updateFcmDeviceToken(user, fcmDeviceToken);
@@ -144,6 +170,7 @@ async function socialAuth(req, res, next) {
     // Check if user exists with this provider and providerId
     let user = await User.findOne({ provider, providerId });
     let message, statusCode;
+    let isNewUser = false; // Track if this is a new user
 
     if (!user) {
       // Try matching by email (from any provider)
@@ -177,6 +204,7 @@ async function socialAuth(req, res, next) {
           tokenVersion: 0,
         });
 
+        isNewUser = true; // Mark as new user
         message = "User registered successfully";
         statusCode = 200;
       }
@@ -185,6 +213,12 @@ async function socialAuth(req, res, next) {
       message = "Login successful";
       statusCode = 200;
     }
+
+    // ⬇️ Create free subscription for new users
+    if (isNewUser) {
+      await createFreeSubscription(user._id);
+    }
+
     await updateFcmDeviceToken(user, fcmDeviceToken);
 
     user.tokenVersion += 1;
