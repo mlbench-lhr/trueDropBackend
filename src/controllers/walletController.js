@@ -14,7 +14,7 @@ async function getSaveAndSober(req, res, next) {
       userId,
       completedOn: { $exists: true },
     })
-      .sort({ createdAt: -1 })
+      .sort({ milestoneId: 1 })
       .populate("milestoneId")
       .lean();
 

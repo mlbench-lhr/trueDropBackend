@@ -256,7 +256,7 @@ async function socialAuth(req, res, next) {
       completedOn: null,
     })
       .populate("milestoneId")
-      .sort({ createdAt: 1 });
+      .sort({ milestoneId: 1 });
     const lastCompletedMilestone = await UsersMilestones.findOne({
       userId: user._id,
       completedOn: { $ne: null },
@@ -478,7 +478,7 @@ async function addUserDetails(req, res, next) {
       completedOn: null,
     })
       .populate("milestoneId")
-      .sort({ createdAt: 1 });
+      .sort({ milestoneId: 1 });
     const lastCompletedMilestone = await UsersMilestones.findOne({
       userId: user._id,
       completedOn: { $ne: null },
@@ -691,7 +691,7 @@ async function login(req, res, next) {
       completedOn: null,
     })
       .populate("milestoneId")
-      .sort({ createdAt: 1 });
+      .sort({ milestoneId: 1 });
     const lastCompletedMilestone = await UsersMilestones.findOne({
       userId: user._id,
       completedOn: { $ne: null },
