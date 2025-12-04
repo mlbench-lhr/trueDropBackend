@@ -379,7 +379,8 @@ exports.cancelSubscription = async (req, res) => {
     const subscription = await Subscription.findOne({
       userId,
       status: "active",
-    });
+      paymentId: { $exists: true },
+    }).sort({ createdAt: 1 });
     if (!subscription || !subscription.paymentId)
       return res.status(200).json({
         status: false,
