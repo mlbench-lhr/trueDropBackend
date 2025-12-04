@@ -492,11 +492,6 @@ exports.getSubscription = async (req, res) => {
       return res
         .status(200)
         .json({ status: false, message: "userId is required", data: null });
-    const user = await User.findById(userId);
-    const hasThreeDaysPassed = () => {
-      const threeDaysInMs = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
-      return Date.now() - new Date(user.createdAt).getTime() > threeDaysInMs;
-    };
     const subscription = await Subscription.findOne({ userId }).sort({
       createdAt: -1,
     });
@@ -533,7 +528,6 @@ exports.getSubscription = async (req, res) => {
         currency: subscription.currency,
         status: subscription.status,
         created: subscription.createdAt,
-        isFreeTrial: !hasThreeDaysPassed(),
         nextBillingDate: subscription.nextBillingDate || null,
       },
     });
@@ -557,11 +551,6 @@ exports.getAllSubscription = async (req, res) => {
         message: "userId is required",
         data: null,
       });
-    const user = await User.findById(userId);
-    const hasThreeDaysPassed = () => {
-      const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
-      return Date.now() - new Date(user.createdAt).getTime() > threeDaysMs;
-    };
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const filter = { userId };
     const total = await Subscription.countDocuments(filter);
@@ -578,7 +567,6 @@ exports.getAllSubscription = async (req, res) => {
       currency: subscription.currency,
       status: subscription.status,
       created: subscription.createdAt,
-      isFreeTrial: !hasThreeDaysPassed(),
       nextBillingDate: subscription.nextBillingDate || null,
     }));
 
