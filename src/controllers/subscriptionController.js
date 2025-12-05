@@ -429,14 +429,27 @@ exports.cancelSubscription = async (req, res) => {
         console.log("Error preparing API cancellation:", error.message);
       }
     }
-    await Subscription.findByIdAndUpdate(subscription._id, {
-      status: "cancelled",
-      cancelledAt: new Date(),
-    });
+    const updatedSubscription = await Subscription.findByIdAndUpdate(
+      subscription._id,
+      {
+        status: "cancelled",
+        cancelledAt: new Date(),
+        nextBillingDate: null,
+      },
+      { new: true }
+    );
     return res.status(200).json({
       status: true,
-      message: "Subscription cancelled successfully (sandbox mode)",
-      data: null,
+      message: "Subscription cancelled successfully",
+      data: {
+        deviceType: updatedSubscription.deviceType,
+        plan: updatedSubscription.plan,
+        price: updatedSubscription.price,
+        currency: updatedSubscription.currency,
+        status: updatedSubscription.status,
+        created: updatedSubscription.createdAt,
+        nextBillingDate: updatedSubscription.nextBillingDate || null,
+      },
     });
   } catch (error) {
     console.error("Cancel subscription error:", error);
