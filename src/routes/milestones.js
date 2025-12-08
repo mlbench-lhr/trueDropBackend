@@ -21,6 +21,13 @@ router.get(
   milestonesController.getMilestonesHistory
 );
 
+// Get current and next milestone with 24h delay logic
+router.get(
+  "/getCurrentMilestones",
+  auth,
+  milestonesController.getCurrentMilestones
+);
+
 // Update a milestones entry
 router.put(
   "/:milestonesId",
