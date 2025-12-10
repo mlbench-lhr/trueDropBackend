@@ -555,6 +555,89 @@ exports.getSubscription = async (req, res) => {
   }
 };
 
+exports.addSubscription = async (req, res) => {
+  try {
+    await connectDB();
+
+    const { userId, deviceType, paymentId, plan, price, currency } = req.body;
+
+    // Validate
+    if (!userId || !deviceType || !plan || !price) {
+      return res.status(200).json({
+        status: false,
+        message: "Missing required fields",
+        data: null,
+      });
+    }
+
+    const planData = PLANS[plan];
+    if (!planData) {
+      return res.status(200).json({
+        status: false,
+        message: "Invalid plan selected",
+        data: null,
+      });
+    }
+
+    // Optional: Expire previous active subscription
+    const previous = await Subscription.findOne({
+      userId,
+      status: "active",
+    });
+
+    if (previous) {
+      await Subscription.findByIdAndUpdate(previous._id, {
+        status: "expired",
+        updatedAt: new Date(),
+      });
+    }
+
+    // Calculate next billing
+    let nextBillingDate = null;
+    if (planData.cycles > 0) {
+      nextBillingDate = new Date();
+      nextBillingDate.setDate(nextBillingDate.getDate() + planData.cycles);
+    }
+
+    // Create subscription
+    const newSubscription = await Subscription.create({
+      userId,
+      deviceType,
+      paymentId: paymentId || null,
+      plan,
+      price,
+      currency: currency || "ZAR",
+      status: "active", // marking as active after payment
+      nextBillingDate,
+      lastPaymentDate: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    return res.status(200).json({
+      status: true,
+      message: "Subscription added successfully",
+      data: {
+        subscriptionId: newSubscription._id,
+        deviceType: newSubscription.deviceType,
+        plan: newSubscription.plan,
+        price: newSubscription.price,
+        currency: newSubscription.currency,
+        status: newSubscription.status,
+        created: newSubscription.createdAt,
+        nextBillingDate: newSubscription.nextBillingDate,
+      },
+    });
+  } catch (error) {
+    console.error("Add subscription error:", error);
+    return res.status(200).json({
+      status: false,
+      message: "Failed to add subscription",
+      data: null,
+    });
+  }
+};
+
 exports.getAllSubscription = async (req, res) => {
   try {
     await connectDB();
