@@ -35,14 +35,14 @@ const PLANS = {
 
   monthly: {
     amount: 68.33,
-    frequency: 1,
+    frequency: 3,
     cycles: 1,
     name: "Monthly Test (Daily x1)",
   },
 
   yearly: {
     amount: 461.22,
-    frequency: 1,
+    frequency: 3,
     cycles: 1,
     name: "Yearly Test (Daily x1)",
   },
