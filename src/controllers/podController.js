@@ -212,7 +212,6 @@ async function getPods(req, res, next) {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const searchQuery = req.query.search || "";
-    const radiusInKm = 1;
     const skip = (page - 1) * limit;
     const currentUser = await User.findById(userId).select("location");
     if (
@@ -228,6 +227,7 @@ async function getPods(req, res, next) {
     }
     const userLat = currentUser.location.lat;
     const userLong = currentUser.location.long;
+    const userRegionKey = getRegionKey(userLat, userLong);
     const yourPodsQuery = { members: { $in: [userId] } };
     if (searchQuery) {
       yourPodsQuery.name = { $regex: searchQuery, $options: "i" };
@@ -274,7 +274,12 @@ async function getPods(req, res, next) {
           distance: distance,
         };
       })
-      .filter((pod) => pod !== null && pod.distance <= radiusInKm)
+      .filter((pod) => {
+        if (!pod) return false;
+        const cLat = pod.createdBy.location.lat;
+        const cLong = pod.createdBy.location.long;
+        return getRegionKey(cLat, cLong) === userRegionKey;
+      })
       .sort((a, b) => a.distance - b.distance);
     const totalItems = availablePodsWithDistance.length;
     const totalPages = Math.ceil(totalItems / limit);
@@ -363,6 +368,12 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 }
 function toRadians(degrees) {
   return degrees * (Math.PI / 180);
+}
+function getRegionKey(lat, lon) {
+  const regionSize = 0.1;
+  const latRegion = Math.floor(lat / regionSize);
+  const lonRegion = Math.floor(lon / regionSize);
+  return latRegion + ":" + lonRegion;
 }
 
 async function searchUsers(req, res, next) {
