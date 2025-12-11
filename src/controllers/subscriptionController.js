@@ -131,6 +131,8 @@ const verifyPayFastData = (pfData, signature, passphrase = "") => {
   console.log("Received signature:", signature);
   return calculatedSignature === signature;
 };
+const USD_ZAR_RATE = parseFloat(process.env.USD_ZAR_RATE) || 18.5;
+const convertZarToUsd = (amount) => parseFloat(((amount || 0) / USD_ZAR_RATE).toFixed(2));
 
 // 1. GET SUBSCRIPTION URL
 exports.getSubscriptionURL = async (req, res) => {
@@ -237,7 +239,7 @@ exports.getSubscriptionURL = async (req, res) => {
         paymentUrl,
         subscriptionId,
         plan: planType,
-        amount: plan.amount,
+        amount: convertZarToUsd(plan.amount),
       },
     });
   } catch (error) {
@@ -444,8 +446,8 @@ exports.cancelSubscription = async (req, res) => {
       data: {
         deviceType: updatedSubscription.deviceType,
         plan: updatedSubscription.plan,
-        price: updatedSubscription.price,
-        currency: updatedSubscription.currency,
+        price: convertZarToUsd(updatedSubscription.price),
+        currency: "USD",
         status: updatedSubscription.status,
         created: updatedSubscription.createdAt,
         nextBillingDate: updatedSubscription.nextBillingDate || null,
@@ -538,8 +540,8 @@ exports.getSubscription = async (req, res) => {
       data: {
         deviceType: subscription.deviceType,
         plan: subscription.plan,
-        price: subscription.price,
-        currency: subscription.currency,
+        price: convertZarToUsd(subscription.price),
+        currency: "USD",
         status: subscription.status,
         created: subscription.createdAt,
         nextBillingDate: subscription.nextBillingDate || null,
@@ -621,8 +623,8 @@ exports.addSubscription = async (req, res) => {
         subscriptionId: newSubscription._id,
         deviceType: newSubscription.deviceType,
         plan: newSubscription.plan,
-        price: newSubscription.price,
-        currency: newSubscription.currency,
+        price: convertZarToUsd(newSubscription.price),
+        currency: "USD",
         status: newSubscription.status,
         created: newSubscription.createdAt,
         nextBillingDate: newSubscription.nextBillingDate,
@@ -660,8 +662,8 @@ exports.getAllSubscription = async (req, res) => {
     const formattedSubscriptions = subscriptions.map((subscription) => ({
       deviceType: subscription.deviceType,
       plan: subscription.plan,
-      price: subscription.price,
-      currency: subscription.currency,
+      price: convertZarToUsd(subscription.price),
+      currency: "USD",
       status: subscription.status,
       created: subscription.createdAt,
       nextBillingDate: subscription.nextBillingDate || null,
