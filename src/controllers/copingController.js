@@ -40,9 +40,7 @@ async function addCoping(req, res, next) {
 
     return res.status(200).json({
       status: true,
-      message: `${createdCopings.length} coping ${
-        createdCopings.length === 1 ? "entry" : "entries"
-      } created successfully`,
+      message: `${createdCopings.length} coping created successfully`,
       data: createdCopings.map((c) => ({
         _id: c._id,
         feeling: c.feeling,

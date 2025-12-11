@@ -41,9 +41,7 @@ async function addJournal(req, res, next) {
 
     return res.status(200).json({
       status: true,
-      message: `${createdJournals.length} journal ${
-        createdJournals.length === 1 ? "entry" : "entries"
-      } created successfully`,
+      message: `${createdJournals.length} journal created successfully`,
       data: createdJournals.map((journal) => ({
         _id: journal._id,
         userId: journal.userId,
