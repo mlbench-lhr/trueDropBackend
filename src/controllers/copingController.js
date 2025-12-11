@@ -20,11 +20,10 @@ async function addCoping(req, res, next) {
 
     // Validate feeling enum
     for (const coping of copings) {
-      if (!coping.feeling || !coping.strategy || !coping.description) {
+      if (!coping.feeling || !coping.strategy) {
         return res.status(200).json({
           status: false,
-          message:
-            "Each coping entry must include feeling, strategy, and description",
+          message: "Coping entry must include feeling and strategy",
           data: null,
         });
       }
@@ -116,11 +115,10 @@ async function updateCoping(req, res, next) {
     const { feeling, strategy, description } = req.body;
     const userId = req.user.userId;
 
-    if (!feeling && !strategy && !description) {
+    if (!feeling && !strategy) {
       return res.status(200).json({
         status: false,
-        message:
-          "At least one field (feeling, strategy, or description) is required",
+        message: "At least one field (feeling or strategy) is required",
         data: null,
       });
     }
