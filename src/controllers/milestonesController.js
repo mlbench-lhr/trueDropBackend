@@ -639,6 +639,7 @@ async function getCurrentMilestones(req, res, next) {
     const moneySaved =
       (soberDays / frequencyInNumber[userFromDb?.goal?.frequency || "daily"]) *
       (userFromDb?.goal?.amount || 0);
+    console.log("lastCompletedMilestone-------", lastCompletedMilestone);
 
     return res.status(200).json({
       status: true,
@@ -657,7 +658,7 @@ async function getCurrentMilestones(req, res, next) {
               moneySaved: moneySaved,
               updatedAt: currentUserMilestone?.updatedAt || null,
               allowCheckIn:
-                (currentUserMilestone?.soberDays || 0) > 0 ||
+                currentUserMilestone?.soberDays < 1 ||
                 calculateAllowCheckIn(lastCompletedMilestone?.completedOn),
             }
           : null,
