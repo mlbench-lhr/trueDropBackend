@@ -503,7 +503,7 @@ async function getCurrentMilestones(req, res, next) {
       .sort({ completedOn: -1 })
       .populate(
         "milestoneId",
-        "frequency tag title description dayCount nextMilestone _id"
+        "frequency tag title description dayCount nextMilestone _id updatedAt"
       )
       .lean();
 
