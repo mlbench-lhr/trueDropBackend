@@ -37,14 +37,14 @@ const PLANS = {
     amount: 68.33,
     frequency: 3,
     cycles: 1,
-    name: "Monthly Test (Daily x1)",
+    name: "Monthly Test $3.99",
   },
 
   yearly: {
     amount: 461.22,
     frequency: 3,
     cycles: 1,
-    name: "Yearly Test (Daily x1)",
+    name: "Yearly Test $31.99",
   },
 };
 
@@ -132,7 +132,8 @@ const verifyPayFastData = (pfData, signature, passphrase = "") => {
   return calculatedSignature === signature;
 };
 const USD_ZAR_RATE = parseFloat(process.env.USD_ZAR_RATE) || 18.5;
-const convertZarToUsd = (amount) => parseFloat(((amount || 0) / USD_ZAR_RATE).toFixed(2));
+const convertZarToUsd = (amount) =>
+  parseFloat(((amount || 0) / USD_ZAR_RATE).toFixed(2));
 
 // 1. GET SUBSCRIPTION URL
 exports.getSubscriptionURL = async (req, res) => {
