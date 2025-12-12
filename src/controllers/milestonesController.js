@@ -506,6 +506,7 @@ async function getCurrentMilestones(req, res, next) {
         "frequency tag title description dayCount nextMilestone _id updatedAt"
       )
       .lean();
+    console.log("lastCompletedMilestone---", lastCompletedMilestone);
 
     let currentMilestone = null;
     let nextMilestone = null;
@@ -659,7 +660,7 @@ async function getCurrentMilestones(req, res, next) {
               updatedAt: currentUserMilestone?.updatedAt || null,
               allowCheckIn:
                 currentUserMilestone?.soberDays < 1 ||
-                calculateAllowCheckIn(lastCompletedMilestone?.updatedAt),
+                calculateAllowCheckIn(currentUserMilestone?.updatedAt),
             }
           : null,
         nextMilestone: nextMilestone
