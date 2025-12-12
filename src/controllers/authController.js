@@ -273,97 +273,11 @@ async function socialAuth(req, res, next) {
         milestoneId: milestones?.[1]?._id,
       },
     ];
-    let userMilestonesSavedInDb = {
-      currentMilestone: { ...milestones[0], soberDays: 0 },
-      nextMilestone: { ...milestones[1], soberDays: 0 },
-    };
     if (isUserHasMilestones.length < 1 && user?.goal?.frequency) {
       userMilestonesSavedInDb = await UsersMilestones.insertMany(
         userMilestonesToStore
       );
     }
-    const respMilestones = {
-      currentMilestone: {
-        _id:
-          isUserHasMilestones[0]?.milestoneId?._id ||
-          milestones[0]?._id ||
-          null,
-        frequency:
-          isUserHasMilestones[0]?.milestoneId?.frequency ||
-          milestones[0]?.frequency ||
-          null,
-        tag: isUserHasMilestones[0]?.milestoneId?.tag || milestones[0]?.tag,
-        title:
-          isUserHasMilestones[0]?.milestoneId?.title || milestones[0]?.title,
-        description:
-          isUserHasMilestones[0]?.milestoneId?.description ||
-          milestones[0]?.description,
-        dayCount:
-          isUserHasMilestones[0]?.milestoneId?.dayCount ||
-          milestones[0]?.dayCount,
-        completedOn:
-          isUserHasMilestones?.[0]?.completedOn ||
-          userMilestonesSavedInDb[0]?.completedOn ||
-          null,
-        moneySaved:
-          isUserHasMilestones?.[0]?.moneySaved ||
-          userMilestonesSavedInDb[0]?.moneySaved ||
-          0,
-        updatedAt:
-          isUserHasMilestones?.[0]?.soberDays > 0 ||
-          userMilestonesSavedInDb[0]?.soberDays > 0
-            ? isUserHasMilestones?.[0]?.updatedAt ||
-              userMilestonesSavedInDb[0]?.updatedAt ||
-              null
-            : null,
-        soberDays:
-          isUserHasMilestones?.[0]?.soberDays ||
-          userMilestonesSavedInDb[0]?.soberDays ||
-          0,
-        allowCheckIn:
-          isUserHasMilestones?.[0]?.soberDays > 0 ||
-          userMilestonesSavedInDb[0]?.soberDays > 0 ||
-          calculateAllowCheckIn(lastCompletedMilestone?.completedOn),
-      },
-      nextMilestone: {
-        _id:
-          isUserHasMilestones[1]?.milestoneId?._id ||
-          milestones[1]?._id ||
-          null,
-        frequency:
-          isUserHasMilestones[1]?.milestoneId?.frequency ||
-          milestones[1]?.frequency ||
-          null,
-        tag: isUserHasMilestones[1]?.milestoneId?.tag || milestones[1]?.tag,
-        title:
-          isUserHasMilestones[1]?.milestoneId?.title || milestones[1]?.title,
-        description:
-          isUserHasMilestones[1]?.milestoneId?.description ||
-          milestones[1]?.description,
-        dayCount:
-          isUserHasMilestones[1]?.milestoneId?.dayCount ||
-          milestones[1]?.dayCount,
-        completedOn:
-          isUserHasMilestones?.[1]?.completedOn ||
-          userMilestonesSavedInDb[1]?.completedOn ||
-          null,
-        moneySaved:
-          isUserHasMilestones?.[1]?.moneySaved ||
-          userMilestonesSavedInDb[1]?.moneySaved ||
-          0,
-        updatedAt:
-          isUserHasMilestones?.[1]?.soberDays > 0 ||
-          userMilestonesSavedInDb[1]?.soberDays > 0
-            ? isUserHasMilestones?.[1]?.updatedAt ||
-              userMilestonesSavedInDb[1]?.updatedAt ||
-              null
-            : null,
-        soberDays:
-          isUserHasMilestones?.[1]?.soberDays ||
-          userMilestonesSavedInDb[1]?.soberDays ||
-          0,
-      },
-    };
     return res.status(statusCode).json({
       status: true,
       message,
@@ -389,7 +303,7 @@ async function socialAuth(req, res, next) {
                 long: 0,
               },
           bio: user.bio,
-          milestones: user?.goal?.frequency ? respMilestones : null,
+          milestones: null,
           isActiveMilestone: isUserHasMilestones.length > 0 ? true : false,
         },
         token: accessToken,
@@ -495,98 +409,11 @@ async function addUserDetails(req, res, next) {
         milestoneId: milestones?.[1]?._id,
       },
     ];
-    let userMilestonesSavedInDb = {
-      currentMilestone: { ...milestones[0], soberDays: 0 },
-      nextMilestone: { ...milestones[1], soberDays: 0 },
-    };
     if (isUserHasMilestones.length < 1) {
       userMilestonesSavedInDb = await UsersMilestones.insertMany(
         userMilestonesToStore
       );
     }
-    const respMilestones = {
-      currentMilestone: {
-        _id:
-          isUserHasMilestones[0]?.milestoneId?._id ||
-          milestones[0]?._id ||
-          null,
-        frequency:
-          isUserHasMilestones[0]?.milestoneId?.frequency ||
-          milestones[0]?.frequency ||
-          null,
-        tag: isUserHasMilestones[0]?.milestoneId?.tag || milestones[0]?.tag,
-        title:
-          isUserHasMilestones[0]?.milestoneId?.title || milestones[0]?.title,
-        description:
-          isUserHasMilestones[0]?.milestoneId?.description ||
-          milestones[0]?.description,
-        dayCount:
-          isUserHasMilestones[0]?.milestoneId?.dayCount ||
-          milestones[0]?.dayCount,
-        completedOn:
-          isUserHasMilestones?.[0]?.completedOn ||
-          userMilestonesSavedInDb[0]?.completedOn ||
-          null,
-        moneySaved:
-          isUserHasMilestones?.[0]?.moneySaved ||
-          userMilestonesSavedInDb[0]?.moneySaved ||
-          0,
-        updatedAt:
-          isUserHasMilestones?.[0]?.soberDays > 0 ||
-          userMilestonesSavedInDb[0]?.soberDays > 0
-            ? isUserHasMilestones?.[0]?.updatedAt ||
-              userMilestonesSavedInDb[0]?.updatedAt ||
-              null
-            : null,
-        soberDays:
-          isUserHasMilestones?.[0]?.soberDays ||
-          userMilestonesSavedInDb[0]?.soberDays ||
-          0,
-        allowCheckIn:
-          isUserHasMilestones?.[0]?.soberDays > 0 ||
-          userMilestonesSavedInDb[0]?.soberDays > 0 ||
-          calculateAllowCheckIn(lastCompletedMilestone?.completedOn),
-      },
-      nextMilestone: {
-        _id:
-          isUserHasMilestones[1]?.milestoneId?._id ||
-          milestones[1]?._id ||
-          null,
-        frequency:
-          isUserHasMilestones[1]?.milestoneId?.frequency ||
-          milestones[1]?.frequency ||
-          null,
-        tag: isUserHasMilestones[1]?.milestoneId?.tag || milestones[1]?.tag,
-        title:
-          isUserHasMilestones[1]?.milestoneId?.title || milestones[1]?.title,
-        description:
-          isUserHasMilestones[1]?.milestoneId?.description ||
-          milestones[1]?.description,
-        dayCount:
-          isUserHasMilestones[1]?.milestoneId?.dayCount ||
-          milestones[1]?.dayCount,
-        completedOn:
-          isUserHasMilestones?.[1]?.completedOn ||
-          userMilestonesSavedInDb[1]?.completedOn ||
-          null,
-        moneySaved:
-          isUserHasMilestones?.[1]?.moneySaved ||
-          userMilestonesSavedInDb[1]?.moneySaved ||
-          0,
-        updatedAt:
-          isUserHasMilestones?.[1]?.soberDays > 0 ||
-          userMilestonesSavedInDb[1]?.soberDays > 0
-            ? isUserHasMilestones?.[1]?.updatedAt ||
-              userMilestonesSavedInDb[1]?.updatedAt ||
-              null
-            : null,
-        soberDays:
-          isUserHasMilestones?.[1]?.soberDays ||
-          userMilestonesSavedInDb[1]?.soberDays ||
-          0,
-      },
-    };
-    console.log("respMilestones----------------------", respMilestones);
 
     return res.status(200).json({
       status: true,
@@ -613,7 +440,7 @@ async function addUserDetails(req, res, next) {
                 lat: 0,
                 long: 0,
               },
-          milestones: respMilestones,
+          milestones: null,
         },
       },
     });
@@ -708,97 +535,11 @@ async function login(req, res, next) {
         milestoneId: milestones?.[1]?._id,
       },
     ];
-    let userMilestonesSavedInDb = {
-      currentMilestone: { ...milestones[0], soberDays: 0 },
-      nextMilestone: { ...milestones[1], soberDays: 0 },
-    };
     if (isUserHasMilestones.length < 1 && user?.goal?.frequency) {
       userMilestonesSavedInDb = await UsersMilestones.insertMany(
         userMilestonesToStore
       );
     }
-    let respMilestones = {
-      currentMilestone: {
-        _id:
-          isUserHasMilestones[0]?.milestoneId?._id ||
-          milestones[0]?._id ||
-          null,
-        frequency:
-          isUserHasMilestones[0]?.milestoneId?.frequency ||
-          milestones[0]?.frequency ||
-          null,
-        tag: isUserHasMilestones[0]?.milestoneId?.tag || milestones[0]?.tag,
-        title:
-          isUserHasMilestones[0]?.milestoneId?.title || milestones[0]?.title,
-        description:
-          isUserHasMilestones[0]?.milestoneId?.description ||
-          milestones[0]?.description,
-        dayCount:
-          isUserHasMilestones[0]?.milestoneId?.dayCount ||
-          milestones[0]?.dayCount,
-        completedOn:
-          isUserHasMilestones?.[0]?.completedOn ||
-          userMilestonesSavedInDb[0]?.completedOn ||
-          null,
-        moneySaved:
-          isUserHasMilestones?.[0]?.moneySaved ||
-          userMilestonesSavedInDb[0]?.moneySaved ||
-          0,
-        updatedAt:
-          isUserHasMilestones?.[0]?.soberDays > 0 ||
-          userMilestonesSavedInDb[0]?.soberDays > 0
-            ? isUserHasMilestones?.[0]?.updatedAt ||
-              userMilestonesSavedInDb[0]?.updatedAt ||
-              null
-            : null,
-        soberDays:
-          isUserHasMilestones?.[0]?.soberDays ||
-          userMilestonesSavedInDb[0]?.soberDays ||
-          0,
-        allowCheckIn:
-          isUserHasMilestones?.[0]?.soberDays > 0 ||
-          userMilestonesSavedInDb[0]?.soberDays > 0 ||
-          calculateAllowCheckIn(lastCompletedMilestone?.completedOn),
-      },
-      nextMilestone: {
-        _id:
-          isUserHasMilestones[1]?.milestoneId?._id ||
-          milestones[1]?._id ||
-          null,
-        frequency:
-          isUserHasMilestones[1]?.milestoneId?.frequency ||
-          milestones[1]?.frequency ||
-          null,
-        tag: isUserHasMilestones[1]?.milestoneId?.tag || milestones[1]?.tag,
-        title:
-          isUserHasMilestones[1]?.milestoneId?.title || milestones[1]?.title,
-        description:
-          isUserHasMilestones[1]?.milestoneId?.description ||
-          milestones[1]?.description,
-        dayCount:
-          isUserHasMilestones[1]?.milestoneId?.dayCount ||
-          milestones[1]?.dayCount,
-        completedOn:
-          isUserHasMilestones?.[1]?.completedOn ||
-          userMilestonesSavedInDb[1]?.completedOn ||
-          null,
-        moneySaved:
-          isUserHasMilestones?.[1]?.moneySaved ||
-          userMilestonesSavedInDb[1]?.moneySaved ||
-          0,
-        updatedAt:
-          isUserHasMilestones?.[1]?.soberDays > 0 ||
-          userMilestonesSavedInDb[1]?.soberDays > 0
-            ? isUserHasMilestones?.[1]?.updatedAt ||
-              userMilestonesSavedInDb[1]?.updatedAt ||
-              null
-            : null,
-        soberDays:
-          isUserHasMilestones?.[1]?.soberDays ||
-          userMilestonesSavedInDb[1]?.soberDays ||
-          0,
-      },
-    };
 
     return res.status(200).json({
       status: true,
@@ -825,7 +566,7 @@ async function login(req, res, next) {
                 long: 0,
               },
           bio: user.bio,
-          milestones: user?.goal?.frequency ? respMilestones : null,
+          milestones: null,
           isActiveMilestone: isUserHasMilestones.length > 0 ? true : false,
         },
         token: accessToken,

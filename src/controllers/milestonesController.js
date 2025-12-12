@@ -318,33 +318,7 @@ async function updateMilestones(req, res, next) {
     return res.status(200).json({
       status: true,
       message: "Milestone updated successfully",
-      data: {
-        currentMilestone: {
-          _id: currentMilestone._id,
-          frequency: currentMilestone.frequency,
-          tag: currentMilestone.tag,
-          title: currentMilestone.title,
-          description: currentMilestone.description,
-          dayCount: currentMilestone.dayCount,
-          completedOn: null,
-          soberDays: userMilestone.soberDays,
-          moneySaved: userMilestone.moneySaved,
-          updatedAt: userMilestone.updatedAt,
-          allowCheckIn:
-            userMilestone.soberDays > 0 ||
-            calculateAllowCheckIn(lastCompletedMilestone?.completedOn),
-        },
-        nextMilestone: nextMilestone
-          ? {
-              _id: nextMilestone._id,
-              frequency: nextMilestone.frequency,
-              tag: nextMilestone.tag,
-              title: nextMilestone.title,
-              description: nextMilestone.description,
-              dayCount: nextMilestone.dayCount,
-            }
-          : null,
-      },
+      data: null,
     });
   } catch (err) {
     logger.error("Add/Update milestones error", err);
@@ -695,13 +669,6 @@ async function getCurrentMilestones(req, res, next) {
               title: nextMilestone.title,
               description: nextMilestone.description,
               dayCount: nextMilestone.dayCount,
-            }
-          : null,
-        lastCompletedMilestone: lastCompletedMilestone
-          ? {
-              _id: lastCompletedMilestone.milestoneId._id,
-              dayCount: lastCompletedMilestone.milestoneId.dayCount,
-              completedOn: lastCompletedMilestone.completedOn,
             }
           : null,
       },
