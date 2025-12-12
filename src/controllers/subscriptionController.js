@@ -541,7 +541,12 @@ exports.getSubscription = async (req, res) => {
       data: {
         deviceType: subscription.deviceType,
         plan: subscription.plan,
-        price: convertZarToUsd(subscription.price),
+        price:
+          subscription.plan === "monthly"
+            ? 3.99
+            : subscription.plan === "yearly"
+            ? 31.99
+            : convertZarToUsd(subscription.price),
         currency: "USD",
         status: subscription.status,
         created: subscription.createdAt,
@@ -663,7 +668,12 @@ exports.getAllSubscription = async (req, res) => {
     const formattedSubscriptions = subscriptions.map((subscription) => ({
       deviceType: subscription.deviceType,
       plan: subscription.plan,
-      price: convertZarToUsd(subscription.price),
+      price:
+        subscription.plan === "monthly"
+          ? 3.99
+          : subscription.plan === "yearly"
+          ? 31.99
+          : convertZarToUsd(subscription.price),
       currency: "USD",
       status: subscription.status,
       created: subscription.createdAt,
