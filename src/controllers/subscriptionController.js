@@ -240,7 +240,12 @@ exports.getSubscriptionURL = async (req, res) => {
         paymentUrl,
         subscriptionId,
         plan: planType,
-        amount: convertZarToUsd(plan.amount),
+        amount:
+          subscription.plan === "monthly"
+            ? 3.99
+            : subscription.plan === "yearly"
+            ? 31.99
+            : convertZarToUsd(subscription.price),
       },
     });
   } catch (error) {
@@ -447,7 +452,12 @@ exports.cancelSubscription = async (req, res) => {
       data: {
         deviceType: updatedSubscription.deviceType,
         plan: updatedSubscription.plan,
-        price: convertZarToUsd(updatedSubscription.price),
+        price:
+          subscription.plan === "monthly"
+            ? 3.99
+            : subscription.plan === "yearly"
+            ? 31.99
+            : convertZarToUsd(subscription.price),
         currency: "USD",
         status: updatedSubscription.status,
         created: updatedSubscription.createdAt,
@@ -629,7 +639,12 @@ exports.addSubscription = async (req, res) => {
         subscriptionId: newSubscription._id,
         deviceType: newSubscription.deviceType,
         plan: newSubscription.plan,
-        price: convertZarToUsd(newSubscription.price),
+        price:
+          newSubscription.plan === "monthly"
+            ? 3.99
+            : newSubscription.plan === "yearly"
+            ? 31.99
+            : convertZarToUsd(newSubscription.price),
         currency: "USD",
         status: newSubscription.status,
         created: newSubscription.createdAt,
