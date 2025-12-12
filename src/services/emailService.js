@@ -1,23 +1,36 @@
 const logger = require("../utils/logger");
+const nodemailer = require("nodemailer");
 
-const BREVO_API_KEY = process.env.BREVO_API_KEY; // Add to .env
-const EMAIL_FROM = process.env.EMAIL_FROM || "mlbenchpvtltd@gmail.com";
+const SMTP_HOST = process.env.SMTP_HOST;
+const SMTP_PORT = Number(process.env.SMTP_PORT) || 587;
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASS = process.env.SMTP_PASS;
+const SMTP_FROM =
+  process.env.SMTP_FROM || process.env.EMAIL_FROM || "mlbenchpvtltd@gmail.com";
+
+function createTransport() {
+  return nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: SMTP_PORT,
+    secure: SMTP_PORT === 465,
+    auth: {
+      user: SMTP_USER,
+      pass: SMTP_PASS,
+    },
+  });
+}
 
 async function sendVerificationCode(email, code) {
   try {
     logger.info("Attempting to send email to:", email);
 
-    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
-      method: "POST",
-      headers: {
-        "api-key": BREVO_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        sender: { email: EMAIL_FROM, name: "ML Bench" },
-        to: [{ email }],
-        subject: "Password Reset Verification Code",
-        htmlContent: `
+    const transporter = createTransport();
+
+    const info = await transporter.sendMail({
+      from: SMTP_FROM,
+      to: email,
+      subject: "Password Reset Verification Code",
+      html: `
           <div style="font-family: Arial, sans-serif; padding: 20px;">
             <h2>Password Reset Request</h2>
             <p>You requested to reset your password. Use the verification code below:</p>
@@ -28,14 +41,9 @@ async function sendVerificationCode(email, code) {
             <p>If you didn't request this, please ignore this email.</p>
           </div>
         `,
-      }),
     });
 
-    const data = await response.json();
-
-    if (!response.ok) throw new Error(data.message || "Failed to send email");
-
-    logger.info("Email sent successfully");
+    logger.info("Email sent successfully", info.messageId);
     return true;
   } catch (error) {
     logger.error("Email send error:", error.message);
