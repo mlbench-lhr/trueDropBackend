@@ -52,7 +52,6 @@ async function createFreeSubscription(userId) {
   try {
     const freeSubscription = await Subscription.create({
       userId: userId.toString(),
-      deviceType: "android", // Default, can be updated later
       plan: "free",
       price: 0,
       currency: "ZAR",

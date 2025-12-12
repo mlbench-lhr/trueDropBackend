@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 
 const subscriptionSchema = new mongoose.Schema({
   userId: { type: String, required: true, index: true },
-  deviceType: { type: String, enum: ["android", "apple"], required: true },
+  deviceType: { type: String, enum: ["android", "apple"], required: false },
   paymentId: { type: String }, // PayFast token
   plan: { type: String, required: true },
   price: { type: Number, required: true },
