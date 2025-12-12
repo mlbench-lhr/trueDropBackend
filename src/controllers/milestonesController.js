@@ -659,7 +659,7 @@ async function getCurrentMilestones(req, res, next) {
               updatedAt: currentUserMilestone?.updatedAt || null,
               allowCheckIn:
                 currentUserMilestone?.soberDays < 1 ||
-                calculateAllowCheckIn(lastCompletedMilestone?.completedOn),
+                calculateAllowCheckIn(lastCompletedMilestone?.updatedAt),
             }
           : null,
         nextMilestone: nextMilestone
