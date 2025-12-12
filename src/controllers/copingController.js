@@ -12,8 +12,7 @@ async function addCoping(req, res, next) {
     if (!copings || !Array.isArray(copings) || copings.length === 0) {
       return res.status(200).json({
         status: false,
-        message:
-          "Copings array is required and must contain at least one entry",
+        message: "Coping is required and must contain at least one entry",
         data: null,
       });
     }
@@ -23,7 +22,7 @@ async function addCoping(req, res, next) {
       if (!coping.feeling || !coping.strategy) {
         return res.status(200).json({
           status: false,
-          message: "Coping entry must include feeling and strategy",
+          message: "Coping must include feeling and strategy",
           data: null,
         });
       }
@@ -40,7 +39,7 @@ async function addCoping(req, res, next) {
 
     return res.status(200).json({
       status: true,
-      message: `${createdCopings.length} coping created successfully`,
+      message: `Coping created successfully`,
       data: createdCopings.map((c) => ({
         _id: c._id,
         feeling: c.feeling,
@@ -126,7 +125,7 @@ async function updateCoping(req, res, next) {
     if (!coping) {
       return res.status(200).json({
         status: false,
-        message: "Coping entry not found",
+        message: "Coping not found",
         data: null,
       });
     }
@@ -139,7 +138,7 @@ async function updateCoping(req, res, next) {
 
     return res.status(200).json({
       status: true,
-      message: "Coping entry updated successfully",
+      message: "Coping updated successfully",
       data: {
         coping: {
           _id: coping._id,
@@ -169,14 +168,14 @@ async function deleteCoping(req, res, next) {
     if (!coping) {
       return res.status(200).json({
         status: false,
-        message: "Coping entry not found",
+        message: "Coping not found",
         data: null,
       });
     }
 
     return res.status(200).json({
       status: true,
-      message: "Coping entry deleted successfully",
+      message: "Coping deleted successfully",
       data: null,
     });
   } catch (err) {

@@ -12,8 +12,7 @@ async function addJournal(req, res, next) {
     if (!journals || !Array.isArray(journals) || journals.length === 0) {
       return res.status(200).json({
         status: false,
-        message:
-          "Journals array is required and must contain at least one entry",
+        message: "Journal is required and must contain at least one entry",
         data: null,
       });
     }
@@ -23,7 +22,7 @@ async function addJournal(req, res, next) {
       if (!journal.feeling || !journal.description) {
         return res.status(200).json({
           status: false,
-          message: "Each journal entry must have feeling and description",
+          message: "Each journal must have feeling and description",
           data: null,
         });
       }
@@ -41,7 +40,7 @@ async function addJournal(req, res, next) {
 
     return res.status(200).json({
       status: true,
-      message: `${createdJournals.length} journal created successfully`,
+      message: `Journal created successfully`,
       data: createdJournals.map((journal) => ({
         _id: journal._id,
         userId: journal.userId,
@@ -120,7 +119,7 @@ async function updateJournal(req, res, next) {
     if (!journal) {
       return res.status(200).json({
         status: false,
-        message: "Journal entry not found",
+        message: "Journal not found",
         data: null,
       });
     }
@@ -132,7 +131,7 @@ async function updateJournal(req, res, next) {
 
     return res.status(200).json({
       status: true,
-      message: "Journal entry updated successfully",
+      message: "Journal updated successfully",
       data: {
         journal: {
           _id: journal._id,
@@ -162,14 +161,14 @@ async function deleteJournal(req, res, next) {
     if (!journal) {
       return res.status(200).json({
         status: false,
-        message: "Journal entry not found",
+        message: "Journal not found",
         data: null,
       });
     }
 
     return res.status(200).json({
       status: true,
-      message: "Journal entry deleted successfully",
+      message: "Journal deleted successfully",
       data: null,
     });
   } catch (err) {

@@ -693,14 +693,14 @@ async function deleteMilestones(req, res, next) {
     if (!milestones) {
       return res.status(200).json({
         status: false,
-        message: "Milestones entry not found",
+        message: "Milestones not found",
         data: null,
       });
     }
 
     return res.status(200).json({
       status: true,
-      message: "Milestones entry deleted successfully",
+      message: "Milestones deleted successfully",
       data: null,
     });
   } catch (err) {
