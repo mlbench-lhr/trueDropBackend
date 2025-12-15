@@ -6,14 +6,22 @@ const connectDB = require("../db/mongo");
 
 function calculateAllowCheckIn(previousMilestoneCompletedOn) {
   if (!previousMilestoneCompletedOn) {
-    return true; // If there's no previous milestone completion, allow check-in
+    return true;
   }
   const now = new Date();
   const completedDate = new Date(previousMilestoneCompletedOn);
-  const timeDiff = now - completedDate;
-  const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
+  const lastDay = new Date(
+    completedDate.getFullYear(),
+    completedDate.getMonth(),
+    completedDate.getDate()
+  );
+  const todayDay = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  );
 
-  return daysDiff >= 1; // true if at least 1 day has passed
+  return todayDay.getTime() > lastDay.getTime();
 }
 
 // Create a new milestones entry
