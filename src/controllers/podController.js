@@ -278,6 +278,7 @@ async function getPods(req, res, next) {
       })
       .filter((pod) => {
         if (!pod) return false;
+        if (searchQuery) return true;
         const cLat = pod.createdBy.location.lat;
         const cLong = pod.createdBy.location.long;
         return getRegionKey(cLat, cLong) === userRegionKey;
