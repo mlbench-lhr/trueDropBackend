@@ -94,10 +94,12 @@ async function joinPod(req, res, next) {
     await connectDB();
     const { id } = req.params;
     const userId = req.user.userId;
-    const usersCreatedPods = await Pod.countDocuments({
+    const usersJoinedPods = await Pod.countDocuments({
       members: { $in: [userId] },
+      createdBy: { $ne: userId }, // Only count pods NOT created by this user
     });
-    if (usersCreatedPods >= 5) {
+
+    if (usersJoinedPods >= 5) {
       return res.status(200).json({
         status: false,
         message: "You already have joined 5 pods",
@@ -113,11 +115,13 @@ async function joinPod(req, res, next) {
         "members",
         "firstName lastName userName profilePicture location"
       );
+
     if (!pod) {
       return res
         .status(200)
         .json({ status: false, message: "Pod not found", data: null });
     }
+
     if (pod.members.length >= 5) {
       return res.status(200).json({
         status: false,
@@ -125,10 +129,13 @@ async function joinPod(req, res, next) {
         data: null,
       });
     }
+
     if (!pod.members.includes(userId)) {
       pod.members.push(userId);
     }
+
     const updatedPod = await pod.save();
+
     return res.status(200).json({
       status: true,
       message: "You have successfully joined the pod.",
@@ -139,7 +146,6 @@ async function joinPod(req, res, next) {
     next(err);
   }
 }
-
 // DELETE POD
 async function deletePod(req, res, next) {
   try {
