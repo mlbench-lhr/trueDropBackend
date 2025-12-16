@@ -59,7 +59,8 @@ async function editPod(req, res, next) {
   try {
     await connectDB();
     const { id } = req.params;
-    const { name, description, members, privacyLevel } = req.body;
+    const { name, description, members, privacyLevel, lastMessageTime } =
+      req.body;
 
     const pod = await Pod.findById(id);
     if (!pod) {
@@ -69,6 +70,7 @@ async function editPod(req, res, next) {
     }
     if (name) pod.name = name;
     if (description) pod.description = description;
+    if (lastMessageTime) pod.lastMessageTime = lastMessageTime;
     if (privacyLevel) pod.privacyLevel = privacyLevel;
     if (members && Array.isArray(members)) pod.members = members;
 

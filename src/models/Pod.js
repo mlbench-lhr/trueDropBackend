@@ -15,6 +15,7 @@ const PodSchema = new Schema(
     description: { type: String, required: false },
     privacyLevel: { type: String, enum: ["public", "private"] },
     lastActiveTime: { type: Date, default: null },
+    lastMessageTime: { type: Date, default: null },
     chat: [chatSchema],
   },
   { timestamps: true }
