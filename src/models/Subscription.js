@@ -13,7 +13,7 @@ const subscriptionSchema = new mongoose.Schema({
     enum: ["pending", "active", "cancelled", "expired", "failed"],
     default: "pending",
   },
-  nextBillingDate: { type: Date },
+  nextBillingDate: { type: Date, default: null },
   lastPaymentDate: { type: Date },
   cancelledAt: { type: Date },
   createdAt: { type: Date, default: Date.now },

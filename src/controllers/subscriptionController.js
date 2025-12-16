@@ -540,9 +540,11 @@ exports.getSubscription = async (req, res) => {
         );
         await Subscription.findByIdAndUpdate(subscription._id, {
           status: "expired",
+          nextBillingDate: null,
           updatedAt: now,
         });
         subscription.status = "expired";
+        subscription.nextBillingDate = null;
       }
     }
     return res.status(200).json({
