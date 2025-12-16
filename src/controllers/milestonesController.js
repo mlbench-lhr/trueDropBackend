@@ -15,11 +15,7 @@ function calculateAllowCheckIn(previousMilestoneCompletedOn) {
     completedDate.getMonth(),
     completedDate.getDate()
   );
-  const todayDay = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate()
-  );
+  const todayDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   return todayDay.getTime() > lastDay.getTime();
 }
@@ -91,6 +87,7 @@ async function updateMilestones(req, res, next) {
       // Mark as completed if soberDays threshold is met
       if (soberDays >= milestoneForResponse.dayCount) {
         userMilestone.completedOn = new Date();
+        userMilestone.soberDays = milestoneForResponse.dayCount;
       }
 
       // Update completedOn if provided in payload
