@@ -6,12 +6,17 @@ const User = require("../models/User");
 const connectDB = require("../db/mongo");
 
 const PAYFAST_CONFIG = {
-  // merchantId: "30891881",
-  // merchantKey: "tkfsxuucbmqeu",
+  merchantId: "30891881",
+  merchantKey: "tkfsxuucbmqeu",
+  passphrase: "Truedrop123456",
+  baseUrl: "https://www.payfast.co.za/eng/process",
+  apiUrl: "https://api.payfast.co.za/subscriptions",
+};
+
+const PAYFAST_CONFIG_STAGING = {
   merchantId: "10044126",
   merchantKey: "qxq4ap5sm2jdq",
   passphrase: "Truedrop123456",
-  // baseUrl: "https://www.payfast.co.za/eng/process",
   baseUrl: "https://sandbox.payfast.co.za/eng/process",
   apiUrl: "https://api.payfast.co.za/subscriptions",
 };
@@ -164,7 +169,7 @@ const diffDays = (a, b) => {
 exports.getSubscriptionURL = async (req, res) => {
   try {
     await connectDB();
-    const { userId, planType, deviceType } = req.body;
+    const { userId, planType, deviceType, isDebugUrl } = req.body;
 
     if (!userId || !planType)
       return res.status(200).json({
@@ -248,8 +253,12 @@ exports.getSubscriptionURL = async (req, res) => {
     }
 
     const paymentData = {
-      merchant_id: PAYFAST_CONFIG.merchantId,
-      merchant_key: PAYFAST_CONFIG.merchantKey,
+      merchant_id: isDebugUrl
+        ? PAYFAST_CONFIG_STAGING.merchantId
+        : PAYFAST_CONFIG.merchantId,
+      merchant_key: isDebugUrl
+        ? PAYFAST_CONFIG_STAGING.merchantKey
+        : PAYFAST_CONFIG.merchantKey,
       return_url: `${process.env.FRONTEND_URL}/subscription/success?subscriptionId=${subscriptionId}`,
       cancel_url: `${process.env.FRONTEND_URL}/subscription/cancel?subscriptionId=${subscriptionId}`,
       notify_url: `${process.env.BACKEND_URL}/api/subscription/webhook`,
@@ -272,11 +281,16 @@ exports.getSubscriptionURL = async (req, res) => {
       confirmation_address: user.email,
     };
 
-    const signature = generateSignature(paymentData, PAYFAST_CONFIG.passphrase);
+    const signature = generateSignature(
+      paymentData,
+      isDebugUrl ? PAYFAST_CONFIG_STAGING.passphrase : PAYFAST_CONFIG.passphrase
+    );
     paymentData.signature = `<${signature}>`;
 
     const urlParams = new URLSearchParams(paymentData).toString();
-    const paymentUrl = `${PAYFAST_CONFIG.baseUrl}?${urlParams}`;
+    const paymentUrl = `${
+      isDebugUrl ? PAYFAST_CONFIG_STAGING.baseUrl : PAYFAST_CONFIG.baseUrl
+    }?${urlParams}`;
 
     return res.status(200).json({
       status: true,
@@ -423,22 +437,35 @@ exports.webhook = async (req, res) => {
 
         if (previousMonthly) {
           const cancelData = {
-            merchant_id: PAYFAST_CONFIG.merchantId,
+            merchant_id: isDebugUrl
+              ? PAYFAST_CONFIG_STAGING.merchantId
+              : PAYFAST_CONFIG.merchantId,
             version: "v1",
             timestamp: new Date().toISOString(),
           };
-          const cancelSignature = generatePayFastAPISignature(
-            cancelData,
-            PAYFAST_CONFIG.passphrase
-          );
+          const cancelSignature = isDebugUrl
+            ? generatePayFastAPISignature(
+                cancelData,
+                PAYFAST_CONFIG_STAGING.passphrase
+              )
+            : generatePayFastAPISignature(
+                cancelData,
+                PAYFAST_CONFIG.passphrase
+              );
           if (previousMonthly.paymentId) {
             try {
               await axios.put(
-                `${PAYFAST_CONFIG.apiUrl}/${previousMonthly.paymentId}/cancel`,
+                `${
+                  isDebugUrl
+                    ? PAYFAST_CONFIG_STAGING.apiUrl
+                    : PAYFAST_CONFIG.apiUrl
+                }/${previousMonthly.paymentId}/cancel`,
                 {},
                 {
                   headers: {
-                    "merchant-id": PAYFAST_CONFIG.merchantId,
+                    "merchant-id": isDebugUrl
+                      ? PAYFAST_CONFIG_STAGING.merchantId
+                      : PAYFAST_CONFIG.merchantId,
                     version: "v1",
                     timestamp: cancelData.timestamp,
                     signature: cancelSignature,
@@ -497,7 +524,7 @@ exports.webhook = async (req, res) => {
 exports.cancelSubscription = async (req, res) => {
   try {
     await connectDB();
-    const { userId } = req.body;
+    const { userId, isDebugUrl } = req.body;
     if (!userId)
       return res
         .status(200)
@@ -519,22 +546,30 @@ exports.cancelSubscription = async (req, res) => {
       try {
         console.log("Attempting PayFast API cancellation...");
         const cancelData = {
-          merchant_id: PAYFAST_CONFIG.merchantId,
+          merchant_id: isDebugUrl
+            ? PAYFAST_CONFIG_STAGING.merchantId
+            : PAYFAST_CONFIG.merchantId,
           version: "v1",
           timestamp: new Date().toISOString(),
         };
-        const cancelSignature = generatePayFastAPISignature(
-          cancelData,
-          PAYFAST_CONFIG.passphrase
-        );
+        const cancelSignature = isDebugUrl
+          ? generatePayFastAPISignature(
+              cancelData,
+              PAYFAST_CONFIG_STAGING.passphrase
+            )
+          : generatePayFastAPISignature(cancelData, PAYFAST_CONFIG.passphrase);
 
         try {
           await axios.put(
-            `${PAYFAST_CONFIG.apiUrl}/${subscription.paymentId}/cancel`,
+            `${
+              isDebugUrl ? PAYFAST_CONFIG_STAGING.apiUrl : PAYFAST_CONFIG.apiUrl
+            }/${subscription.paymentId}/cancel`,
             {},
             {
               headers: {
-                "merchant-id": PAYFAST_CONFIG.merchantId,
+                "merchant-id": isDebugUrl
+                  ? PAYFAST_CONFIG_STAGING.merchantId
+                  : PAYFAST_CONFIG.merchantId,
                 version: "v1",
                 timestamp: cancelData.timestamp,
                 signature: cancelSignature,

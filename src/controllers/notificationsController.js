@@ -174,7 +174,11 @@ async function runCheckinReminderCron(req, res, next) {
     return res.status(200).json({
       status: true,
       message: "Check-in reminders processed",
-      data: { users: userIds.length, tokens: tokens.length, notificationId: saved._id },
+      data: {
+        users: userIds.length,
+        tokens: tokens.length,
+        notificationId: saved._id,
+      },
     });
   } catch (err) {
     logger.error("Check-in cron error", err);
@@ -200,12 +204,21 @@ async function runSubscriptionReminderCron(req, res, next) {
       d.setDate(d.getDate() + days);
       return d;
     };
-    const startOfDayUTC = (date) => new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0));
+    const startOfDayUTC = (date) =>
+      new Date(
+        Date.UTC(
+          date.getUTCFullYear(),
+          date.getUTCMonth(),
+          date.getUTCDate(),
+          0,
+          0,
+          0
+        )
+      );
 
     const now = new Date();
-    const target = addDays(now, 3);
-    const start = startOfDayUTC(target);
-    const end = addDays(start, 1);
+    const start = startOfDayUTC(now);
+    const end = addDays(start, 3); // today, +1 day, +2 days
 
     const subs = await Subscription.find({
       status: "active",
@@ -228,7 +241,7 @@ async function runSubscriptionReminderCron(req, res, next) {
     const tokens = users.flatMap((u) => u.fcmDeviceTokens || []);
 
     const title = "Subscription Renewal Reminder";
-    const body = "Your subscription renews in 3 days. Please ensure payment is set.";
+    const body = "Your subscription renews soon. Please ensure payment is set.";
 
     const saved = await Notifications.create({
       to: tokens,
@@ -242,7 +255,11 @@ async function runSubscriptionReminderCron(req, res, next) {
     return res.status(200).json({
       status: true,
       message: "Subscription renewal reminders processed",
-      data: { users: userIds.length, tokens: tokens.length, notificationId: saved._id },
+      data: {
+        users: userIds.length,
+        tokens: tokens.length,
+        notificationId: saved._id,
+      },
     });
   } catch (err) {
     logger.error("Subscription cron error", err);
