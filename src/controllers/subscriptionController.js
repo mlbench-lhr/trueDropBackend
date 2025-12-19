@@ -148,6 +148,18 @@ const computeNextBillingDate = (planType, fromDate) => {
   return null;
 };
 
+const addDays = (date, days) => {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+};
+
+const diffDays = (a, b) => {
+  if (!a || !b) return 0;
+  const ms = new Date(a).getTime() - new Date(b).getTime();
+  return Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)));
+};
+
 // 1. GET SUBSCRIPTION URL
 exports.getSubscriptionURL = async (req, res) => {
   try {
@@ -215,6 +227,26 @@ exports.getSubscriptionURL = async (req, res) => {
     });
     const subscriptionId = subscription._id.toString();
 
+    let computedBillingDate = new Date().toISOString().split("T")[0];
+    if (planType === "yearly") {
+      const previousMonthly = await Subscription.findOne({
+        userId,
+        status: "active",
+        plan: "monthly",
+      }).sort({ createdAt: -1 });
+      if (previousMonthly) {
+        const remainingDays = diffDays(
+          previousMonthly.nextBillingDate,
+          previousMonthly.lastPaymentDate
+        );
+        const firstRecurring = addDays(
+          computeNextBillingDate("yearly", new Date()),
+          remainingDays
+        );
+        computedBillingDate = firstRecurring.toISOString().split("T")[0];
+      }
+    }
+
     const paymentData = {
       merchant_id: PAYFAST_CONFIG.merchantId,
       merchant_key: PAYFAST_CONFIG.merchantKey,
@@ -232,7 +264,7 @@ exports.getSubscriptionURL = async (req, res) => {
       custom_str2: planType,
       custom_str3: subscriptionId,
       subscription_type: "1",
-      billing_date: new Date().toISOString().split("T")[0],
+      billing_date: computedBillingDate,
       recurring_amount: plan.amount.toFixed(2),
       frequency: plan.frequency.toString(),
       cycles: plan.cycles.toString(),
@@ -390,9 +422,52 @@ exports.webhook = async (req, res) => {
         }).sort({ createdAt: -1 });
 
         if (previousMonthly) {
+          const cancelData = {
+            merchant_id: PAYFAST_CONFIG.merchantId,
+            version: "v1",
+            timestamp: new Date().toISOString(),
+          };
+          const cancelSignature = generatePayFastAPISignature(
+            cancelData,
+            PAYFAST_CONFIG.passphrase
+          );
+          if (previousMonthly.paymentId) {
+            try {
+              await axios.put(
+                `${PAYFAST_CONFIG.apiUrl}/${previousMonthly.paymentId}/cancel`,
+                {},
+                {
+                  headers: {
+                    "merchant-id": PAYFAST_CONFIG.merchantId,
+                    version: "v1",
+                    timestamp: cancelData.timestamp,
+                    signature: cancelSignature,
+                  },
+                  timeout: 10000,
+                }
+              );
+            } catch (apiError) {}
+          }
+
+          const remainingDays = diffDays(
+            previousMonthly.nextBillingDate,
+            previousMonthly.lastPaymentDate
+          );
+
           await Subscription.findByIdAndUpdate(previousMonthly._id, {
-            status: "expired",
+            status: "cancelled",
+            cancelledAt: new Date(),
             nextBillingDate: null,
+            updatedAt: new Date(),
+          });
+
+          const adjustedNext = addDays(
+            computeNextBillingDate("yearly", paymentAt),
+            remainingDays
+          );
+
+          await Subscription.findByIdAndUpdate(updatedSubscription._id, {
+            nextBillingDate: adjustedNext,
             updatedAt: new Date(),
           });
         }
