@@ -237,7 +237,7 @@ exports.getSubscriptionURL = async (req, res) => {
       if (previousMonthly) {
         const remainingDays = diffDays(
           previousMonthly.nextBillingDate,
-          previousMonthly.lastPaymentDate
+          new Date()
         );
         const firstRecurring = addDays(
           computeNextBillingDate("yearly", new Date()),
@@ -451,7 +451,7 @@ exports.webhook = async (req, res) => {
 
           const remainingDays = diffDays(
             previousMonthly.nextBillingDate,
-            previousMonthly.lastPaymentDate
+            new Date()
           );
 
           await Subscription.findByIdAndUpdate(previousMonthly._id, {
