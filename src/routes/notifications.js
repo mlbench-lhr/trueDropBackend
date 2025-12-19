@@ -10,4 +10,13 @@ router.post(
 );
 router.get("/all-notifications", auth, notificationsController.getNotification);
 
+router.post(
+  "/cron/checkin-reminders",
+  notificationsController.runCheckinReminderCron
+);
+router.post(
+  "/cron/subscription-reminders",
+  notificationsController.runSubscriptionReminderCron
+);
+
 module.exports = router;
