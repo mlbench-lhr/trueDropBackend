@@ -5,7 +5,7 @@ const connectDB = require("../db/mongo");
 async function getAllFields(req, res, next) {
   try {
     await connectDB();
-    const fields = await Fields.find().lean();
+    const fields = await Fields.find({ isOther: { exists: false } }).lean();
 
     const grouped = fields.reduce((acc, field) => {
       if (!acc[field.field]) acc[field.field] = [];

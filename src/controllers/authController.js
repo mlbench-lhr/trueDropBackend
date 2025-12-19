@@ -464,11 +464,18 @@ async function login(req, res, next) {
     }
 
     // Find user and verify it's a local account
-    const user = await User.findOne({ email, provider: "local" });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(200).json({
         status: false,
         message: "This email does not exists",
+        data: null,
+      });
+    }
+    if (user.provider !== "local") {
+      return res.status(200).json({
+        status: false,
+        message: "This email is registered using social login.",
         data: null,
       });
     }
