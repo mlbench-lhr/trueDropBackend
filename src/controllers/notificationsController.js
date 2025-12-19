@@ -134,10 +134,16 @@ module.exports = {
 
 async function runCheckinReminderCron(req, res, next) {
   try {
+    console.log("🔔 Check-in cron started");
+
     await connectDB();
+    console.log("✅ DB connected");
 
     const token = req.query.token || req.headers["x-cron-token"];
+    console.log("🔑 Received token:", token);
+
     if (process.env.CRON_SECRET && token !== process.env.CRON_SECRET) {
+      console.log("❌ Unauthorized cron call");
       return res.status(401).json({
         status: false,
         message: "Unauthorized",
@@ -146,7 +152,10 @@ async function runCheckinReminderCron(req, res, next) {
     }
 
     const userIds = await UsersMilestones.distinct("userId");
+    console.log("👥 UserIds found:", userIds.length);
+
     if (!userIds || userIds.length === 0) {
+      console.log("ℹ️ No users with milestones");
       return res.status(200).json({
         status: true,
         message: "No users with milestones found",
@@ -157,7 +166,10 @@ async function runCheckinReminderCron(req, res, next) {
     const users = await User.find({ _id: { $in: userIds } })
       .select("fcmDeviceTokens")
       .lean();
+    console.log("📄 Users fetched:", users.length);
+
     const tokens = users.flatMap((u) => u.fcmDeviceTokens || []);
+    console.log("📱 Total FCM tokens:", tokens.length);
 
     const title = "Daily Check-in Reminder";
     const body = "Don't forget to check in to your milestone today.";
@@ -168,8 +180,10 @@ async function runCheckinReminderCron(req, res, next) {
       type: "milestone",
       userId: userIds,
     });
+    console.log("💾 Notification saved:", saved._id);
 
     await Promise.all(tokens.map((t) => sendAlert(t, title, body)));
+    console.log("🚀 Alerts sent");
 
     return res.status(200).json({
       status: true,
@@ -181,6 +195,7 @@ async function runCheckinReminderCron(req, res, next) {
       },
     });
   } catch (err) {
+    console.log("🔥 Check-in cron error:", err);
     logger.error("Check-in cron error", err);
     next(err);
   }
@@ -246,7 +261,7 @@ async function runSubscriptionReminderCron(req, res, next) {
     const saved = await Notifications.create({
       to: tokens,
       notification: { title, body },
-      type: "wallet",
+      type: "subscription",
       userId: userIds,
     });
 

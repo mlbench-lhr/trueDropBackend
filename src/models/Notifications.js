@@ -14,6 +14,7 @@ const NotificationSchema = new Schema(
         "pod",
         "coping",
         "wallet",
+        "subscription",
         "profile",
         "journal",
       ],
