@@ -238,7 +238,10 @@ async function getPods(req, res, next) {
     const userRegionKey = getRegionKey(userLat, userLong);
     const yourPodsQuery = { members: { $in: [userId] } };
     if (searchQuery) {
-      yourPodsQuery.name = { $regex: searchQuery, $options: "i" };
+      const terms = searchQuery.trim().split(/\s+/);
+      yourPodsQuery.$and = terms.map((t) => ({
+        name: { $regex: t, $options: "i" },
+      }));
     }
     const yourPods = await Pod.find(yourPodsQuery)
       .populate("members", "firstName lastName userName profilePicture email")
@@ -250,7 +253,10 @@ async function getPods(req, res, next) {
       _id: { $nin: PodIds },
     };
     if (searchQuery) {
-      availablePodsQuery.name = { $regex: searchQuery, $options: "i" };
+      const terms = searchQuery.trim().split(/\s+/);
+      availablePodsQuery.$and = terms.map((t) => ({
+        name: { $regex: t, $options: "i" },
+      }));
     }
     const publicPodsWithCreators = await Pod.find(availablePodsQuery)
       .populate({
