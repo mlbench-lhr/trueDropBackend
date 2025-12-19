@@ -357,6 +357,32 @@ exports.webhook = async (req, res) => {
       return res.status(200).send("Subscription not found");
     }
 
+    if (
+      newStatus === "active" &&
+      planType === "yearly" &&
+      userId &&
+      updatedSubscription
+    ) {
+      try {
+        const previousMonthly = await Subscription.findOne({
+          userId,
+          status: "active",
+          plan: "monthly",
+          _id: { $ne: updatedSubscription._id },
+        }).sort({ createdAt: -1 });
+
+        if (previousMonthly) {
+          await Subscription.findByIdAndUpdate(previousMonthly._id, {
+            status: "expired",
+            nextBillingDate: null,
+            updatedAt: new Date(),
+          });
+        }
+      } catch (e) {
+        console.log("Monthly-to-yearly conversion check failed", e?.message);
+      }
+    }
+
     console.log("Webhook complete");
     return res.status(200).json({
       status: true,
