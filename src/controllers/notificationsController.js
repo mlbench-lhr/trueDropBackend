@@ -57,7 +57,7 @@ async function sendAlert(deviceToken, title, body) {
 async function sendNotification(req, res, next) {
   try {
     await connectDB();
-    const { userId, title, body, type } = req.body;
+    const { userId, title, body, type, podId } = req.body;
     const users = await User.find({ _id: { $in: userId } })
       .select("fcmDeviceTokens")
       .lean();
@@ -69,6 +69,7 @@ async function sendNotification(req, res, next) {
       notification: { title, body },
       type,
       userId,
+      podId: podId ? podId : null,
     });
     await Promise.all(tokens.map((token) => sendAlert(token, title, body)));
     return res.status(200).json({
@@ -100,12 +101,16 @@ async function getNotification(req, res, next) {
     const total = await Notifications.countDocuments({ userId });
 
     // Get paginated notifications
-    const notifications = await Notifications.find({ userId })
+    const result = await Notifications.find({ userId })
       .sort({ [sortBy]: sortOrder })
       .skip(skip)
       .limit(parseInt(limit))
       .lean();
 
+    const notifications = result.map((n) => ({
+      ...n,
+      podId: n.podId ?? null,
+    }));
     return res.status(200).json({
       status: true,
       message: `notifications fetched successfully`,
@@ -179,6 +184,7 @@ async function runCheckinReminderCron(req, res, next) {
       notification: { title, body },
       type: "milestone",
       userId: userIds,
+      podId: podId ? podId : null,
     });
     console.log("💾 Notification saved:", saved._id);
 
@@ -263,6 +269,7 @@ async function runSubscriptionReminderCron(req, res, next) {
       notification: { title, body },
       type: "subscription",
       userId: userIds,
+      podId: podId ? podId : null,
     });
 
     await Promise.all(tokens.map((t) => sendAlert(t, title, body)));

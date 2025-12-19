@@ -5,11 +5,13 @@ const NotificationSchema = new Schema(
   {
     userId: [{ type: Schema.Types.ObjectId, ref: "User", required: true }],
     to: [{ type: String, required: true }],
+    podId: { type: String },
     type: {
       type: String,
       required: true,
       enum: [
         "chat",
+        "invite",
         "milestone",
         "pod",
         "coping",
