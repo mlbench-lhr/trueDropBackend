@@ -236,10 +236,20 @@ async function getPods(req, res, next) {
     const userLat = currentUser.location.lat;
     const userLong = currentUser.location.long;
     const userRegionKey = getRegionKey(userLat, userLong);
+    // Helper function to escape special regex characters and create search pattern
+    const createSearchRegex = (query) => {
+      // Escape special regex characters
+      const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      // Split by spaces and create pattern that matches all words
+      const words = escapedQuery.trim().split(/\s+/);
+      // Create a pattern that requires all words to appear (in any order)
+      const pattern = words.map((word) => `(?=.*${word})`).join("");
+      return new RegExp(pattern, "i");
+    };
     const yourPodsQuery = { members: { $in: [userId] } };
-    // if (searchQuery) {
-    //   yourPodsQuery.name = { $regex: searchQuery, $options: "i" };
-    // }
+    if (searchQuery) {
+      yourPodsQuery.name = createSearchRegex(searchQuery);
+    }
     const yourPods = await Pod.find(yourPodsQuery)
       .populate("members", "firstName lastName userName profilePicture email")
       .populate("createdBy", "firstName lastName userName profilePicture email")
@@ -249,15 +259,8 @@ async function getPods(req, res, next) {
       privacyLevel: "public",
       _id: { $nin: PodIds },
     };
-    // if (searchQuery) {
-    //   availablePodsQuery.name = { $regex: searchQuery, $options: "i" };
-    // }
     if (searchQuery) {
-      const escaped = searchQuery.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const pattern = escaped.split(/\s+/).join(".*"); // "new begg" -> "new.*begg"
-      const regex = new RegExp(pattern, "i");
-      yourPodsQuery.name = regex;
-      availablePodsQuery.name = regex;
+      availablePodsQuery.name = createSearchRegex(searchQuery);
     }
 
     const publicPodsWithCreators = await Pod.find(availablePodsQuery)
