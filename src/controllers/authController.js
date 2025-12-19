@@ -318,7 +318,8 @@ async function socialAuth(req, res, next) {
 async function addUserDetails(req, res, next) {
   try {
     await connectDB();
-    const { alcoholType, improvement, goal } = req.body;
+    const { improvement, goal, isOther } = req.body;
+    let alcoholType = req.body?.alcoholType;
     const userId = req.user.userId;
 
     // Validate required fields
@@ -358,6 +359,14 @@ async function addUserDetails(req, res, next) {
         message: "User not found",
         data: null,
       });
+    }
+    if (isOther) {
+      const addAlcoholType = await Fields.create({
+        isOther: true,
+        field: "alcoholType",
+        name: alcoholType,
+      });
+      alcoholType = addAlcoholType._id;
     }
 
     // Update user with details
