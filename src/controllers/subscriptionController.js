@@ -135,6 +135,19 @@ const USD_ZAR_RATE = parseFloat(process.env.USD_ZAR_RATE) || 18.5;
 const convertZarToUsd = (amount) =>
   parseFloat(((amount || 0) / USD_ZAR_RATE).toFixed(2));
 
+const computeNextBillingDate = (planType, fromDate) => {
+  const d = new Date(fromDate || new Date());
+  if (planType === "monthly") {
+    d.setMonth(d.getMonth() + 1);
+    return d;
+  }
+  if (planType === "yearly") {
+    d.setFullYear(d.getFullYear() + 1);
+    return d;
+  }
+  return null;
+};
+
 // 1. GET SUBSCRIPTION URL
 exports.getSubscriptionURL = async (req, res) => {
   try {
@@ -338,13 +351,18 @@ exports.webhook = async (req, res) => {
     console.log("New status:", newStatus);
 
     console.log("Updating subscription...");
+    const paymentAt = new Date();
+    const nextAt =
+      newStatus === "active"
+        ? computeNextBillingDate(planType, paymentAt)
+        : null;
     const updatedSubscription = await Subscription.findByIdAndUpdate(
       subscriptionId,
       {
         status: newStatus,
         paymentId: token,
-        lastPaymentDate: new Date(),
-        nextBillingDate: billing_date ? new Date(billing_date) : null,
+        lastPaymentDate: paymentAt,
+        nextBillingDate: nextAt,
         updatedAt: new Date(),
       },
       { new: true }
@@ -638,12 +656,8 @@ exports.addSubscription = async (req, res) => {
       });
     }
 
-    // Calculate next billing
-    let nextBillingDate = null;
-    if (planData.cycles > 0) {
-      nextBillingDate = new Date();
-      nextBillingDate.setDate(nextBillingDate.getDate() + planData.cycles);
-    }
+    const paymentAt = new Date();
+    const nextBillingDate = computeNextBillingDate(plan, paymentAt);
 
     // Create subscription
     const newSubscription = await Subscription.create({
@@ -655,7 +669,7 @@ exports.addSubscription = async (req, res) => {
       currency: currency || "ZAR",
       status: "active", // marking as active after payment
       nextBillingDate,
-      lastPaymentDate: new Date(),
+      lastPaymentDate: paymentAt,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
