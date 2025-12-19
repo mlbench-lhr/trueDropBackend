@@ -237,12 +237,9 @@ async function getPods(req, res, next) {
     const userLong = currentUser.location.long;
     const userRegionKey = getRegionKey(userLat, userLong);
     const yourPodsQuery = { members: { $in: [userId] } };
-    if (searchQuery) {
-      const terms = searchQuery.trim().split(/\s+/);
-      yourPodsQuery.$and = terms.map((t) => ({
-        name: { $regex: t, $options: "i" },
-      }));
-    }
+    // if (searchQuery) {
+    //   yourPodsQuery.name = { $regex: searchQuery, $options: "i" };
+    // }
     const yourPods = await Pod.find(yourPodsQuery)
       .populate("members", "firstName lastName userName profilePicture email")
       .populate("createdBy", "firstName lastName userName profilePicture email")
@@ -252,12 +249,17 @@ async function getPods(req, res, next) {
       privacyLevel: "public",
       _id: { $nin: PodIds },
     };
+    // if (searchQuery) {
+    //   availablePodsQuery.name = { $regex: searchQuery, $options: "i" };
+    // }
     if (searchQuery) {
-      const terms = searchQuery.trim().split(/\s+/);
-      availablePodsQuery.$and = terms.map((t) => ({
-        name: { $regex: t, $options: "i" },
-      }));
+      const escaped = searchQuery.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const pattern = escaped.split(/\s+/).join(".*"); // "new begg" -> "new.*begg"
+      const regex = new RegExp(pattern, "i");
+      yourPodsQuery.name = regex;
+      availablePodsQuery.name = regex;
     }
+
     const publicPodsWithCreators = await Pod.find(availablePodsQuery)
       .populate({
         path: "createdBy",
