@@ -62,14 +62,13 @@ async function sendNotification(req, res, next) {
 
     const tokens = users.flatMap((u) => u.fcmDeviceTokens || []);
 
-    await Promise.all(tokens.map((token) => sendAlert(token, title, body)));
-
     const saved = await Notifications.create({
       to: tokens,
       notification: { title, body },
       type,
       userId,
     });
+    await Promise.all(tokens.map((token) => sendAlert(token, title, body)));
     return res.status(200).json({
       status: true,
       message: "notification sent successfully",
