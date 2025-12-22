@@ -184,7 +184,6 @@ async function runCheckinReminderCron(req, res, next) {
       notification: { title, body },
       type: "milestone",
       userId: userIds,
-      podId: podId ? podId : null,
     });
     console.log("💾 Notification saved:", saved._id);
 
@@ -269,7 +268,6 @@ async function runSubscriptionReminderCron(req, res, next) {
       notification: { title, body },
       type: "subscription",
       userId: userIds,
-      podId: podId ? podId : null,
     });
 
     await Promise.all(tokens.map((t) => sendAlert(t, title, body)));
