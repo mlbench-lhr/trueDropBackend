@@ -42,6 +42,7 @@ exports.socialLogin = () =>
     provider: Joi.string().required(),
     providerId: Joi.string().required(),
     email: Joi.string().email().optional(), // Optional fallback for matching
+    fcmDeviceToken: Joi.string().optional().allow(""),
   });
 exports.socialAuth = () =>
   Joi.object({
@@ -51,6 +52,7 @@ exports.socialAuth = () =>
     firstName: Joi.string().optional(),
     lastName: Joi.string().optional(),
     userName: Joi.string().optional(),
+    fcmDeviceToken: Joi.string().optional().allow(""),
     profilePicture: Joi.string().uri().optional().allow("", null),
   });
 
