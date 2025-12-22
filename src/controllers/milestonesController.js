@@ -72,7 +72,7 @@ async function updateMilestones(req, res, next) {
         today.getMonth(),
         today.getDate()
       );
-      const diffDays = Math.round((todayDay - lastDay) / (1000 * 60 * 60 * 24));
+      const diffDays = Math.floor((todayDay - lastDay) / (1000 * 60 * 60 * 24));
       if (diffDays > 1) {
         soberDays = 1;
       }
