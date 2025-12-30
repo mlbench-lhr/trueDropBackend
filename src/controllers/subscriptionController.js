@@ -673,7 +673,10 @@ exports.getSubscription = async (req, res) => {
       return res
         .status(200)
         .json({ status: false, message: "userId is required", data: null });
-    const subscription = await Subscription.findOne({ userId }).sort({
+    const subscription = await Subscription.findOne({
+      userId,
+      status: "active",
+    }).sort({
       createdAt: -1,
     });
     if (!subscription)
