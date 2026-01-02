@@ -684,26 +684,26 @@ exports.getSubscription = async (req, res) => {
         .status(200)
         .json({ status: false, message: "No subscription found", data: null });
 
-    if (subscription.status === "active") {
-      const now = new Date();
-      const created = new Date(subscription.createdAt);
-      const daysSinceCreation = Math.floor(
-        (now - created) / (1000 * 60 * 60 * 24)
-      );
-      const plan = PLANS[subscription.plan];
-      if (plan && plan.cycles > 0 && daysSinceCreation >= plan.cycles) {
-        console.log(
-          `Auto-expiring subscription ${subscription._id} after ${plan.cycles} days`
-        );
-        await Subscription.findByIdAndUpdate(subscription._id, {
-          status: "expired",
-          nextBillingDate: null,
-          updatedAt: now,
-        });
-        subscription.status = "expired";
-        subscription.nextBillingDate = null;
-      }
-    }
+    // if (subscription.status === "active") {
+    //   const now = new Date();
+    //   const created = new Date(subscription.createdAt);
+    //   const daysSinceCreation = Math.floor(
+    //     (now - created) / (1000 * 60 * 60 * 24)
+    //   );
+    //   const plan = PLANS[subscription.plan];
+    //   if (plan && plan.cycles > 0 && daysSinceCreation >= plan.cycles) {
+    //     console.log(
+    //       `Auto-expiring subscription ${subscription._id} after ${plan.cycles} days`
+    //     );
+    //     await Subscription.findByIdAndUpdate(subscription._id, {
+    //       status: "expired",
+    //       nextBillingDate: null,
+    //       updatedAt: now,
+    //     });
+    //     subscription.status = "expired";
+    //     subscription.nextBillingDate = null;
+    //   }
+    // }
     return res.status(200).json({
       status: true,
       message: "Subscription fetched",
