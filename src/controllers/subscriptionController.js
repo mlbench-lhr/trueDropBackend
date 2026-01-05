@@ -827,7 +827,7 @@ exports.getAllSubscription = async (req, res) => {
         data: null,
       });
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    const filter = { userId, status: "active" };
+    const filter = { userId };
     const total = await Subscription.countDocuments(filter);
 
     const subscriptions = await Subscription.find(filter)
