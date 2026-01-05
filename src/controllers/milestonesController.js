@@ -8,16 +8,20 @@ function calculateAllowCheckIn(previousMilestoneCompletedOn) {
   if (!previousMilestoneCompletedOn) {
     return true;
   }
+  const completed = new Date(previousMilestoneCompletedOn);
   const now = new Date();
-  const completedDate = new Date(previousMilestoneCompletedOn);
-  const lastDay = new Date(
-    completedDate.getFullYear(),
-    completedDate.getMonth(),
-    completedDate.getDate()
+  const completedUTC = Date.UTC(
+    completed.getUTCFullYear(),
+    completed.getUTCMonth(),
+    completed.getUTCDate()
   );
-  const todayDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayUTC = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate()
+  );
 
-  return todayDay.getTime() > lastDay.getTime();
+  return completedUTC < todayUTC;
 }
 
 // Create a new milestones entry
