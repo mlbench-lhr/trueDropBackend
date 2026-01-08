@@ -183,19 +183,15 @@ async function socialAuth(req, res, next) {
         message = "Login successful";
         statusCode = 200;
       } else {
-        // Completely new user - create account without additional details
-        if (!userName) {
-          return res.status(200).json({
-            status: false,
-            message: "userName is required for new users",
-            data: null,
-          });
-        }
+        const resolvedUserName =
+          userName ||
+          (firstName || lastName
+            ? [firstName, lastName].filter(Boolean).join(" ").trim()
+            : (email ? email.split("@")[0] : `${provider}_${String(providerId).slice(-6)}`));
 
-        // Register new user
         user = await User.create({
           email: loginEmail,
-          userName,
+          userName: resolvedUserName,
           firstName,
           lastName,
           provider,

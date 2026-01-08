@@ -48,7 +48,7 @@ exports.socialAuth = () =>
   Joi.object({
     provider: Joi.string().required(),
     providerId: Joi.string().required(),
-    email: Joi.string().email().required(),
+    email: Joi.string().email().optional().allow("", null),
     firstName: Joi.string().optional(),
     lastName: Joi.string().optional(),
     userName: Joi.string().optional(),
