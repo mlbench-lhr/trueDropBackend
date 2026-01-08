@@ -680,10 +680,40 @@ exports.getSubscription = async (req, res) => {
     }).sort({
       createdAt: -1,
     });
-    if (!subscription)
+    if (!subscription) {
+      const latest = await Subscription.findOne({
+        userId,
+        status: { $in: ["cancelled", "expired"] },
+      }).sort({ createdAt: -1 });
+      if (latest) {
+        const start = latest.lastPaymentDate || latest.createdAt;
+        const graceEnd = computeNextBillingDate(latest.plan, start);
+        const inGrace = graceEnd && new Date() < graceEnd;
+        if (inGrace) {
+          return res.status(200).json({
+            status: true,
+            message: "Subscription fetched",
+            data: {
+              deviceType: latest.deviceType,
+              plan: latest.plan,
+              price:
+                latest.plan === "monthly"
+                  ? 3.99
+                  : latest.plan === "yearly"
+                  ? 31.99
+                  : convertZarToUsd(latest.price),
+              currency: "USD",
+              status: latest.status,
+              created: latest.createdAt,
+              nextBillingDate: graceEnd,
+            },
+          });
+        }
+      }
       return res
         .status(200)
         .json({ status: false, message: "No subscription found", data: null });
+    }
 
     // if (subscription.status === "active") {
     //   const now = new Date();
