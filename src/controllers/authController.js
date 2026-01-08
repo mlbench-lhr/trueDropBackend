@@ -166,6 +166,8 @@ async function socialAuth(req, res, next) {
       fcmDeviceToken,
     } = req.body;
 
+    const loginEmail = email || `${provider}_${providerId}@noemail.local`;
+
     // Check if user exists with this provider and providerId
     let user = await User.findOne({ provider, providerId });
     let message, statusCode;
@@ -173,7 +175,7 @@ async function socialAuth(req, res, next) {
 
     if (!user) {
       // Try matching by email (from any provider)
-      const existingByEmail = await User.findOne({ email });
+      const existingByEmail = await User.findOne({ email: loginEmail });
 
       if (existingByEmail) {
         // User exists with same email but different provider - just log them in
@@ -192,7 +194,7 @@ async function socialAuth(req, res, next) {
 
         // Register new user
         user = await User.create({
-          email,
+          email: loginEmail,
           userName,
           firstName,
           lastName,
