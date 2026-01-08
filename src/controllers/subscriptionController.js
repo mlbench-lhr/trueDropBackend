@@ -403,7 +403,7 @@ exports.webhook = async (req, res) => {
         ? computeNextBillingDate(planType, paymentAt)
         : null;
     const updatedSubscription = await Subscription.findByIdAndUpdate(
-      subscriptionId,
+      effectiveSubscriptionId,
       {
         status: newStatus,
         paymentId: token,
@@ -436,14 +436,15 @@ exports.webhook = async (req, res) => {
         }).sort({ createdAt: -1 });
 
         if (previousMonthly) {
+          const useStaging = process.env.PAYFAST_ENV === "staging";
           const cancelData = {
-            merchant_id: isDebugUrl
+            merchant_id: useStaging
               ? PAYFAST_CONFIG_STAGING.merchantId
               : PAYFAST_CONFIG.merchantId,
             version: "v1",
             timestamp: new Date().toISOString(),
           };
-          const cancelSignature = isDebugUrl
+          const cancelSignature = useStaging
             ? generatePayFastAPISignature(
                 cancelData,
                 PAYFAST_CONFIG_STAGING.passphrase
@@ -456,14 +457,14 @@ exports.webhook = async (req, res) => {
             try {
               await axios.put(
                 `${
-                  isDebugUrl
+                  useStaging
                     ? PAYFAST_CONFIG_STAGING.apiUrl
                     : PAYFAST_CONFIG.apiUrl
                 }/${previousMonthly.paymentId}/cancel`,
                 {},
                 {
                   headers: {
-                    "merchant-id": isDebugUrl
+                    "merchant-id": useStaging
                       ? PAYFAST_CONFIG_STAGING.merchantId
                       : PAYFAST_CONFIG.merchantId,
                     version: "v1",
