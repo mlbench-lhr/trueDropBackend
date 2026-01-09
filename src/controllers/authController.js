@@ -764,7 +764,42 @@ async function resetPassword(req, res, next) {
   }
 }
 
-// Add to module.exports
+async function logout(req, res, next) {
+  try {
+    await connectDB();
+    const { userId, fcmDeviceToken } = req.body;
+    if (!userId || !fcmDeviceToken) {
+      return res.status(200).json({
+        status: false,
+        message: "userId and fcmDeviceToken are required",
+        data: null,
+      });
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(200).json({
+        status: false,
+        message: "User not found",
+        data: null,
+      });
+    }
+    if (!Array.isArray(user.fcmDeviceTokens)) {
+      user.fcmDeviceTokens = [];
+    }
+    const before = user.fcmDeviceTokens.length;
+    user.fcmDeviceTokens = user.fcmDeviceTokens.filter((t) => t !== fcmDeviceToken);
+    await user.save();
+    return res.status(200).json({
+      status: true,
+      message: "Logout successful",
+      data: { removed: before !== user.fcmDeviceTokens.length },
+    });
+  } catch (err) {
+    logger.error("Logout error", err);
+    next(err);
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -773,4 +808,5 @@ module.exports = {
   resetPassword,
   socialAuth,
   addUserDetails,
+  logout,
 };

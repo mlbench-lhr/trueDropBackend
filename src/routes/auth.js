@@ -32,4 +32,5 @@ router.post(
   authController.resetPassword
 );
 router.get("/getFields", getAllFields);
+router.post("/logout", authController.logout);
 module.exports = router;
