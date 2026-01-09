@@ -767,11 +767,11 @@ async function resetPassword(req, res, next) {
 async function logout(req, res, next) {
   try {
     await connectDB();
-    const { userId, fcmDeviceToken } = req.body;
-    if (!userId || !fcmDeviceToken) {
+    const { userId } = req.body;
+    if (!userId) {
       return res.status(200).json({
         status: false,
-        message: "userId and fcmDeviceToken are required",
+        message: "userId is required",
         data: null,
       });
     }
@@ -783,16 +783,12 @@ async function logout(req, res, next) {
         data: null,
       });
     }
-    if (!Array.isArray(user.fcmDeviceTokens)) {
-      user.fcmDeviceTokens = [];
-    }
-    const before = user.fcmDeviceTokens.length;
-    user.fcmDeviceTokens = user.fcmDeviceTokens.filter((t) => t !== fcmDeviceToken);
+    const before = Array.isArray(user.fcmDeviceTokens) ? user.fcmDeviceTokens.length : 0;
+    user.fcmDeviceTokens = [];
     await user.save();
     return res.status(200).json({
       status: true,
       message: "Logout successful",
-      data: { removed: before !== user.fcmDeviceTokens.length },
     });
   } catch (err) {
     logger.error("Logout error", err);
