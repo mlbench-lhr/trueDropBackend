@@ -30,10 +30,9 @@ async function getSaveAndSober(req, res, next) {
       (sum, m) => sum + (m.soberDays || 0),
       0
     );
-    const totalMoneySaved = milestones.reduce(
-      (sum, m) => sum + (m.moneySaved || 0),
-      0
-    );
+    console.log("totalSoberDays-----", totalSoberDays);
+    const totalMoneySaved = totalSoberDays * (userFromDb?.goal?.amount || 0);
+    console.log("totalMoneySaved-----", totalMoneySaved);
 
     let nextTotalMoneySaved = 0;
     if (nextMilestones?.dayCount) {
