@@ -12,9 +12,9 @@ async function getSaveAndSober(req, res, next) {
     const userFromDb = await User.findById(userId);
     const milestones = await UsersMilestones.find({
       userId,
-      completedOn: { $exists: true },
+      completedOn: { $ne: null },
     })
-      .sort({ milestoneId: 1 })
+      .sort({ completedOn: -1 })
       .populate("milestoneId")
       .lean();
 
@@ -30,9 +30,7 @@ async function getSaveAndSober(req, res, next) {
       (sum, m) => sum + (m.soberDays || 0),
       0
     );
-    console.log("totalSoberDays-----", totalSoberDays);
     const totalMoneySaved = totalSoberDays * (userFromDb?.goal?.amount || 0);
-    console.log("totalMoneySaved-----", totalMoneySaved);
 
     let nextTotalMoneySaved = 0;
     if (nextMilestones?.dayCount) {
@@ -41,7 +39,6 @@ async function getSaveAndSober(req, res, next) {
           frequencyInNumber[userFromDb?.goal?.frequency]) *
         userFromDb?.goal?.amount;
     }
-
     return res.status(200).json({
       status: true,
       message: "Totals retrieved successfully",
