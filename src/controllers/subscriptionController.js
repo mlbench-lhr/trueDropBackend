@@ -691,7 +691,7 @@ exports.getSubscription = async (req, res) => {
         message: "Subscription fetched",
         data: {
           deviceType: "android",
-          plan: "free",
+          plan: "lifetime",
           price: 0,
           currency: "USD",
           status: "active",
