@@ -16,8 +16,8 @@ async function sendAlert(deviceToken, title, body, podId) {
       notification: {
         title,
         body,
-        podId: podId ? String(podId) : undefined,
       },
+      data: podId ? { podId: String(podId) } : undefined,
     },
   };
 
