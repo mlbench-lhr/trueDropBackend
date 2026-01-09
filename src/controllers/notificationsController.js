@@ -9,13 +9,14 @@ const Subscription = require("../models/Subscription");
 const PROJECT_ID = process.env.PROJECT_ID || process.env.FIREBASE_PROJECT_ID;
 const FCM_URL = `https://fcm.googleapis.com/v1/projects/${PROJECT_ID}/messages:send`;
 
-async function sendAlert(deviceToken, title, body) {
+async function sendAlert(deviceToken, title, body, podId) {
   const payload = {
     message: {
       token: deviceToken,
       notification: {
         title,
         body,
+        podId: podId ? String(podId) : undefined,
       },
     },
   };
@@ -71,7 +72,7 @@ async function sendNotification(req, res, next) {
       userId,
       podId: podId ? podId : null,
     });
-    await Promise.all(tokens.map((token) => sendAlert(token, title, body)));
+    await Promise.all(tokens.map((token) => sendAlert(token, title, body, podId)));
     return res.status(200).json({
       status: true,
       message: "notification sent successfully",
