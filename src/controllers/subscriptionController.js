@@ -674,6 +674,32 @@ exports.getSubscription = async (req, res) => {
       return res
         .status(200)
         .json({ status: false, message: "userId is required", data: null });
+
+    const user = await User.findById(userId).select("email createdAt");
+    const bypassEmails = [
+      "truedrop1975@gmail.com",
+      "alwaysonthepeak@gmail.com",
+      "support@truedrop.app",
+      "test1@truedrop.app",
+      "test2@truedrop.app",
+    ];
+    const userEmail = (user?.email || "").toLowerCase().trim();
+    if (bypassEmails.includes(userEmail)) {
+      return res.status(200).json({
+        status: true,
+        message: "Subscription fetched",
+        data: {
+          deviceType: "android",
+          plan: "free",
+          price: 0,
+          currency: "USD",
+          status: "active",
+          created: user?.createdAt || new Date(),
+          nextBillingDate: null,
+        },
+      });
+    }
+
     const subscription = await Subscription.findOne({
       userId,
       status: "active",
