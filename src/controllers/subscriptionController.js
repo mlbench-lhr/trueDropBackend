@@ -817,7 +817,6 @@ exports.addSubscription = async (req, res) => {
     // Optional: Expire previous active subscription
     const previous = await Subscription.findOne({
       userId,
-      status: "active",
     });
 
     if (previous) {
