@@ -12,7 +12,7 @@ async function getSaveAndSober(req, res, next) {
     const userFromDb = await User.findById(userId);
     const milestones = await UsersMilestones.find({
       userId,
-      completedOn: { $ne: null },
+      // completedOn: { $ne: null },
     })
       .sort({ completedOn: -1 })
       .populate("milestoneId")
