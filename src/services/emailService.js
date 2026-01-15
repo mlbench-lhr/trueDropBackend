@@ -1,33 +1,24 @@
 const logger = require("../utils/logger");
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-const SMTP_HOST = process.env.SMTP_HOST;
-const SMTP_PORT = Number(process.env.SMTP_PORT) || 587;
-const SMTP_USER = process.env.SMTP_USER;
-const SMTP_PASS = process.env.SMTP_PASS;
-const SMTP_FROM =
-  process.env.SMTP_FROM || process.env.EMAIL_FROM || "mlbenchpvtltd@gmail.com";
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const EMAIL_FROM =
+  process.env.EMAIL_FROM || process.env.SMTP_FROM || "mlbenchpvtltd@gmail.com";
 
-function createTransport() {
-  return nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: SMTP_PORT,
-    secure: SMTP_PORT === 465,
-    auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASS,
-    },
-  });
-}
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+console.log("resend-----", resend);
 
 async function sendVerificationCode(email, code) {
   try {
     logger.info("Attempting to send email to:", email);
 
-    const transporter = createTransport();
+    if (!resend) {
+      logger.error("Resend client not initialized. Missing RESEND_API_KEY.");
+      return false;
+    }
 
-    const info = await transporter.sendMail({
-      from: SMTP_FROM,
+    const { data, error } = await resend.emails.send({
+      from: EMAIL_FROM,
       to: email,
       subject: "Password Reset Verification Code",
       html: `
@@ -42,8 +33,30 @@ async function sendVerificationCode(email, code) {
           </div>
         `,
     });
+    const res = await resend.emails.send({
+      from: EMAIL_FROM,
+      to: email,
+      subject: "Password Reset Verification Code",
+      html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px;">
+            <h2>Password Reset Request</h2>
+            <p>You requested to reset your password. Use the verification code below:</p>
+            <div style="background-color: #f4f4f4; padding: 15px; border-radius: 5px; font-size: 24px; font-weight: bold; text-align: center; margin: 20px 0;">
+              ${code}
+            </div>
+            <p>This code will expire in 10 minutes.</p>
+            <p>If you didn't request this, please ignore this email.</p>
+          </div>
+        `,
+    });
+    console.log("res------", res);
 
-    logger.info("Email sent successfully", info.messageId);
+    if (error) {
+      logger.error("Email send error:", error.message || error);
+      return false;
+    }
+
+    logger.info("Email sent successfully", data && data.id);
     return true;
   } catch (error) {
     logger.error("Email send error:", error.message);
