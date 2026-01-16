@@ -29,6 +29,15 @@ const PAYFAST_IPS = [
   "197.97.145.148",
 ];
 
+const USD_ZAR_RATE = parseFloat(process.env.USD_ZAR_RATE) || 18.5;
+const convertZarToUsd = (amount) =>
+  parseFloat(((amount || 0) / USD_ZAR_RATE).toFixed(2));
+const convertUsdToZar = (amount) =>
+  parseFloat(((amount || 0) * USD_ZAR_RATE).toFixed(2));
+
+const MONTHLY_USD_PRICE = 4.99;
+const YEARLY_USD_PRICE = 39.99;
+
 const PLANS = {
   free: {
     amount: 0,
@@ -39,17 +48,17 @@ const PLANS = {
   },
 
   monthly: {
-    amount: 68.33,
+    amount: convertUsdToZar(MONTHLY_USD_PRICE),
     frequency: 3,
     cycles: 1,
-    name: "Monthly Test $3.99",
+    name: "Monthly Plan $4.99",
   },
 
   yearly: {
-    amount: 461.22,
+    amount: convertUsdToZar(YEARLY_USD_PRICE),
     frequency: 3,
     cycles: 1,
-    name: "Yearly Test $31.99",
+    name: "Yearly Plan $39.99",
   },
 };
 
@@ -136,9 +145,6 @@ const verifyPayFastData = (pfData, signature, passphrase = "") => {
   console.log("Received signature:", signature);
   return calculatedSignature === signature;
 };
-const USD_ZAR_RATE = parseFloat(process.env.USD_ZAR_RATE) || 18.5;
-const convertZarToUsd = (amount) =>
-  parseFloat(((amount || 0) / USD_ZAR_RATE).toFixed(2));
 
 const computeNextBillingDate = (planType, fromDate) => {
   const d = new Date(fromDate || new Date());
@@ -301,9 +307,9 @@ exports.getSubscriptionURL = async (req, res) => {
         plan: planType,
         amount:
           subscription.plan === "monthly"
-            ? 3.99
+            ? MONTHLY_USD_PRICE
             : subscription.plan === "yearly"
-            ? 31.99
+            ? YEARLY_USD_PRICE
             : convertZarToUsd(subscription.price),
       },
     });
@@ -609,9 +615,9 @@ exports.cancelSubscription = async (req, res) => {
         plan: updatedSubscription.plan,
         price:
           subscription.plan === "monthly"
-            ? 3.99
+            ? MONTHLY_USD_PRICE
             : subscription.plan === "yearly"
-            ? 31.99
+            ? YEARLY_USD_PRICE
             : convertZarToUsd(subscription.price),
         currency: "USD",
         status: updatedSubscription.status,
@@ -682,7 +688,7 @@ exports.getSubscription = async (req, res) => {
       "support@truedrop.app",
       "test1@truedrop.app",
       "test2@truedrop.app",
-      "mlbenchpvtltd@gmail.com"
+      "mlbenchpvtltd@gmail.com",
     ];
     const userEmail = (user?.email || "").toLowerCase().trim();
     if (bypassEmails.includes(userEmail)) {
@@ -725,9 +731,9 @@ exports.getSubscription = async (req, res) => {
               plan: latest.plan,
               price:
                 latest.plan === "monthly"
-                  ? 3.99
+                  ? MONTHLY_USD_PRICE
                   : latest.plan === "yearly"
-                  ? 31.99
+                  ? YEARLY_USD_PRICE
                   : convertZarToUsd(latest.price),
               currency: "USD",
               status: latest.status,
@@ -770,9 +776,9 @@ exports.getSubscription = async (req, res) => {
         plan: subscription.plan,
         price:
           subscription.plan === "monthly"
-            ? 3.99
+            ? MONTHLY_USD_PRICE
             : subscription.plan === "yearly"
-            ? 31.99
+            ? YEARLY_USD_PRICE
             : convertZarToUsd(subscription.price),
         currency: "USD",
         status: subscription.status,
@@ -853,9 +859,9 @@ exports.addSubscription = async (req, res) => {
         plan: newSubscription.plan,
         price:
           newSubscription.plan === "monthly"
-            ? 3.99
+            ? MONTHLY_USD_PRICE
             : newSubscription.plan === "yearly"
-            ? 31.99
+            ? YEARLY_USD_PRICE
             : convertZarToUsd(newSubscription.price),
         currency: "USD",
         status: newSubscription.status,
@@ -897,9 +903,9 @@ exports.getAllSubscription = async (req, res) => {
       plan: subscription.plan,
       price:
         subscription.plan === "monthly"
-          ? 3.99
+          ? MONTHLY_USD_PRICE
           : subscription.plan === "yearly"
-          ? 31.99
+          ? YEARLY_USD_PRICE
           : convertZarToUsd(subscription.price),
       currency: "USD",
       status: subscription.status,
