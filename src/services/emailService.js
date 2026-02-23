@@ -33,23 +33,7 @@ async function sendVerificationCode(email, code) {
           </div>
         `,
     });
-    const res = await resend.emails.send({
-      from: EMAIL_FROM,
-      to: email,
-      subject: "Password Reset Verification Code",
-      html: `
-          <div style="font-family: Arial, sans-serif; padding: 20px;">
-            <h2>Password Reset Request</h2>
-            <p>You requested to reset your password. Use the verification code below:</p>
-            <div style="background-color: #f4f4f4; padding: 15px; border-radius: 5px; font-size: 24px; font-weight: bold; text-align: center; margin: 20px 0;">
-              ${code}
-            </div>
-            <p>This code will expire in 10 minutes.</p>
-            <p>If you didn't request this, please ignore this email.</p>
-          </div>
-        `,
-    });
-    console.log("res------", res);
+
 
     if (error) {
       logger.error("Email send error:", error.message || error);
