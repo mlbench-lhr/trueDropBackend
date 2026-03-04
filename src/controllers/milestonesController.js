@@ -651,6 +651,10 @@ async function getCurrentMilestones(req, res, next) {
       (userFromDb?.goal?.amount || 0);
     console.log("lastCompletedMilestone-------", lastCompletedMilestone);
 
+    const daysToNextMilestone = nextMilestone
+      ? Math.max(currentMilestone.dayCount - soberDays, 0)
+      : null;
+
     return res.status(200).json({
       status: true,
       message: "Milestones fetched successfully",
@@ -680,6 +684,7 @@ async function getCurrentMilestones(req, res, next) {
               title: nextMilestone.title,
               description: nextMilestone.description,
               dayCount: nextMilestone.dayCount,
+              daysToAchieve: daysToNextMilestone,
             }
           : null,
       },
