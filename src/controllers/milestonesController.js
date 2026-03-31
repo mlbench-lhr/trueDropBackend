@@ -4,24 +4,15 @@ const UsersMilestones = require("../models/UsersMilestones");
 const logger = require("../utils/logger");
 const connectDB = require("../db/mongo");
 
-function calculateAllowCheckIn(previousMilestoneCompletedOn) {
-  if (!previousMilestoneCompletedOn) {
+function calculateAllowCheckIn(previousTime) {
+  if (!previousTime) {
     return true;
   }
-  const completed = new Date(previousMilestoneCompletedOn);
+  const lastUpdate = new Date(previousTime);
   const now = new Date();
-  const completedUTC = Date.UTC(
-    completed.getUTCFullYear(),
-    completed.getUTCMonth(),
-    completed.getUTCDate()
-  );
-  const todayUTC = Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate()
-  );
+  const hoursDiff = (now - lastUpdate) / (1000 * 60 * 60);
 
-  return completedUTC < todayUTC;
+  return hoursDiff >= 24;
 }
 
 // Create a new milestones entry
@@ -88,8 +79,11 @@ async function updateMilestones(req, res, next) {
       userMilestone.soberDays = soberDays;
       userMilestone.moneySaved = moneySaved;
 
-      // Mark as completed if soberDays threshold is met
-      if (soberDays >= milestoneForResponse.dayCount) {
+      // Mark as completed if soberDays threshold is met and not already completed
+      if (
+        soberDays >= milestoneForResponse.dayCount &&
+        !userMilestone.completedOn
+      ) {
         userMilestone.completedOn = new Date();
         userMilestone.soberDays = milestoneForResponse.dayCount;
       }
@@ -527,11 +521,7 @@ async function getCurrentMilestones(req, res, next) {
         return true; // No completed milestone yet, allow advancement
       }
 
-      const completedDate = new Date(lastCompletedMilestone.completedOn);
-      const now = new Date();
-      const hoursDiff = (now - completedDate) / (1000 * 60 * 60);
-
-      return hoursDiff >= 24;
+      return calculateAllowCheckIn(lastCompletedMilestone.completedOn);
     };
 
     if (!lastCompletedMilestone) {
