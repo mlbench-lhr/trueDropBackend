@@ -690,7 +690,9 @@ exports.getSubscription = async (req, res) => {
       "test2@truedrop.app",
       "mlbenchpvtltd@gmail.com",
       "batoolnaba610@gmail.com",
-      "bampakistani@gmail.com"
+      "bampakistani@gmail.com",
+      "olive.1@yopmail.com",
+      "olive.2@yopmail.com"
     ];
     const userEmail = (user?.email || "").toLowerCase().trim();
     if (bypassEmails.includes(userEmail)) {
