@@ -76,24 +76,31 @@ async function updateMilestones(req, res, next) {
     if (userMilestone) {
       // Update existing milestone
       milestoneForResponse = userMilestone.milestoneId;
-      userMilestone.soberDays = soberDays;
-      userMilestone.moneySaved = moneySaved;
+      const update = {
+        soberDays,
+        moneySaved,
+      };
 
       // Mark as completed if soberDays threshold is met and not already completed
       if (
         soberDays >= milestoneForResponse.dayCount &&
         !userMilestone.completedOn
       ) {
-        userMilestone.completedOn = new Date();
-        userMilestone.soberDays = milestoneForResponse.dayCount;
+        update.completedOn = new Date();
+        update.soberDays = milestoneForResponse.dayCount;
       }
 
       // Update completedOn if provided in payload
       if (completedOn) {
-        userMilestone.completedOn = completedOn;
+        update.completedOn = completedOn;
       }
 
-      await userMilestone.save();
+      await UsersMilestones.updateOne(
+        { _id: userMilestone._id },
+        { $set: update, $currentDate: { updatedAt: true } },
+      );
+
+      userMilestone = await UsersMilestones.findById(userMilestone._id);
     } else {
       // Create new milestone entry
       const milestoneFromDb = await Milestones.findById(milestoneId).select(
