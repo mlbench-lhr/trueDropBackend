@@ -487,7 +487,6 @@ async function getCurrentMilestones(req, res, next) {
   try {
     await connectDB();
     const userId = req.user.userId;
-    const { currentDate } = req.query;
 
     if (!userId) {
       return res.status(200).json({
@@ -517,7 +516,6 @@ async function getCurrentMilestones(req, res, next) {
         "frequency tag title description dayCount nextMilestone _id updatedAt"
       )
       .lean();
-    console.log("lastCompletedMilestone---", lastCompletedMilestone);
 
     let currentMilestone = null;
     let nextMilestone = null;
@@ -645,38 +643,37 @@ async function getCurrentMilestones(req, res, next) {
     const frequencyInNumber = { daily: 1, weekly: 7, monthly: 30 };
     let missedDay = false;
     let soberDaysValue = currentUserMilestone?.soberDays || 0;
-    if (currentDate && currentUserMilestone?.updatedAt) {
+    if (currentUserMilestone?.updatedAt) {
+      const now = new Date();
+      const todayUTC = new Date(Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate()
+      ));
       const last = new Date(currentUserMilestone.updatedAt);
-      const today = new Date(currentDate);
-      const lastDay = new Date(
-        last.getFullYear(),
-        last.getMonth(),
-        last.getDate()
-      );
-      const todayDay = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate()
-      );
-      const diffDays = Math.floor((todayDay - lastDay) / (1000 * 60 * 60 * 24));
+      const lastUTC = new Date(Date.UTC(
+        last.getUTCFullYear(),
+        last.getUTCMonth(),
+        last.getUTCDate()
+      ));
+      const diffDays = Math.floor((todayUTC - lastUTC) / (1000 * 60 * 60 * 24));
       if (diffDays > 1) {
         missedDay = true;
         soberDaysValue = 0;
       }
-    }
+      }
     const moneySaved =
       missedDay
         ? 0
         : (soberDaysValue / frequencyInNumber[userFromDb?.goal?.frequency || "daily"]) *
           (userFromDb?.goal?.amount || 0);
-    console.log("lastCompletedMilestone-------", lastCompletedMilestone);
 
     const daysToNextMilestone = nextMilestone
       ? Math.max(currentMilestone.dayCount - soberDaysValue, 0)
       : null;
 
     const responseMessage = missedDay ? "You missed a day and streak is broken" : "Milestones fetched successfully";
-
+    
     return res.status(200).json({
       status: true,
       message: responseMessage,
