@@ -487,6 +487,7 @@ async function getCurrentMilestones(req, res, next) {
   try {
     await connectDB();
     const userId = req.user.userId;
+    const { currentDate } = req.query;
 
     if (!userId) {
       return res.status(200).json({
@@ -642,19 +643,43 @@ async function getCurrentMilestones(req, res, next) {
 
     // Calculate money saved
     const frequencyInNumber = { daily: 1, weekly: 7, monthly: 30 };
-    const soberDays = currentUserMilestone?.soberDays || 0;
+    let missedDay = false;
+    let soberDaysValue = currentUserMilestone?.soberDays || 0;
+    if (currentDate && currentUserMilestone?.updatedAt) {
+      const last = new Date(currentUserMilestone.updatedAt);
+      const today = new Date(currentDate);
+      const lastDay = new Date(
+        last.getFullYear(),
+        last.getMonth(),
+        last.getDate()
+      );
+      const todayDay = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+      );
+      const diffDays = Math.floor((todayDay - lastDay) / (1000 * 60 * 60 * 24));
+      if (diffDays > 1) {
+        missedDay = true;
+        soberDaysValue = 0;
+      }
+    }
     const moneySaved =
-      (soberDays / frequencyInNumber[userFromDb?.goal?.frequency || "daily"]) *
-      (userFromDb?.goal?.amount || 0);
+      missedDay
+        ? 0
+        : (soberDaysValue / frequencyInNumber[userFromDb?.goal?.frequency || "daily"]) *
+          (userFromDb?.goal?.amount || 0);
     console.log("lastCompletedMilestone-------", lastCompletedMilestone);
 
     const daysToNextMilestone = nextMilestone
-      ? Math.max(currentMilestone.dayCount - soberDays, 0)
+      ? Math.max(currentMilestone.dayCount - soberDaysValue, 0)
       : null;
+
+    const responseMessage = missedDay ? "You missed a day and streak is broken" : "Milestones fetched successfully";
 
     return res.status(200).json({
       status: true,
-      message: "Milestones fetched successfully",
+      message: responseMessage,
       data: {
         currentMilestone: currentMilestone
           ? {
@@ -665,7 +690,7 @@ async function getCurrentMilestones(req, res, next) {
               description: currentMilestone.description,
               dayCount: currentMilestone.dayCount,
               completedOn: currentUserMilestone?.completedOn || null,
-              soberDays: currentUserMilestone?.soberDays || 0,
+              soberDays: soberDaysValue,
               moneySaved: moneySaved,
               updatedAt: currentUserMilestone?.updatedAt || null,
               allowCheckIn:
